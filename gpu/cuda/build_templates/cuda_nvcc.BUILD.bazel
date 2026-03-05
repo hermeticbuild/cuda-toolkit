@@ -1,0 +1,103 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@cuda//cuda:build_defs.bzl", "if_cuda_newer_than")
+load("@bazel_skylib//rules/directory:directory.bzl", "directory")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+
+directory(
+    name = "nvcc_directory",
+    srcs = glob([
+        "include/cuda.h",
+        "bin/ptxas",
+        "bin/fatbinary",
+        "nvvm/libdevice/libdevice.10.bc",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nvvm",
+    srcs = ["nvvm/libdevice/libdevice.10.bc"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nvdisasm",
+    srcs = [
+        "bin/nvdisasm",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nvlink",
+    srcs = [
+        "bin/nvlink",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "fatbinary",
+    srcs = [
+        "bin/fatbinary",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "bin2c",
+    srcs = [
+        "bin/bin2c",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "ptxas",
+    srcs = [
+        "bin/ptxas",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "bin",
+    srcs = glob([
+        "bin/**",
+        "nvvm/bin/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "link_stub",
+    srcs = [
+        "bin/crt/link.stub",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob([
+        "include/fatbinary_section.h",
+        "include/nvPTXCompiler.h",
+        #TODO(cerisier): wtf...
+        "include/cuda.h",
+    ]) + if_cuda_newer_than(
+        "13_0",
+        if_true = [],
+        if_false = glob(["include/crt/**"]),
+    ),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["include"],
+    defines = ["_ALLOW_UNSUPPORTED_LIBCPP"],
+    strip_include_prefix = "include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

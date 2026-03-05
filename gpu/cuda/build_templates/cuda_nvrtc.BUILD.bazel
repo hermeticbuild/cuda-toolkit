@@ -1,0 +1,52 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@cuda_nvrtc//:version.bzl", "LIB_VERSIONS")
+
+load(
+    "@cuda//cuda:build_defs.bzl",
+    "if_cuda_newer_than",
+    "cuda_rpath_flags",
+)
+
+cc_import(
+    name = "nvrtc_main",
+    hdrs = [":headers"],
+    shared_library = "lib/libnvrtc.so." + LIB_VERSIONS["libnvrtc"],
+)
+
+cc_import(
+    name = "nvrtc_builtins",
+    hdrs = [":headers"],
+    shared_library = "lib/libnvrtc-builtins.so." + LIB_VERSIONS["libnvrtc-builtins"],
+)
+cc_library(
+    name = "nvrtc",
+    deps = [
+        ":nvrtc_main",
+        ":nvrtc_builtins",
+    ],
+    linkopts = if_cuda_newer_than(
+        "13_0",
+        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
+        if_false = cuda_rpath_flags("nvidia/cuda_nvrtc/lib"),
+    ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = [
+        "include/nvrtc.h",
+    ],
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

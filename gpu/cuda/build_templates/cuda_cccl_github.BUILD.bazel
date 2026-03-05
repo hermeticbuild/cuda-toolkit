@@ -1,0 +1,82 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+filegroup(
+    name = "header_list",
+    srcs = [":thrust_header_list",":nv_header_list", ":cuda_header_list", ":cub_header_list"],
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "headers",
+    deps = [":thrust_headers",":nv_headers", ":cuda_headers", ":cub_headers"],
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+filegroup(
+    name = "thrust_header_list",
+    srcs = glob([
+        "thrust/thrust/**",
+    ]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "thrust_headers",
+    hdrs = [":thrust_header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["thrust"],
+    strip_include_prefix = "thrust",
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+filegroup(
+    name = "cuda_header_list",
+    srcs = glob([
+        "libcudacxx/include/cuda/**",
+    ]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "cuda_headers",
+    hdrs = [":cuda_header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["libcudacxx/include"],
+    strip_include_prefix = "libcudacxx/include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+filegroup(
+    name = "nv_header_list",
+    srcs = glob([
+        "libcudacxx/include/nv/**",
+    ]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "nv_headers",
+    hdrs = ["nv_header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["libcudacxx/include/nv"],
+    strip_include_prefix = "libcudacxx/include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+filegroup(
+    name = "cub_header_list",
+    srcs = glob([
+        "cub/cub/**",
+    ]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "cub_headers",
+    hdrs = [":cub_header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["cub"],
+    strip_include_prefix = "cub",
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+

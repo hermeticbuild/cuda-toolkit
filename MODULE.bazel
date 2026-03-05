@@ -1,0 +1,41 @@
+module(
+    name = "cuda_toolkit",
+    version = "0.0.0",
+    bazel_compatibility = [">=7.4.0"],
+    compatibility_level = 0,
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "bazel_lib", version = "3.0.0")
+bazel_dep(name = "platforms", version = "1.0.0")
+
+cuda_ext = use_extension("//extensions:cuda.bzl", "cuda_ext")
+cuda_ext.configure(
+    cuda_version = "12.8.1",
+    cudnn_version = "9.16.0",
+    host_platform = "amd64",
+    target_platform = "amd64",
+)
+use_repo(
+    cuda_ext,
+    "cuda",
+    "cuda_cccl",
+    "cuda_crt",
+    "cuda_cublas",
+    "cuda_cudart",
+    "cuda_cudnn",
+    "cuda_cufft",
+    "cuda_cupti",
+    "cuda_curand",
+    "cuda_cusolver",
+    "cuda_cusparse",
+    "cuda_driver",
+    "cuda_nvcc",
+    "cuda_nvdisasm",
+    "cuda_nvjitlink",
+    "cuda_nvml",
+    "cuda_nvrtc",
+    "cuda_nvtx",
+    "cuda_nvvm",
+    "cuda_profiler_api",
+)
