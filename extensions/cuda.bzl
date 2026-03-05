@@ -94,13 +94,10 @@ def _cuda_ext_impl(mctx):
     cuda_redist_repositories(
         cuda_redistributions = cuda_redistributions,
         cuda_version = tag.cuda_version,
-        host_platform = tag.host_platform,
-        target_platform = tag.target_platform,
     )
     cudnn_redist_repository(
         cudnn_redistributions = cudnn_redistributions,
         cuda_version = tag.cuda_version,
-        target_platform = tag.target_platform,
     )
 
     cuda_configure(
@@ -115,8 +112,6 @@ _configure_tag = tag_class(
         "cuda_version": attr.string(mandatory = True),
         "cudnn_version": attr.string(mandatory = True),
         "cuda_umd_version": attr.string(mandatory = False),
-        "host_platform": attr.string(mandatory = True),
-        "target_platform": attr.string(mandatory = True),
     },
 )
 

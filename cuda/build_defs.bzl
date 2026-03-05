@@ -55,7 +55,7 @@ def if_version_equal_or_greater_than(
 # avaialble from PyPI.
 def cuda_rpath_flags(relpath):
     return select({
-        "@cuda_sdk//common:enable_cuda_rpath": [
+        "@cuda_toolkit//common:enable_cuda_rpath": [
             "-Wl,-rpath='$$ORIGIN/../../" + relpath + "'",
             "-Wl,-rpath='$$ORIGIN/../" + relpath + "'",
         ],

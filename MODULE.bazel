@@ -14,8 +14,6 @@ cuda_ext = use_extension("//extensions:cuda.bzl", "cuda_ext")
 cuda_ext.configure(
     cuda_version = "12.8.1",
     cudnn_version = "9.16.0",
-    host_platform = "amd64",
-    target_platform = "amd64",
 )
 use_repo(
     cuda_ext,

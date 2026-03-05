@@ -22,8 +22,6 @@ cuda_ext = use_extension("//extensions:cuda.bzl", "cuda_ext")
 cuda_ext.configure(
     cuda_version = "12.9.1",
     cudnn_version = "9.8.0",
-    host_platform = "amd64",
-    target_platform = "amd64",
     # Optional:
     # cuda_umd_version = "13.0.0",
 )
@@ -55,7 +53,9 @@ use_repo(
 ## Notes
 
 - `cuda_umd_version` defaults to `cuda_version` when omitted.
-- `host_platform` and `target_platform` are required and drive deterministic repo
-  selection. Supported values are `amd64`, `aarch64`, `tegra-aarch64`.
+- CUDA repos are platform-resolving proxies. The selected concrete redistribution
+  is chosen from the current Bazel configuration platform (including exec config).
+- For local validation on non-Linux hosts, you can force Linux selection with
+  `--platforms=//:platform_linux_amd64` or `--platforms=//:platform_linux_arm64`.
 - `@cuda//cuda:build_defs.bzl` and `@cuda//cuda:BUILD`
   are static files from `//cuda`.

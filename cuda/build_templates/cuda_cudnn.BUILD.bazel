@@ -1,6 +1,6 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
-load("@cuda_cudnn//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_VERSIONS")
 
 load(
     "@cuda//cuda:build_defs.bzl",

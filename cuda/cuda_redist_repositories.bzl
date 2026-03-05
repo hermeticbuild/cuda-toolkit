@@ -12,17 +12,75 @@ OS_ARCH_DICT = {
     "aarch64": "aarch64-unknown-linux-gnu",
     "tegra-aarch64": "tegra-aarch64-unknown-linux-gnu",
 }
-_HOST_TOOL_REPOSITORIES = [
-    "cuda_nvcc",
-    "cuda_nvdisasm",
-    "cuda_nvjitlink",
-    "cuda_nvprune",
-    "cuda_nvvm",
-]
+_ARCH_REPO_SUFFIX = {
+    "amd64": "amd64",
+    "aarch64": "aarch64",
+    "tegra-aarch64": "tegra_aarch64",
+}
+_PROXY_ARCH_CONDITIONS = {
+    "amd64": ["@cuda_toolkit//:linux_amd64"],
+    # Both linux-sbsa and tegra-aarch64 map to linux arm64 constraints today.
+    "aarch64": ["@cuda_toolkit//:linux_arm64", "@cuda_toolkit//:linux_aarch64"],
+}
 _REDIST_ARCH_DICT = {
     "linux-x86_64": "x86_64-unknown-linux-gnu",
     "linux-sbsa": "aarch64-unknown-linux-gnu",
     "linux-aarch64": "tegra-aarch64-unknown-linux-gnu",
+}
+_REPO_PUBLIC_TARGETS = {
+    "cuda_cccl": ["header_list", "headers"],
+    "cuda_crt": ["header_list", "headers_impl", "placeholder", "headers"],
+    "cuda_cublas": ["cublas_shared_library", "cublasLt_shared_library", "cublas", "cublasLt", "header_list", "headers"],
+    "cuda_cudart": ["static", "cuda_stub", "cudart_shared_library", "cuda_driver", "cudart", "header_list", "headers"],
+    "cuda_cudnn": [
+        "cudnn_ops",
+        "cudnn_cnn",
+        "cudnn_adv",
+        "cudnn_graph",
+        "cudnn_engines_precompiled",
+        "cudnn_engines_runtime_compiled",
+        "cudnn_heuristic",
+        "cudnn_main",
+        "cudnn_ops_infer",
+        "cudnn_cnn_infer",
+        "cudnn_ops_train",
+        "cudnn_cnn_train",
+        "cudnn_adv_infer",
+        "cudnn_adv_train",
+        "cudnn",
+        "header_list",
+        "headers",
+    ],
+    "cuda_cufft": ["cufft_shared_library", "cufft", "header_list", "headers"],
+    "cuda_cupti": ["cupti_shared_library", "cupti", "header_list", "headers"],
+    "cuda_curand": ["curand_shared_library", "curand", "header_list", "headers"],
+    "cuda_cusolver": ["cusolver_shared_library", "cusolver", "header_list", "headers"],
+    "cuda_cusparse": ["cusparse_shared_library", "cusparse", "header_list", "headers"],
+    "cuda_driver": [
+        "driver_shared_library",
+        "nvidia-ptxjitcompiler_shared_library",
+        "libcuda_so_1",
+        "libnvidia-ptxjitcompiler_so_1",
+        "libcuda_so",
+        "nvidia_driver",
+        "nvidia_ptxjitcompiler",
+        "include_cuda_umd_libs",
+        "cuda_umd_libs",
+    ],
+    "cuda_nvcc": ["nvcc_directory", "nvvm", "nvdisasm", "nvlink", "fatbinary", "bin2c", "ptxas", "bin", "link_stub", "header_list", "headers"],
+    "cuda_nvdisasm": ["nvdisasm"],
+    "cuda_nvjitlink": ["nvjitlink_shared_library", "nvjitlink", "header_list", "headers"],
+    "cuda_nvml": ["header_list", "headers", "nvidia-ml_stub", "nvml"],
+    "cuda_nvprune": ["nvprune"],
+    "cuda_nvrtc": ["nvrtc_main", "nvrtc_builtins", "nvrtc", "header_list", "headers"],
+    "cuda_nvtx": ["header_list", "headers"],
+    "cuda_nvvm": ["cicc", "nvvm"],
+    "cuda_profiler_api": ["header_list", "headers"],
+}
+_PROXY_TARGET_OVERRIDES = {
+    "cuda_nvcc": {
+        "nvdisasm": "@cuda_nvdisasm//:nvdisasm",
+    },
 }
 _SUPPORTED_ARCHIVE_EXTENSIONS = [
     # we use suffix match, so suffix specializations should be
@@ -52,12 +110,10 @@ _SUPPORTED_ARCHIVE_EXTENSIONS = [
 def cudnn_redist_repository(
         cudnn_redistributions,
         cuda_version,
-        target_platform,
         cudnn_redist_path_prefix = CUDNN_REDIST_PATH_PREFIX,
         redist_versions_to_build_templates = REDIST_VERSIONS_TO_BUILD_TEMPLATES):
     # buildifier: disable=function-docstring-args
     """Initializes CUDNN repository."""
-    _validate_platform_attr("target_platform", target_platform)
     if "cudnn" in cudnn_redistributions:
         url_dict = _get_redistribution_urls(
             cudnn_redistributions["cudnn"],
@@ -71,35 +127,25 @@ def cudnn_redist_repository(
     versions, templates = get_version_and_template_lists(
         repo_data["version_to_template"],
     )
-    if _has_redistribution_url(url_dict):
-        redist_repository(
-            name = repo_data["repo_name"],
-            versions = versions,
-            build_templates = templates,
-            cuda_version = cuda_version,
-            component_version = component_version,
-            url_dict = url_dict,
-            redist_path_prefix = cudnn_redist_path_prefix,
-            target_arch = target_platform,
-            repository_symlinks = {},
-        )
-    else:
-        redist_placeholder_repository(
-            name = repo_data["repo_name"],
-            build_template = templates[0],
-        )
+    _create_component_repositories(
+        repo_name = repo_data["repo_name"],
+        versions = versions,
+        templates = templates,
+        cuda_version = cuda_version,
+        component_version = component_version,
+        url_dict = url_dict,
+        redist_path_prefix = cudnn_redist_path_prefix,
+        repository_symlinks_by_arch = {},
+    )
 
 def cuda_redist_repositories(
         cuda_redistributions,
         cuda_version,
-        host_platform,
-        target_platform,
         cuda_redist_path_prefix = CUDA_REDIST_PATH_PREFIX,
         redist_versions_to_build_templates = REDIST_VERSIONS_TO_BUILD_TEMPLATES):
     # buildifier: disable=function-docstring-args
     """Initializes CUDA repositories."""
-    _validate_platform_attr("host_platform", host_platform)
-    _validate_platform_attr("target_platform", target_platform)
+    component_specs = []
     for redist_name in sorted(redist_versions_to_build_templates.keys()):
         if redist_name in ["cudnn", "cuda_nccl"]:
             continue
@@ -116,48 +162,86 @@ def cuda_redist_repositories(
         versions, templates = get_version_and_template_lists(
             repo_data["version_to_template"],
         )
-        repo_platform = _get_repo_platform(
-            repo_data["repo_name"],
-            host_platform = host_platform,
-            target_platform = target_platform,
+        component_specs.append({
+            "repo_name": repo_data["repo_name"],
+            "versions": versions,
+            "templates": templates,
+            "component_version": component_version,
+            "url_dict": url_dict,
+        })
+
+    sorted_component_specs = [
+        spec
+        for spec in sorted(component_specs, key = lambda spec: spec["repo_name"])
+        if spec["repo_name"] != "cuda_nvcc"
+    ] + [
+        spec
+        for spec in sorted(component_specs, key = lambda spec: spec["repo_name"])
+        if spec["repo_name"] == "cuda_nvcc"
+    ]
+
+    for spec in sorted_component_specs:
+        _create_component_repositories(
+            repo_name = spec["repo_name"],
+            versions = spec["versions"],
+            templates = spec["templates"],
+            cuda_version = cuda_version,
+            component_version = spec["component_version"],
+            url_dict = spec["url_dict"],
+            redist_path_prefix = cuda_redist_path_prefix,
+            repository_symlinks_by_arch = {},
         )
-        if _has_redistribution_url(url_dict):
+
+def _create_component_repositories(
+        repo_name,
+        versions,
+        templates,
+        cuda_version,
+        component_version,
+        url_dict,
+        redist_path_prefix,
+        repository_symlinks_by_arch):
+    arch_repo_names = {}
+    for arch in sorted(OS_ARCH_DICT.keys()):
+        concrete_repo_name = _concrete_repo_name(repo_name, arch)
+        if _has_arch_redistribution(url_dict, cuda_version, arch):
             redist_repository(
-                name = repo_data["repo_name"],
+                name = concrete_repo_name,
                 versions = versions,
                 build_templates = templates,
                 cuda_version = cuda_version,
                 component_version = component_version,
                 url_dict = url_dict,
-                redist_path_prefix = cuda_redist_path_prefix,
-                target_arch = repo_platform,
-                repository_symlinks = {
-                    Label("@cuda_cudart//:include/cuda.h"): "include/cuda.h",
-                    Label("@cuda_nvdisasm//:bin/nvdisasm"): "bin/nvdisasm",
-                    Label("@cuda_nvvm//:nvvm/bin/cicc"): "nvvm/bin/cicc",
-                    Label("@cuda_nvvm//:nvvm/libdevice/libdevice.10.bc"): "nvvm/libdevice/libdevice.10.bc",
-                } if repo_data["repo_name"] == "cuda_nvcc" else {},
+                redist_path_prefix = redist_path_prefix,
+                target_arch = arch,
+                repository_symlinks = repository_symlinks_by_arch.get(arch, {}),
             )
+            arch_repo_names[arch] = concrete_repo_name
         else:
-            redist_placeholder_repository(
-                name = repo_data["repo_name"],
-                build_template = templates[0],
-            )
+            arch_repo_names[arch] = ""
 
-def _validate_platform_attr(attr_name, platform):
-    if platform not in OS_ARCH_DICT:
-        fail(
-            "Unsupported {} '{}'. Supported values: {}".format(
-                attr_name,
-                platform,
-                sorted(OS_ARCH_DICT.keys()),
-            ),
-        )
+    if repo_name not in _REPO_PUBLIC_TARGETS:
+        fail("Missing public target catalog for repository '{}'".format(repo_name))
+    redist_proxy_repository(
+        name = repo_name,
+        target_names = _REPO_PUBLIC_TARGETS[repo_name],
+        arch_repo_names = arch_repo_names,
+        target_overrides = _PROXY_TARGET_OVERRIDES.get(repo_name, {}),
+        component_version = component_version,
+    )
 
-def _get_repo_platform(repo_name, host_platform, target_platform):
-    if repo_name in _HOST_TOOL_REPOSITORIES:
-        return host_platform
-    return target_platform
+def _concrete_repo_name(repo_name, arch):
+    return "{}__{}".format(repo_name, _ARCH_REPO_SUFFIX[arch])
+
+def _has_arch_redistribution(url_dict, cuda_version, arch):
+    arch_key = OS_ARCH_DICT[arch]
+    if arch_key in url_dict:
+        return True
+    major_cuda_arch_key = "cuda{version}_{arch}".format(
+        version = cuda_version.split(".")[0],
+        arch = arch_key,
+    )
+    return major_cuda_arch_key in url_dict
 
 def _get_redistribution_urls(dist_info, dist_name = "<unknown>"):
     # buildifier: disable=function-docstring-return
@@ -240,12 +324,6 @@ def get_archive_name(url):
             return filename[:-len(extension)]
     return filename
 
-def _has_redistribution_url(url_dict):
-    for values in url_dict.values():
-        if len(values) > 0 and values[0]:
-            return True
-    return False
-
 def _get_build_template(repository_ctx, major_lib_version):
     fallback_template = None
     template = None
@@ -300,6 +378,21 @@ def _create_repository_symlinks(repository_ctx):
             continue
         repository_ctx.symlink(target_path, link_name)
 
+def _normalize_build_visibility(repository_ctx):
+    build_file = repository_ctx.path("BUILD")
+    if not build_file.exists:
+        return
+    build_content = repository_ctx.read("BUILD")
+    build_content = build_content.replace(
+        "visibility = [\"@cuda//cuda:__pkg__\"],",
+        "visibility = [\"//visibility:public\"],",
+    )
+    build_content = build_content.replace(
+        "visibility = [\"@cuda_cudart//:__pkg__\"],",
+        "visibility = [\"//visibility:public\"],",
+    )
+    repository_ctx.file("BUILD", build_content)
+
 def _get_lib_versions_from_lib_dir(repository_ctx):
     lib_versions = {}
     lib_dir = repository_ctx.path("lib")
@@ -344,31 +437,33 @@ def _format_lib_versions_bzl(lib_versions):
     lines.append("}")
     return "\n".join(lines)
 
-def _create_version_file(repository_ctx, component_version, lib_versions = {}):
-    if repository_ctx.name == "cuda_driver" and component_version:
-        print("Downloaded hermetic User Mode Driver version is %s" % component_version)  # buildifier: disable=print
-
+def _version_bzl_content(component_version, lib_versions = {}):
     parts = component_version.split(".") if component_version else []
     version_major = parts[0] if len(parts) > 0 else ""
     version_minor = parts[1] if len(parts) > 1 else ""
     version_patch = parts[2] if len(parts) > 2 else ""
-
-    repository_ctx.file(
-        "version.bzl",
-        """IS_PLACEHOLDER = {is_placeholder}
+    return """IS_PLACEHOLDER = {is_placeholder}
 VERSION = "{version}"
 VERSION_MAJOR = "{version_major}"
 VERSION_MINOR = "{version_minor}"
 VERSION_PATCH = "{version_patch}"
 {lib_versions}
 """.format(
-            is_placeholder = "False" if component_version else "True",
-            version = component_version,
-            version_major = version_major,
-            version_minor = version_minor,
-            version_patch = version_patch,
-            lib_versions = _format_lib_versions_bzl(lib_versions),
-        ),
+        is_placeholder = "False" if component_version else "True",
+        version = component_version,
+        version_major = version_major,
+        version_minor = version_minor,
+        version_patch = version_patch,
+        lib_versions = _format_lib_versions_bzl(lib_versions),
+    )
+
+def _create_version_file(repository_ctx, component_version, lib_versions = {}):
+    if repository_ctx.name == "cuda_driver" and component_version:
+        print("Downloaded hermetic User Mode Driver version is %s" % component_version)  # buildifier: disable=print
+
+    repository_ctx.file(
+        "version.bzl",
+        _version_bzl_content(component_version, lib_versions),
     )
 
 #TODO(cerisier): remove me
@@ -439,6 +534,7 @@ def _redist_repository_impl(repository_ctx):
         component_version.split(".")[0],
     )
     repository_ctx.template("BUILD", build_template, {})
+    _normalize_build_visibility(repository_ctx)
 
     _create_libcuda_symlinks(
         repository_ctx,
@@ -471,5 +567,72 @@ redist_placeholder_repository = repository_rule(
     implementation = _redist_placeholder_repository_impl,
     attrs = {
         "build_template": attr.label(mandatory = True),
+    },
+)
+
+def _redist_proxy_repository_impl(repository_ctx):
+    # Keep version.bzl in proxy repos so canonical labels like
+    # @cuda_cudart//:version.bzl remain loadable after arch split.
+    repository_ctx.file(
+        "version.bzl",
+        _version_bzl_content(repository_ctx.attr.component_version, {}),
+    )
+
+    lines = [
+        "package(default_visibility = [\"//visibility:public\"])",
+        "",
+    ]
+
+    for target_name in repository_ctx.attr.target_names:
+        if target_name in repository_ctx.attr.target_overrides:
+            lines.extend([
+                "alias(",
+                "    name = \"{}\",".format(target_name),
+                "    actual = \"{}\",".format(repository_ctx.attr.target_overrides[target_name]),
+                ")",
+                "",
+            ])
+            continue
+
+        select_entries = []
+        no_match_error = "{}: platform-specific target '{}' unavailable for selected platform".format(
+            repository_ctx.name,
+            target_name,
+        )
+        lines.extend([
+            "alias(",
+            "    name = \"{}\",".format(target_name),
+            "    actual = select({",
+        ])
+        for arch in sorted(_PROXY_ARCH_CONDITIONS.keys()):
+            arch_repo_name = repository_ctx.attr.arch_repo_names.get(arch, "")
+            if not arch_repo_name:
+                continue
+            resolved_label = "@{}//:{}".format(arch_repo_name, target_name)
+            for config_setting_name in _PROXY_ARCH_CONDITIONS[arch]:
+                select_entries.append((config_setting_name, resolved_label))
+
+        for (config_setting_name, resolved_label) in select_entries:
+            lines.append("        \"{}\": \"{}\",".format(
+                config_setting_name,
+                resolved_label,
+            ))
+        lines.extend([
+            "    }}, no_match_error = \"{}\"),".format(
+                no_match_error,
+            ),
+            ")",
+            "",
+        ])
+
+    repository_ctx.file("BUILD.bazel", "\n".join(lines))
+
+redist_proxy_repository = repository_rule(
+    implementation = _redist_proxy_repository_impl,
+    attrs = {
+        "target_names": attr.string_list(mandatory = True),
+        "arch_repo_names": attr.string_dict(mandatory = True),
+        "target_overrides": attr.string_dict(mandatory = False),
+        "component_version": attr.string(mandatory = True),
     },
 )

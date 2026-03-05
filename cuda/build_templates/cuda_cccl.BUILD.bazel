@@ -3,7 +3,7 @@ load(
     "@cuda//cuda:build_defs.bzl",
     "cuda_lib_header_prefix"
 )
-load("@cuda_cudart//:version.bzl", _cudart_version_major = "VERSION_MAJOR")
+load("//:version.bzl", _cudart_version_major = "VERSION_MAJOR")
 
 filegroup(
     name = "header_list",
