@@ -6,17 +6,23 @@ load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 directory(
     name = "nvcc_directory",
     srcs = glob([
-        "include/cuda.h",
         "bin/ptxas",
         "bin/fatbinary",
-        "nvvm/libdevice/libdevice.10.bc",
-    ]),
+    ]) + if_cuda_newer_than(
+        "13_0",
+        if_true = [],
+        if_false = ["nvvm/libdevice/libdevice.10.bc"],
+    ),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "nvvm",
-    srcs = ["nvvm/libdevice/libdevice.10.bc"],
+    srcs = if_cuda_newer_than(
+        "13_0",
+        if_true = [],
+        if_false = ["nvvm/libdevice/libdevice.10.bc"],
+    ),
     visibility = ["//visibility:public"],
 )
 
@@ -56,8 +62,11 @@ filegroup(
     name = "bin",
     srcs = glob([
         "bin/**",
-        "nvvm/bin/**",
-    ]),
+    ]) + if_cuda_newer_than(
+        "13_0",
+        if_true = [],
+        if_false = ["nvvm/bin/cicc"],
+    ),
     visibility = ["//visibility:public"],
 )
 
@@ -71,15 +80,16 @@ filegroup(
 
 filegroup(
     name = "header_list",
-    srcs = glob([
+    srcs = [
         "include/fatbinary_section.h",
-        "include/nvPTXCompiler.h",
-        #TODO(cerisier): wtf...
-        "include/cuda.h",
-    ]) + if_cuda_newer_than(
+    ] + if_cuda_newer_than(
         "13_0",
         if_true = [],
-        if_false = glob(["include/crt/**"]),
+        if_false = ["include/nvPTXCompiler.h"],
+    ) + if_cuda_newer_than(
+        "13_0",
+        if_true = [],
+        if_false = glob(["include/crt/**"], allow_empty = True),
     ),
     visibility = ["@cuda//cuda:__pkg__"],
 )

@@ -6,6 +6,7 @@ load(
      "cuda_rpath_flags",
      "if_cuda_newer_than",
 )
+_HAS_FP4_FP6_FP8_HEADERS = int(VERSION_MAJOR) > 12 or (int(VERSION_MAJOR) == 12 and int(VERSION_MINOR) >= 8)
 
 exports_files([
     "include/cuda.h",
@@ -79,11 +80,6 @@ filegroup(
         "include/cuda_egl_interop.h",
         "include/cuda_fp16.h",
         "include/cuda_fp16.hpp",
-        "include/cuda_fp4.hpp",
-        "include/cuda_fp6.h",
-        "include/cuda_fp6.hpp",
-        "include/cuda_fp8.h",
-        "include/cuda_fp8.hpp",
         "include/cuda_gl_interop.h",
         "include/cuda_occupancy.h",
         "include/cuda_pipeline.h",
@@ -91,7 +87,6 @@ filegroup(
         "include/cuda_pipeline_primitives.h",
         "include/cuda_runtime.h",
         "include/cuda_runtime_api.h",
-        "include/cuda_texture_types.h",
         "include/cuda_vdpau_interop.h",
         "include/cudart_platform.h",
         "include/device_atomic_functions.h",
@@ -125,20 +120,29 @@ filegroup(
         "include/sm_60_atomic_functions.hpp",
         "include/sm_61_intrinsics.h",
         "include/sm_61_intrinsics.hpp",
+        "include/vector_functions.h",
+        "include/vector_functions.hpp",
+        "include/vector_types.h",
+    ]) + ([
+        "include/cuda_fp4.hpp",
+        "include/cuda_fp6.h",
+        "include/cuda_fp6.hpp",
+        "include/cuda_fp8.h",
+        "include/cuda_fp8.hpp",
+    ] if _HAS_FP4_FP6_FP8_HEADERS else []) + ([
+        "include/cuda_texture_types.h",
+    ] if int(VERSION_MAJOR) < 13 else []) + ([
         "include/surface_functions.h",
         "include/surface_indirect_functions.h",
         "include/surface_types.h",
         "include/texture_fetch_functions.h",
         "include/texture_indirect_functions.h",
         "include/texture_types.h",
-        "include/vector_functions.h",
-        "include/vector_functions.hpp",
-        "include/vector_types.h",
-    ]) + ([
+    ] if int(VERSION_MAJOR) < 13 else []) + ([
         "include/cuda_surface_types.h",
     ] if int(VERSION_MAJOR) < 13 else []) + ([
         "include/cuda_fp4.h",
-    ] if (int(VERSION_MAJOR) > 12 or (int(VERSION_MAJOR) == 12 and int(VERSION_MINOR) >= 8)) else []),
+    ] if _HAS_FP4_FP6_FP8_HEADERS else []),
     visibility = ["@cuda//cuda:__pkg__"],
 )
 

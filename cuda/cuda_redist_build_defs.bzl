@@ -44,6 +44,7 @@ REDIST_VERSIONS_TO_BUILD_TEMPLATES = {
             "555": "//cuda/build_templates:cuda_driver.BUILD.bazel",
             "550": "//cuda/build_templates:cuda_driver.BUILD.bazel",
             "545": "//cuda/build_templates:cuda_driver.BUILD.bazel",
+            "535": "//cuda/build_templates:cuda_driver.BUILD.bazel",
             "530": "//cuda/build_templates:cuda_driver.BUILD.bazel",
             "520": "//cuda/build_templates:cuda_driver.BUILD.bazel",
         },
