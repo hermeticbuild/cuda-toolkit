@@ -9,13 +9,13 @@ load(
 
 cc_import(
     name = "cusolver_shared_library",
-    hdrs = [":headers"],
     shared_library = "lib/libcusolver.so." + LIB_VERSIONS["libcusolver"],
     deps = [
         "@cuda_nvjitlink//:nvjitlink",
         "@cuda_cusparse//:cusparse",
         "@cuda_cublas//:cublas",
         "@cuda_cublas//:cublasLt",
+        ":headers",
     ],
 )
 cc_library(
@@ -41,7 +41,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["include"],
     strip_include_prefix = "include",
     visibility = ["@cuda//cuda:__pkg__"],

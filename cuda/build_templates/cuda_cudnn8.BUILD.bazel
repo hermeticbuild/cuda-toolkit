@@ -9,43 +9,43 @@ load(
 
 cc_import(
     name = "cudnn_ops_infer",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_ops_infer.so." + LIB_VERSIONS["libcudnn_ops_infer"],
 )
 
 cc_import(
     name = "cudnn_cnn_infer",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_cnn_infer.so." + LIB_VERSIONS["libcudnn_cnn_infer"],
 )
 
 cc_import(
     name = "cudnn_ops_train",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_ops_train.so." + LIB_VERSIONS["libcudnn_ops_train"],
 )
 
 cc_import(
     name = "cudnn_cnn_train",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_cnn_train.so." + LIB_VERSIONS["libcudnn_cnn_train"],
 )
 
 cc_import(
     name = "cudnn_adv_infer",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_adv_infer.so." + LIB_VERSIONS["libcudnn_adv_infer"],
 )
 
 cc_import(
     name = "cudnn_adv_train",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_adv_train.so." + LIB_VERSIONS["libcudnn_adv_train"],
 )
 
 cc_import(
     name = "cudnn_main",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn.so." + LIB_VERSIONS["libcudnn"],
 )
 cc_library(
@@ -75,7 +75,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cudnn",
     includes = ["include"],
     strip_include_prefix = "include",
     visibility = ["@cuda//cuda:__pkg__"],

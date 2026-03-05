@@ -17,7 +17,7 @@ _HEADER_GLOBS = [
 
 cc_import(
     name = "cufft_shared_library",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcufft.so." + LIB_VERSIONS["libcufft"],
 )
 cc_library(
@@ -40,7 +40,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["include"],
     strip_include_prefix = "include",
     visibility = ["@cuda//cuda:__pkg__"],

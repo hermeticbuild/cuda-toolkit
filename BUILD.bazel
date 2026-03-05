@@ -88,6 +88,11 @@ alias(
 )
 
 alias(
+    name = "cudnn_headers",
+    actual = "@cuda_cudnn//:headers",
+)
+
+alias(
     name = "cufft",
     actual = "@cuda_cufft//:cufft",
 )
@@ -95,4 +100,29 @@ alias(
 alias(
     name = "curand",
     actual = "@cuda_curand//:curand",
+)
+
+alias(
+    name = "cusolver",
+    actual = "@cuda_cusolver//:cusolver",
+)
+
+alias(
+    name = "cusparse",
+    actual = "@cuda_cusparse//:cusparse",
+)
+
+alias(
+    name = "nvrtc",
+    actual = "@cuda_nvrtc//:nvrtc",
+)
+
+alias(
+    name = "nvjitlink",
+    actual = "@cuda_nvjitlink//:nvjitlink",
+)
+
+alias(
+    name = "cupti",
+    actual = "@cuda_cupti//:cupti",
 )

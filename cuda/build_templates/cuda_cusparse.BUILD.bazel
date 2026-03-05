@@ -9,9 +9,8 @@ load(
 
 cc_import(
     name = "cusparse_shared_library",
-    hdrs = [":headers"],
     shared_library = "lib/libcusparse.so." + LIB_VERSIONS["libcusparse"],
-    deps = ["@cuda_nvjitlink//:nvjitlink"],
+    deps = ["@cuda_nvjitlink//:nvjitlink", ":headers"],
 )
 cc_library(
     name = "cusparse",
@@ -33,7 +32,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["include"],
     strip_include_prefix = "include",
     visibility = ["@cuda//cuda:__pkg__"],

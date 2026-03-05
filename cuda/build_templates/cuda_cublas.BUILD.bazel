@@ -10,14 +10,13 @@ load(
 
 cc_import(
     name = "cublas_shared_library",
-    hdrs = [":headers"],
     shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
-    deps = [":cublasLt"],
+    deps = [":cublasLt", ":headers"],
 )
 
 cc_import(
     name = "cublasLt_shared_library",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
 )
 cc_library(
@@ -57,7 +56,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["include"],
     strip_include_prefix = "include",
     visibility = ["@cuda//cuda:__pkg__"],

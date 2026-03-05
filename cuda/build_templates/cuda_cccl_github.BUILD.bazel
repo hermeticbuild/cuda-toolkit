@@ -23,7 +23,6 @@ filegroup(
 cc_library(
     name = "thrust_headers",
     hdrs = [":thrust_header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["thrust"],
     strip_include_prefix = "thrust",
     visibility = ["@cuda//cuda:__pkg__"],
@@ -40,7 +39,6 @@ filegroup(
 cc_library(
     name = "cuda_headers",
     hdrs = [":cuda_header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["libcudacxx/include"],
     strip_include_prefix = "libcudacxx/include",
     visibility = ["@cuda//cuda:__pkg__"],
@@ -57,7 +55,6 @@ filegroup(
 cc_library(
     name = "nv_headers",
     hdrs = ["nv_header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["libcudacxx/include/nv"],
     strip_include_prefix = "libcudacxx/include",
     visibility = ["@cuda//cuda:__pkg__"],
@@ -74,7 +71,6 @@ filegroup(
 cc_library(
     name = "cub_headers",
     hdrs = [":cub_header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["cub"],
     strip_include_prefix = "cub",
     visibility = ["@cuda//cuda:__pkg__"],

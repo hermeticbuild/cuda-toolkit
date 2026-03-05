@@ -9,54 +9,53 @@ load(
 
 cc_import(
     name = "cudnn_ops",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_ops.so." + LIB_VERSIONS["libcudnn_ops"],
 )
 
 cc_import(
     name = "cudnn_cnn",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_cnn.so." + LIB_VERSIONS["libcudnn_cnn"],
 )
 
 cc_import(
     name = "cudnn_adv",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_adv.so." + LIB_VERSIONS["libcudnn_adv"],
 )
 
 cc_import(
     name = "cudnn_graph",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_graph.so." + LIB_VERSIONS["libcudnn_graph"],
 )
 
 cc_import(
     name = "cudnn_engines_precompiled",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_engines_precompiled.so." + LIB_VERSIONS["libcudnn_engines_precompiled"],
 )
 
 cc_import(
     name = "cudnn_engines_runtime_compiled",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_engines_runtime_compiled.so." + LIB_VERSIONS["libcudnn_engines_runtime_compiled"],
 )
 
 cc_import(
     name = "cudnn_heuristic",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn_heuristic.so." + LIB_VERSIONS["libcudnn_heuristic"],
 )
 
 cc_import(
     name = "cudnn_main",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudnn.so." + LIB_VERSIONS["libcudnn"],
 )
 cc_library(
     name = "cudnn",
-    hdrs = [":header_list"],
     deps = [
       ":cudnn_engines_precompiled",
       ":cudnn_ops",
@@ -83,7 +82,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cudnn",
     includes = ["include"],
     strip_include_prefix = "include",
     visibility = ["@cuda//cuda:__pkg__"],

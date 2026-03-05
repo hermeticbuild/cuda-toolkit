@@ -20,7 +20,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["include" + cuda_lib_header_prefix(_cudart_version_major, 13, "/cccl", "")],
     strip_include_prefix = "include" + cuda_lib_header_prefix(_cudart_version_major, 13, "/cccl", ""),
     visibility = ["@cuda//cuda:__pkg__"],

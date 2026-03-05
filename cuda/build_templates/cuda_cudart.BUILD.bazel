@@ -101,7 +101,7 @@ cc_import(
 
 cc_import(
     name = "cudart_shared_library",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
 )
 cc_library(
@@ -153,7 +153,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [ ":header_list" ],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["include"],
     strip_include_prefix = "include",
     visibility = ["@cuda//cuda:__pkg__"],

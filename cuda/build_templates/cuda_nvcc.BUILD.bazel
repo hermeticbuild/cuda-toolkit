@@ -99,7 +99,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cuda/include",
     includes = ["include"],
     defines = ["_ALLOW_UNSUPPORTED_LIBCPP"],
     strip_include_prefix = "include",

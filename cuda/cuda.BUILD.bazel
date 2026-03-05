@@ -9,41 +9,24 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "cuda_headers",
-    include_prefix = "third_party/gpus",
-    # For the layering check to work we need to re-export all the headers from
-    # the subtargets. We still also need them in the dependencies for setting
-    # up the right include paths with the include prefixes.
-    textual_hdrs = [
-            "@cuda_cccl//:header_list",
-            "@cuda_cudart//:header_list",
-            "@cuda_cublas//:header_list",
-            "@cuda_profiler_api//:header_list",
-            "@cuda_nvrtc//:header_list",
-            "@cuda_nvtx//:header_list",
-            "@cuda_nvcc//:header_list",
-            "@cuda_cusolver//:header_list",
-            "@cuda_cufft//:header_list",
-            "@cuda_cusparse//:header_list",
-            "@cuda_curand//:header_list",
-            "@cuda_cupti//:header_list",
-            "@cuda_nvml//:header_list",
-            "@cuda_nvjitlink//:header_list",
-           ] + (["@cuda_crt//:header_list"] if _cudart_version_major and int(_cudart_version_major) >= 13 else [""][:0]),
-    deps = [":cccl_headers",
-            ":cudart_headers",
-            ":cublas_headers",
-            ":profiler_api_headers",
-            ":nvrtc_headers",
-            ":nvtx_headers",
-            ":nvcc_headers",
-            ":cusolver_headers",
-            ":cufft_headers",
-            ":cusparse_headers",
-            ":curand_headers",
-            ":cupti_headers",
-            ":nvml_headers",
-            ":nvjitlink_headers",
-           ] + ([":crt_headers"] if _cudart_version_major and int(_cudart_version_major) >= 13 else [""][:0]),
+    deps = [
+        ":cccl_headers",
+        ":cudart_headers",
+        ":cudnn_headers",
+        ":cublas_headers",
+        ":profiler_api_headers",
+        ":nvrtc_headers",
+        ":nvtx_headers",
+        ":nvcc_headers",
+        ":cusolver_headers",
+        ":cufft_headers",
+        ":cusparse_headers",
+        ":curand_headers",
+        ":cupti_headers",
+        ":nvml_headers",
+        ":nvjitlink_headers",
+        ":crt_headers",
+    ],
 )
 
 # This target is needed if users want to have implicit cuda_headers dependencies
@@ -78,118 +61,118 @@ alias(
 )
 
 alias(
-  name = "cudart_headers",
-  actual = "@cuda_cudart//:headers",
+    name = "cudart_headers",
+    actual = "@cuda_cudart//:headers",
 )
 
 alias(
-  name = "cudart",
-  actual = "@cuda_cudart//:cudart",
+    name = "cudart",
+    actual = "@cuda_cudart//:cudart",
 )
 
 alias(
-  name = "nvtx_headers",
-  actual = "@cuda_nvtx//:headers",
+    name = "nvtx_headers",
+    actual = "@cuda_nvtx//:headers",
 )
 
 alias(
-  name = "nvml_headers",
-  actual = "@cuda_nvml//:headers",
+    name = "nvml_headers",
+    actual = "@cuda_nvml//:headers",
 )
 
 alias(
-  name = "nvcc_headers",
-  actual = "@cuda_nvcc//:headers",
+    name = "nvcc_headers",
+    actual = "@cuda_nvcc//:headers",
 )
 
 alias(
-  name = "crt_headers",
-  actual = "@cuda_crt//:headers",
+    name = "crt_headers",
+    actual = "@cuda_crt//:headers",
 )
 
 alias(
-  name = "cccl_headers",
-  actual = "@cuda_cccl//:headers",
+    name = "cccl_headers",
+    actual = "@cuda_cccl//:headers",
 )
 
 alias(
-  name = "cublas_headers",
-  actual = "@cuda_cublas//:headers",
+    name = "cublas_headers",
+    actual = "@cuda_cublas//:headers",
 )
 
 alias(
-  name = "profiler_api_headers",
-  actual = "@cuda_profiler_api//:headers",
+    name = "profiler_api_headers",
+    actual = "@cuda_profiler_api//:headers",
 )
 
 alias(
-  name = "cusolver_headers",
-  actual = "@cuda_cusolver//:headers",
+    name = "cusolver_headers",
+    actual = "@cuda_cusolver//:headers",
 )
 
 alias(
-  name = "cufft_headers",
-  actual = "@cuda_cufft//:headers",
+    name = "cufft_headers",
+    actual = "@cuda_cufft//:headers",
 )
 
 alias(
-  name = "cusparse_headers",
-  actual = "@cuda_cusparse//:headers",
+    name = "cusparse_headers",
+    actual = "@cuda_cusparse//:headers",
 )
 
 alias(
-  name = "curand_headers",
-  actual = "@cuda_curand//:headers",
+    name = "curand_headers",
+    actual = "@cuda_curand//:headers",
 )
 
 alias(
-  name = "nvjitlink_headers",
-  actual = "@cuda_nvjitlink//:headers",
+    name = "nvjitlink_headers",
+    actual = "@cuda_nvjitlink//:headers",
 )
 
 alias(
-  name = "nvrtc_headers",
-  actual = "@cuda_nvrtc//:headers",
+    name = "nvrtc_headers",
+    actual = "@cuda_nvrtc//:headers",
 )
 
 alias(
-  name = "cublas",
-  actual = "@cuda_cublas//:cublas",
+    name = "cublas",
+    actual = "@cuda_cublas//:cublas",
 )
 
 alias(
-  name = "cublasLt",
-  actual = "@cuda_cublas//:cublasLt",
+    name = "cublasLt",
+    actual = "@cuda_cublas//:cublasLt",
 )
 
 alias(
-  name = "cusolver",
-  actual = "@cuda_cusolver//:cusolver",
+    name = "cusolver",
+    actual = "@cuda_cusolver//:cusolver",
 )
 
 alias(
-  name = "cudnn",
-  actual = "@cuda_cudnn//:cudnn",
+    name = "cudnn",
+    actual = "@cuda_cudnn//:cudnn",
 )
 
 alias(
-  name = "cudnn_header",
-  actual = "@cuda_cudnn//:headers",
+    name = "cudnn_headers",
+    actual = "@cuda_cudnn//:headers",
 )
 
 alias(
-  name = "cufft",
-  actual = "@cuda_cufft//:cufft",
+    name = "cufft",
+    actual = "@cuda_cufft//:cufft",
 )
 
 alias(
-  name = "curand",
-  actual = "@cuda_curand//:curand",
+    name = "curand",
+    actual = "@cuda_curand//:curand",
 )
 
 alias(
-  name = "nvrtc",
-  actual = "@cuda_nvrtc//:nvrtc",
+    name = "nvrtc",
+    actual = "@cuda_nvrtc//:nvrtc",
 )
 
 cc_library(
@@ -211,18 +194,18 @@ alias(
 )
 
 alias(
-  name = "cupti_headers",
-  actual = "@cuda_cupti//:headers",
+    name = "cupti_headers",
+    actual = "@cuda_cupti//:headers",
 )
 
 alias(
-  name = "cupti_dsos",
-  actual = "@cuda_cupti//:cupti",
+    name = "cupti_dsos",
+    actual = "@cuda_cupti//:cupti",
 )
 
 alias(
-  name = "cusparse",
-  actual = "@cuda_cusparse//:cusparse",
+    name = "cusparse",
+    actual = "@cuda_cusparse//:cusparse",
 )
 
 alias(

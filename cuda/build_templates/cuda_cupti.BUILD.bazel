@@ -51,7 +51,7 @@ _HEADER_GLOBS = [
 
 cc_import(
     name = "cupti_shared_library",
-    hdrs = [":headers"],
+    deps = [":headers"],
     shared_library = "lib/libcupti.so." + LIB_VERSIONS["libcupti"],
 )
 cc_library(
@@ -91,7 +91,6 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    include_prefix = "third_party/gpus/cuda/extras/CUPTI/include",
     includes = ["include/"],
     strip_include_prefix = "include",
     visibility = ["@cuda//cuda:__pkg__"],
