@@ -12,6 +12,41 @@ _MINOR_VERSION = "{}.{}".format(
     _CUPTI_VERSION_PARTS[0],
     _CUPTI_VERSION_PARTS[1] if len(_CUPTI_VERSION_PARTS) > 1 else "0",
 )
+# Keep concrete paths explicit; reserve glob only for real patterns.
+_HEADER_FILES = [
+    "include/cuda_stdint.h",
+    "include/cupti.h",
+    "include/cupti_activity.h",
+    "include/cupti_callbacks.h",
+    "include/cupti_checkpoint.h",
+    "include/cupti_driver_cbid.h",
+    "include/cupti_events.h",
+    "include/cupti_metrics.h",
+    "include/cupti_nvtx_cbid.h",
+    "include/cupti_pcsampling.h",
+    "include/cupti_pcsampling_util.h",
+    "include/cupti_profiler_target.h",
+    "include/cupti_result.h",
+    "include/cupti_runtime_cbid.h",
+    "include/cupti_target.h",
+    "include/cupti_version.h",
+    "include/generated_cudaGL_meta.h",
+    "include/generated_cudaVDPAU_meta.h",
+    "include/generated_cuda_gl_interop_meta.h",
+    "include/generated_cuda_meta.h",
+    "include/generated_cuda_runtime_api_meta.h",
+    "include/generated_cuda_vdpau_interop_meta.h",
+    "include/generated_cudart_removed_meta.h",
+    "include/generated_nvtx_meta.h",
+    "include/nvperf_common.h",
+    "include/nvperf_cuda_host.h",
+    "include/nvperf_host.h",
+    "include/nvperf_target.h",
+]
+_HEADER_GLOBS = [
+    "include/Openacc/**",
+    "include/Openmp/**",
+]
 
 
 cc_import(
@@ -32,38 +67,7 @@ cc_library(
 
 filegroup(
     name = "header_list",
-    srcs = glob([
-        "include/Openacc/**",
-        "include/Openmp/**",
-        "include/cuda_stdint.h",
-        "include/cupti.h",
-        "include/cupti_activity.h",
-        "include/cupti_callbacks.h",
-        "include/cupti_checkpoint.h",
-        "include/cupti_driver_cbid.h",
-        "include/cupti_events.h",
-        "include/cupti_metrics.h",
-        "include/cupti_nvtx_cbid.h",
-        "include/cupti_pcsampling.h",
-        "include/cupti_pcsampling_util.h",
-        "include/cupti_profiler_target.h",
-        "include/cupti_result.h",
-        "include/cupti_runtime_cbid.h",
-        "include/cupti_target.h",
-        "include/cupti_version.h",
-        "include/generated_cudaGL_meta.h",
-        "include/generated_cudaVDPAU_meta.h",
-        "include/generated_cuda_gl_interop_meta.h",
-        "include/generated_cuda_meta.h",
-        "include/generated_cuda_runtime_api_meta.h",
-        "include/generated_cuda_vdpau_interop_meta.h",
-        "include/generated_cudart_removed_meta.h",
-        "include/generated_nvtx_meta.h",
-        "include/nvperf_common.h",
-        "include/nvperf_cuda_host.h",
-        "include/nvperf_host.h",
-        "include/nvperf_target.h",
-    ]) + if_version_equal_or_greater_than(
+    srcs = _HEADER_FILES + glob(_HEADER_GLOBS) + if_version_equal_or_greater_than(
         _MINOR_VERSION,
         "2024.0",
         ["include/cupti_sass_metrics.h"],

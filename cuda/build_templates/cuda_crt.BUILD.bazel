@@ -1,15 +1,10 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-
-load("@cuda//cuda:build_defs.bzl", "if_cuda_newer_than")
-load(":version.bzl", "IS_PLACEHOLDER")
+load(":version.bzl", "IS_PLACEHOLDER", "VERSION_MAJOR")
+_HAS_CRT_HEADERS = int(VERSION_MAJOR) >= 13
 
 filegroup(
     name = "header_list",
-    srcs = [] if IS_PLACEHOLDER else if_cuda_newer_than(
-        "13_0",
-        if_true = glob(["include/crt/**"]),
-        if_false = [],
-    ),
+    srcs = [] if IS_PLACEHOLDER else (glob(["include/crt/**"]) if _HAS_CRT_HEADERS else []),
     visibility = ["@cuda//cuda:__pkg__"],
 )
 

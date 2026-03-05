@@ -1,14 +1,16 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@cuda//cuda:build_defs.bzl", "if_cuda_newer_than")
+load(":version.bzl", "VERSION_MAJOR")
 load("@bazel_skylib//rules/directory:directory.bzl", "directory")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+_IS_CUDA_13_OR_NEWER = int(VERSION_MAJOR) >= 13
 
 directory(
     name = "nvcc_directory",
-    srcs = glob([
+    srcs = [
         "bin/ptxas",
         "bin/fatbinary",
-    ]) + if_cuda_newer_than(
+    ] + if_cuda_newer_than(
         "13_0",
         if_true = [],
         if_false = ["nvvm/libdevice/libdevice.10.bc"],
@@ -82,14 +84,14 @@ filegroup(
     name = "header_list",
     srcs = [
         "include/fatbinary_section.h",
-    ] + if_cuda_newer_than(
-        "13_0",
-        if_true = [],
-        if_false = ["include/nvPTXCompiler.h"],
-    ) + if_cuda_newer_than(
-        "13_0",
-        if_true = [],
-        if_false = glob(["include/crt/**"], allow_empty = True),
+    ] + (
+        []
+        if _IS_CUDA_13_OR_NEWER
+        else ["include/nvPTXCompiler.h"]
+    ) + (
+        []
+        if _IS_CUDA_13_OR_NEWER
+        else glob(["include/crt/**"])
     ),
     visibility = ["@cuda//cuda:__pkg__"],
 )

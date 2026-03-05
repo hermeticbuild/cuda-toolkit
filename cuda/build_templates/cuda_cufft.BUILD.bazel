@@ -7,6 +7,13 @@ load(
      "cuda_rpath_flags",
      "if_cuda_newer_than",
 )
+# Keep concrete paths explicit; reserve glob only for real patterns.
+_HEADER_FILES = [
+    "include/cudalibxt.h",
+]
+_HEADER_GLOBS = [
+    "include/cufft*.h",
+]
 
 cc_import(
     name = "cufft_shared_library",
@@ -26,10 +33,7 @@ cc_library(
 
 filegroup(
     name = "header_list",
-    srcs = glob([
-        "include/cudalibxt.h",
-        "include/cufft*.h"
-    ]),
+    srcs = _HEADER_FILES + glob(_HEADER_GLOBS),
     visibility = ["@cuda//cuda:__pkg__"],
 )
 
