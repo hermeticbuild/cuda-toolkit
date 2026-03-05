@@ -72,6 +72,10 @@ _HEADER_FILES = [
     "include/sm_60_atomic_functions.hpp",
     "include/sm_61_intrinsics.h",
     "include/sm_61_intrinsics.hpp",
+    "include/surface_indirect_functions.h",
+    "include/surface_types.h",
+    "include/texture_indirect_functions.h",
+    "include/texture_types.h",
     "include/vector_functions.h",
     "include/vector_functions.hpp",
     "include/vector_types.h",
@@ -137,11 +141,7 @@ filegroup(
         "include/cuda_texture_types.h",
     ] if int(VERSION_MAJOR) < 13 else []) + ([
         "include/surface_functions.h",
-        "include/surface_indirect_functions.h",
-        "include/surface_types.h",
         "include/texture_fetch_functions.h",
-        "include/texture_indirect_functions.h",
-        "include/texture_types.h",
     ] if int(VERSION_MAJOR) < 13 else []) + ([
         "include/cuda_surface_types.h",
     ] if int(VERSION_MAJOR) < 13 else []) + ([
