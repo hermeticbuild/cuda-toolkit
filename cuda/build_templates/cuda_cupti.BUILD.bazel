@@ -1,0 +1,91 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@cuda_cupti//:version.bzl", "LIB_VERSIONS")
+load(
+    "@cuda//cuda:build_defs.bzl",
+    "if_cuda_newer_than",
+    "if_version_equal_or_greater_than",
+    "cuda_rpath_flags",
+)
+_CUPTI_VERSION_PARTS = LIB_VERSIONS["libcupti"].split(".")
+_MINOR_VERSION = "{}.{}".format(
+    _CUPTI_VERSION_PARTS[0],
+    _CUPTI_VERSION_PARTS[1] if len(_CUPTI_VERSION_PARTS) > 1 else "0",
+)
+
+
+cc_import(
+    name = "cupti_shared_library",
+    hdrs = [":headers"],
+    shared_library = "lib/libcupti.so." + LIB_VERSIONS["libcupti"],
+)
+cc_library(
+    name = "cupti",
+    deps = [":cupti_shared_library"],
+    linkopts = if_cuda_newer_than(
+        "13_0",
+        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
+        if_false = cuda_rpath_flags("nvidia/cuda_cupti/lib"),
+    ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob([
+        "include/Openacc/**",
+        "include/Openmp/**",
+        "include/cuda_stdint.h",
+        "include/cupti.h",
+        "include/cupti_activity.h",
+        "include/cupti_callbacks.h",
+        "include/cupti_checkpoint.h",
+        "include/cupti_driver_cbid.h",
+        "include/cupti_events.h",
+        "include/cupti_metrics.h",
+        "include/cupti_nvtx_cbid.h",
+        "include/cupti_pcsampling.h",
+        "include/cupti_pcsampling_util.h",
+        "include/cupti_profiler_target.h",
+        "include/cupti_result.h",
+        "include/cupti_runtime_cbid.h",
+        "include/cupti_sass_metrics.h",
+        "include/cupti_target.h",
+        "include/cupti_version.h",
+        "include/generated_cudaGL_meta.h",
+        "include/generated_cudaVDPAU_meta.h",
+        "include/generated_cuda_gl_interop_meta.h",
+        "include/generated_cuda_meta.h",
+        "include/generated_cuda_runtime_api_meta.h",
+        "include/generated_cuda_vdpau_interop_meta.h",
+        "include/generated_cudart_removed_meta.h",
+        "include/generated_nvtx_meta.h",
+        "include/nvperf_common.h",
+        "include/nvperf_cuda_host.h",
+        "include/nvperf_host.h",
+        "include/nvperf_target.h",
+    ]) + if_version_equal_or_greater_than(
+        _MINOR_VERSION,
+        "2024.0",
+        ["include/cupti_common.h"],
+    ) + if_version_equal_or_greater_than(
+        _MINOR_VERSION,
+        "2024.3",
+        ["include/cupti_pmsampling.h",
+        "include/cupti_profiler_host.h"],
+    ) + if_version_equal_or_greater_than(
+        _MINOR_VERSION,
+        "2023.3",
+        ["include/cupti_activity_deprecated.h"],
+    ),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cuda/extras/CUPTI/include",
+    includes = ["include/"],
+    strip_include_prefix = "include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

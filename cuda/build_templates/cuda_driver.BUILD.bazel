@@ -1,0 +1,64 @@
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@cuda_driver//:version.bzl", "LIB_VERSIONS")
+
+cc_import(
+    name = "driver_shared_library",
+    shared_library = "lib/libcuda.so." + LIB_VERSIONS["libcuda"],
+)
+
+cc_import(
+    name = "nvidia-ptxjitcompiler_shared_library",
+    shared_library = "lib/libnvidia-ptxjitcompiler.so." + LIB_VERSIONS["libnvidia-ptxjitcompiler"],
+)
+
+cc_import(
+    name = "libcuda_so_1",
+    shared_library = "lib/libcuda.so.1",
+)
+
+cc_import(
+    name = "libnvidia-ptxjitcompiler_so_1",
+    shared_library = "lib/libnvidia-ptxjitcompiler.so.1",
+)
+
+# Workaround for adding path of library symlink to RPATH of cc_binaries.
+cc_import(
+    name = "libcuda_so",
+    shared_library = "lib/libcuda.so",
+)
+
+cc_library(
+    name = "nvidia_driver",
+    deps = [
+        ":libcuda_so",
+        ":libcuda_so_1",
+        ":driver_shared_library",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvidia_ptxjitcompiler",
+    deps = [
+        ":libnvidia-ptxjitcompiler_so_1",
+        ":nvidia-ptxjitcompiler_shared_library",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# Flag indicating whether we should use hermetic user mode driver.
+# It must be enabled for complete CUDA hermeticity.
+bool_flag(
+    name = "include_cuda_umd_libs",
+    build_setting_default = False,
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "cuda_umd_libs",
+    flag_values = {":include_cuda_umd_libs": "True"},
+    visibility = ["//visibility:public"],
+)

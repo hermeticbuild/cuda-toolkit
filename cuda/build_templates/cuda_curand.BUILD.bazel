@@ -1,0 +1,39 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@cuda_curand//:version.bzl", "LIB_VERSIONS")
+load(
+    "@cuda//cuda:build_defs.bzl",
+    "if_cuda_newer_than",
+    "cuda_rpath_flags",
+)
+
+cc_import(
+    name = "curand_shared_library",
+    hdrs = [":headers"],
+    shared_library = "lib/libcurand.so." + LIB_VERSIONS["libcurand"],
+)
+cc_library(
+    name = "curand",
+    deps = [":curand_shared_library"],
+    linkopts = if_cuda_newer_than(
+        "13_0",
+        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
+        if_false = cuda_rpath_flags("nvidia/curand/lib"),
+    ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob(["include/curand*.h"]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

@@ -1,0 +1,48 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@cuda_cusolver//:version.bzl", "LIB_VERSIONS")
+load(
+    "@cuda//cuda:build_defs.bzl",
+    "if_cuda_newer_than",
+    "cuda_rpath_flags",
+)
+
+cc_import(
+    name = "cusolver_shared_library",
+    hdrs = [":headers"],
+    shared_library = "lib/libcusolver.so." + LIB_VERSIONS["libcusolver"],
+    deps = [
+        "@cuda_nvjitlink//:nvjitlink",
+        "@cuda_cusparse//:cusparse",
+        "@cuda_cublas//:cublas",
+        "@cuda_cublas//:cublasLt",
+    ],
+)
+cc_library(
+    name = "cusolver",
+    deps = [":cusolver_shared_library"],
+    linkopts = if_cuda_newer_than(
+        "13_0",
+        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
+        if_false = cuda_rpath_flags("nvidia/cusolver/lib"),
+    ),
+    visibility = ["//visibility:public"],
+)
+
+
+filegroup(
+    name = "header_list",
+    srcs = glob([
+        "include/cusolver*.h",
+    ]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

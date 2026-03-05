@@ -1,0 +1,16 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+filegroup(
+    name = "header_list",
+    srcs = glob(["include/**"]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

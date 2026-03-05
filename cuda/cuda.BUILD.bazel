@@ -1,0 +1,278 @@
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@cuda_cudart//:version.bzl", _cudart_version_major = "VERSION_MAJOR")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "cuda_headers",
+    include_prefix = "third_party/gpus",
+    # For the layering check to work we need to re-export all the headers from
+    # the subtargets. We still also need them in the dependencies for setting
+    # up the right include paths with the include prefixes.
+    textual_hdrs = [
+            "@cuda_cccl//:header_list",
+            "@cuda_cudart//:header_list",
+            "@cuda_cublas//:header_list",
+            "@cuda_profiler_api//:header_list",
+            "@cuda_nvrtc//:header_list",
+            "@cuda_nvtx//:header_list",
+            "@cuda_nvcc//:header_list",
+            "@cuda_cusolver//:header_list",
+            "@cuda_cufft//:header_list",
+            "@cuda_cusparse//:header_list",
+            "@cuda_curand//:header_list",
+            "@cuda_cupti//:header_list",
+            "@cuda_nvml//:header_list",
+            "@cuda_nvjitlink//:header_list",
+           ] + (["@cuda_crt//:header_list"] if _cudart_version_major and int(_cudart_version_major) >= 13 else [""][:0]),
+    deps = [":cccl_headers",
+            ":cudart_headers",
+            ":cublas_headers",
+            ":profiler_api_headers",
+            ":nvrtc_headers",
+            ":nvtx_headers",
+            ":nvcc_headers",
+            ":cusolver_headers",
+            ":cufft_headers",
+            ":cusparse_headers",
+            ":curand_headers",
+            ":cupti_headers",
+            ":nvml_headers",
+            ":nvjitlink_headers",
+           ] + ([":crt_headers"] if _cudart_version_major and int(_cudart_version_major) >= 13 else [""][:0]),
+)
+
+# This target is needed if users want to have implicit cuda_headers dependencies
+# Users can depend on this alias to get the cuda_headers without causing duplicate
+# dependencies.
+alias(
+    name = "implicit_cuda_headers_dependency",
+    actual = ":cuda_headers",
+)
+
+cc_library(
+    name = "cudart_static",
+    srcs = ["@cuda_cudart//:static"],
+    linkopts = [
+        "-ldl",
+        "-lpthread",
+        "-lrt"
+    ],
+)
+
+alias(
+  name = "cuda_runtime",
+  actual = ":cudart_static",
+)
+
+alias(
+    name = "cuda_driver",
+    actual = select({
+        "@cuda_driver//:cuda_umd_libs": "@cuda_driver//:nvidia_driver",
+        "//conditions:default": "@cuda_cudart//:cuda_driver",
+    }),
+)
+
+alias(
+  name = "cudart_headers",
+  actual = "@cuda_cudart//:headers",
+)
+
+alias(
+  name = "cudart",
+  actual = "@cuda_cudart//:cudart",
+)
+
+alias(
+  name = "nvtx_headers",
+  actual = "@cuda_nvtx//:headers",
+)
+
+alias(
+  name = "nvml_headers",
+  actual = "@cuda_nvml//:headers",
+)
+
+alias(
+  name = "nvcc_headers",
+  actual = "@cuda_nvcc//:headers",
+)
+
+alias(
+  name = "crt_headers",
+  actual = "@cuda_crt//:headers",
+)
+
+alias(
+  name = "cccl_headers",
+  actual = "@cuda_cccl//:headers",
+)
+
+alias(
+  name = "cublas_headers",
+  actual = "@cuda_cublas//:headers",
+)
+
+alias(
+  name = "profiler_api_headers",
+  actual = "@cuda_profiler_api//:headers",
+)
+
+alias(
+  name = "cusolver_headers",
+  actual = "@cuda_cusolver//:headers",
+)
+
+alias(
+  name = "cufft_headers",
+  actual = "@cuda_cufft//:headers",
+)
+
+alias(
+  name = "cusparse_headers",
+  actual = "@cuda_cusparse//:headers",
+)
+
+alias(
+  name = "curand_headers",
+  actual = "@cuda_curand//:headers",
+)
+
+alias(
+  name = "nvjitlink_headers",
+  actual = "@cuda_nvjitlink//:headers",
+)
+
+alias(
+  name = "nvrtc_headers",
+  actual = "@cuda_nvrtc//:headers",
+)
+
+alias(
+  name = "cublas",
+  actual = "@cuda_cublas//:cublas",
+)
+
+alias(
+  name = "cublasLt",
+  actual = "@cuda_cublas//:cublasLt",
+)
+
+alias(
+  name = "cusolver",
+  actual = "@cuda_cusolver//:cusolver",
+)
+
+alias(
+  name = "cudnn",
+  actual = "@cuda_cudnn//:cudnn",
+)
+
+alias(
+  name = "cudnn_header",
+  actual = "@cuda_cudnn//:headers",
+)
+
+alias(
+  name = "cufft",
+  actual = "@cuda_cufft//:cufft",
+)
+
+alias(
+  name = "curand",
+  actual = "@cuda_curand//:curand",
+)
+
+alias(
+  name = "nvrtc",
+  actual = "@cuda_nvrtc//:nvrtc",
+)
+
+cc_library(
+    name = "cuda",
+    deps = [
+        ":cublas",
+        ":cublasLt",
+        ":cuda_headers",
+        ":cudart",
+        ":cudnn",
+        ":cufft",
+        ":curand",
+    ],
+)
+
+alias(
+    name = "cub_headers",
+    actual = ":cuda_headers",
+)
+
+alias(
+  name = "cupti_headers",
+  actual = "@cuda_cupti//:headers",
+)
+
+alias(
+  name = "cupti_dsos",
+  actual = "@cuda_cupti//:cupti",
+)
+
+alias(
+  name = "cusparse",
+  actual = "@cuda_cusparse//:cusparse",
+)
+
+alias(
+    name = "cuda-nvvm",
+    actual = "@cuda_nvcc//:nvvm" if _cudart_version_major and int(_cudart_version_major) < 13 else "@cuda_nvvm//:nvvm",
+)
+
+alias(
+    name = "nvjitlink",
+    actual = "@cuda_nvjitlink//:nvjitlink"
+)
+
+cc_library(
+    name = "libdevice_root",
+    data = [":cuda-nvvm"],
+)
+
+bzl_library(
+    name = "build_defs_bzl",
+    srcs = ["build_defs.bzl"],
+    deps = [
+        "@bazel_skylib//lib:selects",
+    ],
+)
+
+alias(
+    name = "runtime_fatbinary",
+    actual = "@cuda_nvcc//:fatbinary",
+)
+
+alias(
+    name = "runtime_nvlink",
+    actual = "@cuda_nvcc//:nvlink",
+)
+
+alias(
+    name = "runtime_ptxas",
+    actual = "@cuda_nvcc//:ptxas",
+)
+
+alias(
+    name = "runtime_nvdisasm",
+    actual = "@cuda_nvdisasm//:nvdisasm",
+)
+
+# TODO(cerisier): Do differently
+copy_to_directory(
+    name = "cuda_path",
+    srcs = [
+        "@cuda_nvcc//:nvcc_directory",
+    ],
+    include_external_repositories = ["**"],
+)

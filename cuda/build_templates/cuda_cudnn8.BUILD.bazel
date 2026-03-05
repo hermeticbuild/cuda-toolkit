@@ -1,0 +1,82 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@cuda_cudnn//:version.bzl", "LIB_VERSIONS")
+
+load(
+    "@cuda//cuda:build_defs.bzl",
+    "cuda_rpath_flags",
+)
+
+cc_import(
+    name = "cudnn_ops_infer",
+    hdrs = [":headers"],
+    shared_library = "lib/libcudnn_ops_infer.so." + LIB_VERSIONS["libcudnn_ops_infer"],
+)
+
+cc_import(
+    name = "cudnn_cnn_infer",
+    hdrs = [":headers"],
+    shared_library = "lib/libcudnn_cnn_infer.so." + LIB_VERSIONS["libcudnn_cnn_infer"],
+)
+
+cc_import(
+    name = "cudnn_ops_train",
+    hdrs = [":headers"],
+    shared_library = "lib/libcudnn_ops_train.so." + LIB_VERSIONS["libcudnn_ops_train"],
+)
+
+cc_import(
+    name = "cudnn_cnn_train",
+    hdrs = [":headers"],
+    shared_library = "lib/libcudnn_cnn_train.so." + LIB_VERSIONS["libcudnn_cnn_train"],
+)
+
+cc_import(
+    name = "cudnn_adv_infer",
+    hdrs = [":headers"],
+    shared_library = "lib/libcudnn_adv_infer.so." + LIB_VERSIONS["libcudnn_adv_infer"],
+)
+
+cc_import(
+    name = "cudnn_adv_train",
+    hdrs = [":headers"],
+    shared_library = "lib/libcudnn_adv_train.so." + LIB_VERSIONS["libcudnn_adv_train"],
+)
+
+cc_import(
+    name = "cudnn_main",
+    hdrs = [":headers"],
+    shared_library = "lib/libcudnn.so." + LIB_VERSIONS["libcudnn"],
+)
+cc_library(
+    name = "cudnn",
+    deps = [
+      ":cudnn_ops_infer",
+      ":cudnn_ops_train",
+      ":cudnn_cnn_infer",
+      ":cudnn_cnn_train",
+      ":cudnn_adv_infer",
+      ":cudnn_adv_train",
+      "@cuda_nvrtc//:nvrtc",
+      ":cudnn_main",
+    ],
+    linkopts = cuda_rpath_flags("nvidia/cudnn/lib"),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob([
+        "include/cudnn*.h",
+    ]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cudnn",
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

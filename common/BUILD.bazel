@@ -1,0 +1,16 @@
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+package(default_visibility = ["//visibility:public"])
+
+# Config setting for CUDA stub rpaths.
+bool_flag(
+    name = "cuda_rpath",
+    build_setting_default = True,
+)
+
+config_setting(
+    name = "enable_cuda_rpath",
+    flag_values = {
+        ":cuda_rpath": "True",
+    },
+)

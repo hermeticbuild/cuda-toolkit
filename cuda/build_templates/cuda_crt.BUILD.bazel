@@ -1,0 +1,32 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+load("@cuda//cuda:build_defs.bzl", "if_cuda_newer_than")
+load(":version.bzl", "IS_PLACEHOLDER")
+
+filegroup(
+    name = "header_list",
+    srcs = [] if IS_PLACEHOLDER else if_cuda_newer_than(
+        "13_0",
+        if_true = glob(["include/crt/**"]),
+        if_false = [],
+    ),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+cc_library(
+    name = "headers_impl",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["include"],
+    strip_include_prefix = "include",
+)
+
+cc_library(
+    name = "placeholder",
+)
+
+alias(
+    name = "headers",
+    actual = ":placeholder" if IS_PLACEHOLDER else ":headers_impl",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

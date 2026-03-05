@@ -1,0 +1,64 @@
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@cuda_cublas//:version.bzl", "LIB_VERSIONS")
+
+load(
+     "@cuda//cuda:build_defs.bzl",
+     "cuda_rpath_flags",
+     "if_cuda_newer_than",
+)
+
+cc_import(
+    name = "cublas_shared_library",
+    hdrs = [":headers"],
+    shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
+    deps = [":cublasLt"],
+)
+
+cc_import(
+    name = "cublasLt_shared_library",
+    hdrs = [":headers"],
+    shared_library = "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
+)
+cc_library(
+    name = "cublas",
+    visibility = ["//visibility:public"],
+    deps = [":cublas_shared_library"],
+    linkopts = if_cuda_newer_than(
+        "13_0",
+        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
+        if_false = cuda_rpath_flags("nvidia/cublas/lib"),
+    ),
+)
+
+cc_library(
+    name = "cublasLt",
+    visibility = ["//visibility:public"],
+    deps = [":cublasLt_shared_library"],
+    linkopts = if_cuda_newer_than(
+        "13_0",
+        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
+        if_false = cuda_rpath_flags("nvidia/cublas/lib"),
+    ),
+)
+
+filegroup(
+    name = "header_list",
+    srcs = [
+        "include/cublas.h",
+        "include/cublasLt.h",
+        "include/cublas_api.h",
+        "include/cublas_v2.h",
+    ],
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    include_prefix = "third_party/gpus/cuda/include",
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["@cuda//cuda:__pkg__"],
+)

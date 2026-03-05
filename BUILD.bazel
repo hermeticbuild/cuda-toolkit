@@ -1,0 +1,58 @@
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+native_binary(
+    name = "ptxas",
+    src = "@cuda//cuda:runtime_ptxas",
+)
+
+alias(
+    name = "cuda_headers",
+    actual = "@cuda//cuda:cuda_headers",
+)
+
+alias(
+    name = "cuda_path",
+    actual = "@cuda//cuda:cuda_path",
+)
+
+alias(
+    name = "fatbinary",
+    actual = "@cuda//cuda:runtime_fatbinary",
+)
+
+alias(
+    name = "cuda",
+    actual = "@cuda//cuda:cuda",
+)
+
+alias(
+    name = "cublas",
+    actual = "@cuda_cublas//:cublas",
+)
+
+alias(
+    name = "cublasLt",
+    actual = "@cuda_cublas//:cublasLt",
+)
+
+alias(
+    name = "cudart",
+    actual = "@cuda//cuda:cudart",
+)
+
+alias(
+    name = "cudnn",
+    actual = "@cuda_cudnn//:cudnn",
+)
+
+alias(
+    name = "cufft",
+    actual = "@cuda_cufft//:cufft",
+)
+
+alias(
+    name = "curand",
+    actual = "@cuda_curand//:curand",
+)
