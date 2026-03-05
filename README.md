@@ -59,3 +59,13 @@ use_repo(
   `--platforms=//:platform_linux_amd64` or `--platforms=//:platform_linux_arm64`.
 - `@cuda//cuda:build_defs.bzl` and `@cuda//cuda:BUILD`
   are static files from `//cuda`.
+
+## Origin
+
+This project was originally derived from [rules_ml_toolchain](https://github.com/google-ml-infra/rules_ml_toolchain),
+licensed under the Apache License 2.0.
+
+The codebase has been extensively rewritten and extended.
+Only small portions of the original implementation remain.
+
+See the LICENSE file for license details and original copyright notices.
