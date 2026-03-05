@@ -31,7 +31,7 @@ _REPO_PUBLIC_TARGETS = {
     "cuda_cccl": ["header_list", "headers"],
     "cuda_crt": ["header_list", "headers_impl", "placeholder", "headers"],
     "cuda_cublas": ["cublas_shared_library", "cublasLt_shared_library", "cublas", "cublasLt", "header_list", "headers"],
-    "cuda_cudart": ["static", "cuda_stub", "cudart_shared_library", "cuda_driver", "cudart", "header_list", "headers"],
+    "cuda_cudart": ["static", "cuda_stub", "cudart_shared_library", "cuda_driver", "cudart", "header_list", "headers", "cuda_header"],
     "cuda_cudnn": [
         "cudnn_ops",
         "cudnn_cnn",
@@ -135,7 +135,6 @@ def cudnn_redist_repository(
         component_version = component_version,
         url_dict = url_dict,
         redist_path_prefix = cudnn_redist_path_prefix,
-        repository_symlinks_by_arch = {},
     )
 
 def cuda_redist_repositories(
@@ -189,7 +188,6 @@ def cuda_redist_repositories(
             component_version = spec["component_version"],
             url_dict = spec["url_dict"],
             redist_path_prefix = cuda_redist_path_prefix,
-            repository_symlinks_by_arch = {},
         )
 
 def _create_component_repositories(
@@ -199,8 +197,7 @@ def _create_component_repositories(
         cuda_version,
         component_version,
         url_dict,
-        redist_path_prefix,
-        repository_symlinks_by_arch):
+        redist_path_prefix):
     arch_repo_names = {}
     for arch in sorted(OS_ARCH_DICT.keys()):
         concrete_repo_name = _concrete_repo_name(repo_name, arch)
@@ -214,7 +211,6 @@ def _create_component_repositories(
                 url_dict = url_dict,
                 redist_path_prefix = redist_path_prefix,
                 target_arch = arch,
-                repository_symlinks = repository_symlinks_by_arch.get(arch, {}),
             )
             arch_repo_names[arch] = concrete_repo_name
         else:
@@ -366,17 +362,6 @@ def _create_libcuda_symlinks(
                     print("File %s already exists!" % repository_ctx.path(unversioned_symlink))  # buildifier: disable=print
                 else:
                     repository_ctx.symlink(symlink_so_1, unversioned_symlink)
-
-def _create_repository_symlinks(repository_ctx):
-    for target, link_name in repository_ctx.attr.repository_symlinks.items():
-        target_path = repository_ctx.path(target)
-        if not target_path.exists:
-            print("Target %s doesn't exist!" % target_path)  # buildifier: disable=print
-            continue
-        if repository_ctx.path(link_name).exists:
-            print("File %s already exists!" % repository_ctx.path(link_name))  # buildifier: disable=print
-            continue
-        repository_ctx.symlink(target_path, link_name)
 
 def _normalize_build_visibility(repository_ctx):
     build_file = repository_ctx.path("BUILD")
@@ -540,7 +525,6 @@ def _redist_repository_impl(repository_ctx):
         repository_ctx,
         component_version,
     )
-    _create_repository_symlinks(repository_ctx)
     _create_version_file(repository_ctx, component_version, lib_versions)
 
 redist_repository = repository_rule(
@@ -553,7 +537,6 @@ redist_repository = repository_rule(
         "component_version": attr.string(mandatory = True),
         "redist_path_prefix": attr.string(),
         "target_arch": attr.string(mandatory = True),
-        "repository_symlinks": attr.label_keyed_string_dict(mandatory = False),
     },
 )
 

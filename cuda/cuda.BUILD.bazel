@@ -255,7 +255,12 @@ alias(
 copy_to_directory(
     name = "cuda_path",
     srcs = [
+        # contains cuda.h for CUDA >= 13
+        "@cuda_cudart//:cuda_header",
+        # contains cuda.h for CUDA < 13
         "@cuda_nvcc//:nvcc_directory",
+        # contains libdevice.10.bc
+        ":cuda-nvvm",
     ],
     include_external_repositories = ["**"],
 )

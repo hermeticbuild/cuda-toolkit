@@ -6,6 +6,13 @@ load(
      "cuda_rpath_flags",
      "if_cuda_newer_than",
 )
+
+filegroup(
+    name = "cuda_header",
+    srcs = ["include/cuda.h"],
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
 _HAS_FP4_FP6_FP8_HEADERS = int(VERSION_MAJOR) > 12 or (int(VERSION_MAJOR) == 12 and int(VERSION_MINOR) >= 8)
 # Keep concrete paths explicit; reserve glob only for real patterns.
 _HEADER_FILES = [

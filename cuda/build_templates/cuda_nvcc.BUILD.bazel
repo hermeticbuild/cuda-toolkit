@@ -13,7 +13,10 @@ directory(
     ] + if_cuda_newer_than(
         "13_0",
         if_true = [],
-        if_false = ["nvvm/libdevice/libdevice.10.bc"],
+        if_false = [
+            "nvvm/libdevice/libdevice.10.bc",
+            "include/cuda.h",
+        ],
     ),
     visibility = ["//visibility:public"],
 )
