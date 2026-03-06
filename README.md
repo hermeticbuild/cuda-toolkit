@@ -15,6 +15,20 @@ Supported versions are defined in:
 - `cuda/cuda_redist_versions.json`
 - `cuda/cudnn_redist_versions.json`
 
+## Supported platforms
+
+CUDA components are typically published for these platforms:
+- `linux-x86_64`
+- `linux-sbsa`
+- `windows-x86_64`
+
+This module exposes each component through proxy subpackages:
+- `@cuda//<component>`
+
+These proxy targets are platform-aware and resolve to the correct concrete package for the active Bazel configuration.
+
+For example, `@cuda//nvcc:ptxas` used from an attribute with `cfg = "exec"` resolves automatically to the appropriate execution-platform binary.
+
 ## Recommended usage
 
 Example `MODULE.bazel` setup:
@@ -36,7 +50,7 @@ use_repo(
 ## Notes
 
 - `cuda_umd_version` defaults to `cuda_version` when omitted.
-- CUDA packages under `@cuda//<redist>` are platform-resolving proxies. The selected concrete redistribution
+- CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - For local validation on non-Linux hosts, you can force Linux selection with
   `--platforms=//:platform_linux_amd64` or `--platforms=//:platform_linux_arm64`.
