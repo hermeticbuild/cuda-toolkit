@@ -1,4 +1,6 @@
-# Bazel CUDA Toolkit
+# CUDA Toolkit
+
+<img width="320" height="320" alt="image" src="https://github.com/user-attachments/assets/1d816875-0282-4ac7-9405-0f53528f5495" />
 
 ## Project Overview
 
