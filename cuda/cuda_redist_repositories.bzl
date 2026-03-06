@@ -54,6 +54,7 @@ _SUPPORTED_ARCHIVE_EXTENSIONS = [
 def cudnn_redist_repository(
         cudnn_redistributions,
         cuda_version,
+        repo_prefix,
         cudnn_redist_path_prefix = CUDNN_REDIST_PATH_PREFIX,
         redist_versions_to_build_templates = REDIST_VERSIONS_TO_BUILD_DEFS):
     # buildifier: disable=function-docstring-args
@@ -74,6 +75,7 @@ def cudnn_redist_repository(
     if component_version:
         available_arches = _create_component_arch_specific_repositories(
             repo_name = repo_data["repo_name"],
+            repo_prefix = repo_prefix,
             versions = versions,
             templates = templates,
             cuda_version = cuda_version,
@@ -94,6 +96,7 @@ def cudnn_redist_repository(
 def cuda_redist_repositories(
         cuda_redistributions,
         cuda_version,
+        repo_prefix,
         cuda_redist_path_prefix = CUDA_REDIST_PATH_PREFIX,
         redist_versions_to_build_templates = REDIST_VERSIONS_TO_BUILD_DEFS):
     # buildifier: disable=function-docstring-args
@@ -141,6 +144,7 @@ def cuda_redist_repositories(
             continue
         available_arches = _create_component_arch_specific_repositories(
             repo_name = spec["repo_name"],
+            repo_prefix = repo_prefix,
             versions = spec["versions"],
             templates = spec["templates"],
             cuda_version = cuda_version,
@@ -158,6 +162,7 @@ def cuda_redist_repositories(
 
 def _create_component_arch_specific_repositories(
         repo_name,
+        repo_prefix,
         versions,
         templates,
         cuda_version,
@@ -166,7 +171,7 @@ def _create_component_arch_specific_repositories(
         redist_path_prefix):
     available_arches = []
     for arch in sorted(OS_ARCH_DICT.keys()):
-        concrete_repo_name = _concrete_repo_name(repo_name, arch)
+        concrete_repo_name = _concrete_repo_name(repo_prefix, repo_name, arch)
         if _has_arch_redistribution(per_arch_url_dict, cuda_version, arch):
             redist_repository(
                 name = concrete_repo_name,
@@ -177,6 +182,7 @@ def _create_component_arch_specific_repositories(
                 per_arch_url_dict = per_arch_url_dict,
                 redist_path_prefix = redist_path_prefix,
                 target_arch = arch,
+                cuda_repo_name = repo_prefix,
             )
             if arch in PROXY_ARCH_CONDITIONS:
                 available_arches.append(arch)
@@ -185,8 +191,8 @@ def _create_component_arch_specific_repositories(
         fail("Missing public target catalog for repository '{}'".format(repo_name))
     return available_arches
 
-def _concrete_repo_name(repo_name, arch):
-    return "{}__{}".format(repo_name, _ARCH_REPO_SUFFIX[arch])
+def _concrete_repo_name(repo_prefix, repo_name, arch):
+    return "{}_{}__{}".format(repo_prefix, repo_name, _ARCH_REPO_SUFFIX[arch])
 
 def _has_arch_redistribution(per_arch_url_dict, cuda_version, arch):
     arch_key = OS_ARCH_DICT[arch]
@@ -342,11 +348,15 @@ def _normalize_build_visibility(repository_ctx):
         return
     build_content = repository_ctx.read("BUILD")
     build_content = build_content.replace(
-        "visibility = [\"@cuda//cuda:__pkg__\"],",
+        "@cuda//",
+        "@{}//".format(repository_ctx.attr.cuda_repo_name),
+    )
+    build_content = build_content.replace(
+        "visibility = [\"@{}//cuda:__pkg__\"],".format(repository_ctx.attr.cuda_repo_name),
         "visibility = [\"//visibility:public\"],",
     )
     build_content = build_content.replace(
-        "visibility = [\"@cuda//cudart:__pkg__\"],",
+        "visibility = [\"@{}//cudart:__pkg__\"],".format(repository_ctx.attr.cuda_repo_name),
         "visibility = [\"//visibility:public\"],",
     )
     repository_ctx.file("BUILD", build_content)
@@ -510,6 +520,7 @@ redist_repository = repository_rule(
         "component_version": attr.string(mandatory = True),
         "redist_path_prefix": attr.string(),
         "target_arch": attr.string(mandatory = True),
+        "cuda_repo_name": attr.string(mandatory = True),
     },
 )
 
