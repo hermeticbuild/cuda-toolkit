@@ -1,5 +1,6 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("//:cuda_tools_probe.bzl", "cuda_tools_probe")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -18,4 +19,8 @@ cc_binary(
     name = "cuda_toolkit_all_dummy_main",
     srcs = ["main.cc"],
     deps = [":cuda_toolkit_all"],
+)
+
+cuda_tools_probe(
+    name = "cuda_tools_probe",
 )

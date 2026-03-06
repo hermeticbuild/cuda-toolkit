@@ -8,6 +8,17 @@ load(
     "REPO_PUBLIC_TARGETS",
 )
 
+_TOOLCHAIN_ARCH_CONSTRAINTS = {
+    "amd64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    "aarch64": [
+        "@platforms//os:linux",
+        "@platforms//cpu:arm64",
+    ],
+}
+
 def _concrete_repo_name(repo_prefix, repo_name, arch):
     return "{}_{}__{}".format(repo_prefix, repo_name, ARCH_REPO_SUFFIX[arch])
 
@@ -108,6 +119,54 @@ def _write_proxy_packages(repository_ctx):
             _version_bzl_content(component_version),
         )
 
+def _write_toolchain_package(repository_ctx):
+    available_arches = repository_ctx.attr.component_arches.get("cuda_nvcc", [])
+    if not available_arches:
+        return
+
+    repository_ctx.symlink(
+        repository_ctx.attr.toolchain_defs_file,
+        "toolchain/defs.bzl",
+    )
+
+    lines = [
+        "load(\":defs.bzl\", \"cuda_tools_toolchain\")",
+        "",
+        "package(default_visibility = [\"//visibility:public\"])",
+        "",
+    ]
+
+    for arch in sorted(available_arches):
+        if arch not in PROXY_ARCH_CONDITIONS:
+            continue
+        impl_name = "cuda_tools_impl_{}".format(arch.replace("-", "_"))
+        lines.extend([
+            "cuda_tools_toolchain(",
+            "    name = \"{}\",".format(impl_name),
+            "    ptxas = \"//nvcc:ptxas\",",
+            "    fatbinary = \"//nvcc:fatbinary\",",
+            "    cuda_path = \"//cuda:cuda_path_directory\",",
+            ")",
+            "",
+        ])
+        for idx, constraint in enumerate(PROXY_ARCH_CONDITIONS[arch]):
+            toolchain_name = "cuda_tools_{}_{}".format(arch.replace("-", "_"), idx)
+            arch_constraints = _TOOLCHAIN_ARCH_CONSTRAINTS.get(arch, [])
+            lines.extend([
+                "toolchain(",
+                "    name = \"{}\",".format(toolchain_name),
+                "    toolchain = \":{}\",".format(impl_name),
+                "    toolchain_type = \"@cuda_toolkit//cuda/toolchain:cuda_tools_toolchain_type\",",
+                "    exec_compatible_with = {},".format(repr(arch_constraints)),
+                ")",
+                "",
+            ])
+
+    repository_ctx.file(
+        "toolchain/BUILD.bazel",
+        "\n".join(lines),
+    )
+
 def _cuda_configure_impl(repository_ctx):
     cuda_version = repository_ctx.attr.cuda_version
 
@@ -129,6 +188,7 @@ def _cuda_configure_impl(repository_ctx):
     )
 
     _write_proxy_packages(repository_ctx)
+    _write_toolchain_package(repository_ctx)
 
 cuda_configure = repository_rule(
     implementation = _cuda_configure_impl,
@@ -138,5 +198,6 @@ cuda_configure = repository_rule(
         "component_arches": attr.string_list_dict(default = {}),
         "build_defs_file": attr.label(default = Label("//cuda:versions_helper.bzl")),
         "cuda_build_file": attr.label(default = Label("//cuda:cuda.BUILD.bazel")),
+        "toolchain_defs_file": attr.label(default = Label("//cuda/toolchain:defs.bzl")),
     },
 )
