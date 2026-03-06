@@ -35,19 +35,35 @@ Example `MODULE.bazel` setup:
 
 ```starlark
 cuda_ext = use_extension("//extensions:cuda.bzl", "cuda")
-cuda_ext.configure(
+cuda_ext.version(
     cuda_version = "12.9.1",
     cudnn_version = "9.8.0",
     # Optional:
     # cuda_umd_version = "13.0.0",
 )
-use_repo(cuda_ext, "cuda")
+use_repo(
+    cuda_ext,
+    cuda = "cuda12_9_1",
+)
+```
+
+You can register multiple versions:
+
+```starlark
+cuda_ext.version(cuda_version = "12.8.1", cudnn_version = "9.16.0")
+cuda_ext.version(cuda_version = "13.1.1", cudnn_version = "9.16.0")
+
+use_repo(
+    cuda_ext,
+    cuda12 = "cuda12_8_1",
+    cuda13 = "cuda13_1_1",
+)
 ```
 
 ## Notes
 
 - `cuda_umd_version` defaults to `cuda_version` when omitted.
-- CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
+- CUDA packages under `@cuda<version>//<redist>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - For local validation on non-Linux hosts, you can force Linux selection with
   `--platforms=//:platform_linux_amd64` or `--platforms=//:platform_linux_arm64`.

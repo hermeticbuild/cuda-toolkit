@@ -17,21 +17,21 @@ def _is_valid_version(version):
     parts = version.split(".")
     return parts and all([p.isdigit() for p in parts])
 
-def _single_config_tag(mctx):
-    latest_tag = None
-    root_latest_tag = None
+def _version_tags(mctx):
+    root_tags = []
+    all_tags = []
     for mod in mctx.modules:
-        for tag in mod.tags.configure:
-            latest_tag = tag
+        for tag in mod.tags.version:
+            all_tags.append(tag)
             if mod.is_root:
-                root_latest_tag = tag
+                root_tags.append(tag)
+    tags = root_tags if root_tags else all_tags
+    if not tags:
+        fail("cuda extension requires at least one version tag")
+    return tags
 
-    if root_latest_tag:
-        return root_latest_tag
-    if latest_tag:
-        return latest_tag
-
-    fail("cuda extension requires at least one configure tag")
+def _version_repo_name(cuda_version):
+    return "cuda{}".format(cuda_version.replace(".", "_"))
 
 def _get_url_sha_from_version_map(version, version_to_url_sha, toolkit_name):
     url_sha = version_to_url_sha.get(version)
@@ -62,84 +62,102 @@ def _read_downloaded_json(mctx, pending_download):
     return json.decode(mctx.read(pending_download.output_path))
 
 def _cuda_impl(mctx):
-    tag = _single_config_tag(mctx)
-    if not _is_valid_version(tag.cuda_version):
-        fail("Invalid cuda_version '{}': expected digits separated by dots".format(tag.cuda_version))
-    if not _is_valid_version(tag.cudnn_version):
-        fail("Invalid cudnn_version '{}': expected digits separated by dots".format(tag.cudnn_version))
-    cuda_umd_version = tag.cuda_umd_version or tag.cuda_version
-    if not _is_valid_version(cuda_umd_version):
-        fail("Invalid cuda_umd_version '{}': expected digits separated by dots".format(cuda_umd_version))
-
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
     cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
 
-    (cuda_redist_url, cuda_redist_sha256) = _get_url_sha_from_version_map(
-        version = tag.cuda_version,
-        version_to_url_sha = cuda_version_map,
-        toolkit_name = "CUDA",
-    )
-    (cuda_umd_redist_url, cuda_umd_redist_sha256) = _get_url_sha_from_version_map(
-        version = cuda_umd_version,
-        version_to_url_sha = cuda_version_map,
-        toolkit_name = "CUDA_UMD",
-    )
-    (cudnn_redist_url, cudnn_redist_sha256) = _get_url_sha_from_version_map(
-        version = tag.cudnn_version,
-        version_to_url_sha = cudnn_version_map,
-        toolkit_name = "CUDNN",
-    )
+    for tag in _version_tags(mctx):
+        if not _is_valid_version(tag.cuda_version):
+            fail("Invalid cuda_version '{}': expected digits separated by dots".format(tag.cuda_version))
+        if not _is_valid_version(tag.cudnn_version):
+            fail("Invalid cudnn_version '{}': expected digits separated by dots".format(tag.cudnn_version))
+        cuda_umd_version = tag.cuda_umd_version or tag.cuda_version
+        if not _is_valid_version(cuda_umd_version):
+            fail("Invalid cuda_umd_version '{}': expected digits separated by dots".format(cuda_umd_version))
 
-    cuda_redistributions_download = _json_from_url_future(
-        mctx = mctx,
-        url = cuda_redist_url,
-        sha256 = cuda_redist_sha256,
-        output_path = "redistrib_cuda_%s.json" % tag.cuda_version,
-    )
-    cuda_umd_redistributions_download = _json_from_url_future(
-        mctx = mctx,
-        url = cuda_umd_redist_url,
-        sha256 = cuda_umd_redist_sha256,
-        output_path = "redistrib_cuda_umd_%s.json" % cuda_umd_version,
-    )
-    cudnn_redistributions_download = _json_from_url_future(
-        mctx = mctx,
-        url = cudnn_redist_url,
-        sha256 = cudnn_redist_sha256,
-        output_path = "redistrib_cudnn_%s.json" % tag.cudnn_version,
-    )
+        cuda_redistributions_download = _json_from_url_future(
+            mctx = mctx,
+            url = cuda_redist_url,
+            sha256 = cuda_redist_sha256,
+            output_path = "redistrib_cuda_%s.json" % tag.cuda_version,
+        )
+        cuda_umd_redistributions_download = _json_from_url_future(
+            mctx = mctx,
+            url = cuda_umd_redist_url,
+            sha256 = cuda_umd_redist_sha256,
+            output_path = "redistrib_cuda_umd_%s.json" % cuda_umd_version,
+        )
+        cudnn_redistributions_download = _json_from_url_future(
+            mctx = mctx,
+            url = cudnn_redist_url,
+            sha256 = cudnn_redist_sha256,
+            output_path = "redistrib_cudnn_%s.json" % tag.cudnn_version,
+        )
 
-    cuda_redistributions = _read_downloaded_json(mctx, cuda_redistributions_download)
-    cuda_umd_redistributions = _read_downloaded_json(mctx, cuda_umd_redistributions_download)
-    cudnn_redistributions = _read_downloaded_json(mctx, cudnn_redistributions_download)
+        cuda_redistributions = _read_downloaded_json(mctx, cuda_redistributions_download)
+        cuda_umd_redistributions = _read_downloaded_json(mctx, cuda_umd_redistributions_download)
+        cudnn_redistributions = _read_downloaded_json(mctx, cudnn_redistributions_download)
 
-    cuda_proxy_data = cuda_redist_repositories(
+        cuda_proxy_data = cuda_redist_repositories(
+            cuda_redistributions = dict(
+                cuda_redistributions,
+                nvidia_driver = cuda_umd_redistributions.get("nvidia_driver", {}),
+            ),
+            cuda_version = tag.cuda_version,
+        )
+        cudnn_proxy_data = cudnn_redist_repository(
+            cudnn_redistributions = cudnn_redistributions,
+            cuda_version = tag.cuda_version,
+        )
+
+        cuda_redistributions = _load_json_from_url(
+            mctx = mctx,
+            url = cuda_redist_url,
+            sha256 = cuda_redist_sha256,
+            output_path = "redistrib_cuda_{}.json".format(tag.cuda_version),
+        )
+        cuda_umd_redistributions = _load_json_from_url(
+            mctx = mctx,
+            url = cuda_umd_redist_url,
+            sha256 = cuda_umd_redist_sha256,
+            output_path = "redistrib_cuda_umd_{}.json".format(cuda_umd_version),
+        )
         cuda_redistributions = dict(
             cuda_redistributions,
             nvidia_driver = cuda_umd_redistributions.get("nvidia_driver", {}),
-        ),
-        cuda_version = tag.cuda_version,
-    )
-    cudnn_proxy_data = cudnn_redist_repository(
-        cudnn_redistributions = cudnn_redistributions,
-        cuda_version = tag.cuda_version,
-    )
+        )
+        cudnn_redistributions = _load_json_from_url(
+            mctx = mctx,
+            url = cudnn_redist_url,
+            sha256 = cudnn_redist_sha256,
+            output_path = "redistrib_cudnn_{}.json".format(tag.cudnn_version),
+        )
 
-    component_versions = dict(cuda_proxy_data["component_versions"])
-    component_versions.update(cudnn_proxy_data["component_versions"])
-    component_arches = dict(cuda_proxy_data["component_arches"])
-    component_arches.update(cudnn_proxy_data["component_arches"])
+        cuda_proxy_data = cuda_redist_repositories(
+            cuda_redistributions = cuda_redistributions,
+            cuda_version = tag.cuda_version,
+            repo_prefix = repo_name,
+        )
+        cudnn_proxy_data = cudnn_redist_repository(
+            cudnn_redistributions = cudnn_redistributions,
+            cuda_version = tag.cuda_version,
+            repo_prefix = repo_name,
+        )
 
-    cuda_configure(
-        name = "cuda",
-        cuda_version = tag.cuda_version,
-        component_versions = component_versions,
-        component_arches = component_arches,
-    )
+        component_versions = dict(cuda_proxy_data["component_versions"])
+        component_versions.update(cudnn_proxy_data["component_versions"])
+        component_arches = dict(cuda_proxy_data["component_arches"])
+        component_arches.update(cudnn_proxy_data["component_arches"])
+
+        cuda_configure(
+            name = repo_name,
+            cuda_version = tag.cuda_version,
+            component_versions = component_versions,
+            component_arches = component_arches,
+        )
 
     return mctx.extension_metadata(reproducible = True)
 
-_configure_tag = tag_class(
+_version_tag = tag_class(
     attrs = {
         "cuda_version": attr.string(mandatory = True),
         "cudnn_version": attr.string(mandatory = True),
@@ -149,5 +167,5 @@ _configure_tag = tag_class(
 
 cuda = module_extension(
     implementation = _cuda_impl,
-    tag_classes = {"configure": _configure_tag},
+    tag_classes = {"version": _version_tag},
 )

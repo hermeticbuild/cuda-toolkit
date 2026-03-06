@@ -7,8 +7,8 @@ load(
     "REPO_PUBLIC_TARGETS",
 )
 
-def _concrete_repo_name(repo_name, arch):
-    return "{}__{}".format(repo_name, ARCH_REPO_SUFFIX[arch])
+def _concrete_repo_name(repo_prefix, repo_name, arch):
+    return "{}_{}__{}".format(repo_prefix, repo_name, ARCH_REPO_SUFFIX[arch])
 
 def _proxy_package_name(repo_name):
     return repo_name.removeprefix("cuda_")
@@ -33,7 +33,7 @@ LIB_VERSIONS = {{}}
         version_patch = version_patch,
     )
 
-def _render_proxy_build_file(repo_name, package_name, target_names, available_arches):
+def _render_proxy_build_file(repo_prefix, repo_name, package_name, target_names, available_arches):
     lines = [
         "package(default_visibility = [\"//visibility:public\"])",
         "",
@@ -53,7 +53,7 @@ def _render_proxy_build_file(repo_name, package_name, target_names, available_ar
         for arch in sorted(available_arches):
             if arch not in PROXY_ARCH_CONDITIONS:
                 continue
-            resolved_label = "@{}//:{}".format(_concrete_repo_name(repo_name, arch), target_name)
+            resolved_label = "@@{}//:{}".format(_concrete_repo_name(repo_prefix, repo_name, arch), target_name)
             for config_setting_name in PROXY_ARCH_CONDITIONS[arch]:
                 select_entries.append((config_setting_name, resolved_label))
 
@@ -83,6 +83,7 @@ def _write_proxy_packages(repository_ctx):
         repository_ctx.file(
             "{}/BUILD.bazel".format(package_name),
             _render_proxy_build_file(
+                repo_prefix = repository_ctx.name,
                 repo_name = repo_name,
                 package_name = package_name,
                 target_names = REPO_PUBLIC_TARGETS[repo_name],
