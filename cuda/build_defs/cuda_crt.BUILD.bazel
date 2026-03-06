@@ -12,7 +12,7 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 filegroup(
     name = "header_list",
     srcs = glob(["include/crt/**"]),
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -20,5 +20,5 @@ cc_library(
     hdrs = [":header_list"],
     includes = ["include"],
     strip_include_prefix = "include",
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )

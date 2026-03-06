@@ -11,7 +11,7 @@ load("@rules_cc//cc:cc_import.bzl", "cc_import")
 filegroup(
     name = "header_list",
     srcs = ["include/nvml.h"],
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -19,7 +19,7 @@ cc_library(
     hdrs = [":header_list"],
     includes = ["include"],
     strip_include_prefix = "include",
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
@@ -27,7 +27,7 @@ cc_import(
     deps = [":headers"],
     interface_library = "lib/stubs/libnvidia-ml.so",
     system_provided = 1,
-    visibility = ["@cuda//cudart:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(

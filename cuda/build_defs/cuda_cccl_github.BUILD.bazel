@@ -10,13 +10,13 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 filegroup(
     name = "header_list",
     srcs = [":thrust_header_list",":nv_header_list", ":cuda_header_list", ":cub_header_list"],
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "headers",
     deps = [":thrust_headers",":nv_headers", ":cuda_headers", ":cub_headers"],
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -24,7 +24,7 @@ filegroup(
     srcs = glob([
         "thrust/thrust/**",
     ]),
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -32,7 +32,7 @@ cc_library(
     hdrs = [":thrust_header_list"],
     includes = ["thrust"],
     strip_include_prefix = "thrust",
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -40,7 +40,7 @@ filegroup(
     srcs = glob([
         "libcudacxx/include/cuda/**",
     ]),
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -48,7 +48,7 @@ cc_library(
     hdrs = [":cuda_header_list"],
     includes = ["libcudacxx/include"],
     strip_include_prefix = "libcudacxx/include",
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -56,7 +56,7 @@ filegroup(
     srcs = glob([
         "libcudacxx/include/nv/**",
     ]),
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -64,7 +64,7 @@ cc_library(
     hdrs = ["nv_header_list"],
     includes = ["libcudacxx/include/nv"],
     strip_include_prefix = "libcudacxx/include",
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -72,7 +72,7 @@ filegroup(
     srcs = glob([
         "cub/cub/**",
     ]),
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -80,6 +80,6 @@ cc_library(
     hdrs = [":cub_header_list"],
     includes = ["cub"],
     strip_include_prefix = "cub",
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 

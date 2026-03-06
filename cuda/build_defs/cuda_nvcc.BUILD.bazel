@@ -89,7 +89,7 @@ filegroup(
             allow_empty = True,
         ),
     ),
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -98,5 +98,5 @@ cc_library(
     includes = ["include"],
     defines = ["_ALLOW_UNSUPPORTED_LIBCPP"],
     strip_include_prefix = "include",
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )

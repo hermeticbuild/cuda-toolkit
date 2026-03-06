@@ -119,14 +119,9 @@ def _cuda_configure_impl(repository_ctx):
         "cuda/cuda_version.bzl",
         "CUDA_VERSION = \"{}\"".format(cuda_version),
     )
-    cuda_build_content = repository_ctx.read(repository_ctx.attr.cuda_build_file)
-    cuda_build_content = cuda_build_content.replace(
-        "@cuda//",
-        "//",
-    )
-    repository_ctx.file(
+    repository_ctx.symlink(
+        repository_ctx.attr.cuda_build_file,
         "cuda/BUILD.bazel",
-        cuda_build_content,
     )
     repository_ctx.file(
         "BUILD.bazel",

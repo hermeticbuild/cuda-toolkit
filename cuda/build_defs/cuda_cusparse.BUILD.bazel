@@ -22,7 +22,7 @@ cc_library(
 filegroup(
     name = "header_list",
     srcs = ["include/cusparse.h"],
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
@@ -30,5 +30,5 @@ cc_library(
     hdrs = [":header_list"],
     includes = ["include"],
     strip_include_prefix = "include",
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
