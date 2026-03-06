@@ -1,3 +1,10 @@
+"""BUILD definitions for cuda_nvcc package"""
+
+# This BUILD file is used within the arch specific cuda redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_nvcc proxy repository can re-export it.
+
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@cuda//cuda:build_defs.bzl", "if_cuda_newer_than")
 load(":version.bzl", "VERSION_MAJOR")

@@ -1,3 +1,10 @@
+"""BUILD definitions for cuda_cufft package"""
+
+# This BUILD file is used within the arch specific cuda redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_cufft proxy repository can re-export it.
+
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("//:version.bzl", "LIB_VERSIONS")

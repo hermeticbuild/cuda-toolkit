@@ -1,3 +1,10 @@
+"""BUILD definitions for cuda_cccl_github package"""
+
+# This BUILD file is used within the arch specific cuda redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_cccl_github proxy repository can re-export it.
+
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 filegroup(

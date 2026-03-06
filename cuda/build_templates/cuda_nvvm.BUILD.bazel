@@ -1,3 +1,10 @@
+"""BUILD definitions for cuda_nvvm package"""
+
+# This BUILD file is used within the arch specific cuda redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_nvvm proxy repository can re-export it.
+
 load("@cuda//cuda:build_defs.bzl", "if_cuda_newer_than")
 
 exports_files([

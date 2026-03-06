@@ -1,3 +1,10 @@
+"""BUILD definitions for cuda_crt package"""
+
+# This BUILD file is used within the arch specific cuda redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_crt proxy repository can re-export it.
+
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load(":version.bzl", "IS_PLACEHOLDER", "VERSION_MAJOR")
 _HAS_CRT_HEADERS = int(VERSION_MAJOR) >= 13
