@@ -8,31 +8,20 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("//:version.bzl", "LIB_VERSIONS")
-load(
-    "@cuda//cuda:build_defs.bzl",
-    "if_cuda_newer_than",
-    "cuda_rpath_flags",
-)
-
 cc_import(
     name = "cusolver_shared_library",
     shared_library = "lib/libcusolver.so." + LIB_VERSIONS["libcusolver"],
     deps = [
-        "@cuda_nvjitlink//:nvjitlink",
-        "@cuda_cusparse//:cusparse",
-        "@cuda_cublas//:cublas",
-        "@cuda_cublas//:cublasLt",
+        "@cuda//nvjitlink:nvjitlink",
+        "@cuda//cusparse:cusparse",
+        "@cuda//cublas:cublas",
+        "@cuda//cublas:cublasLt",
         ":headers",
     ],
 )
 cc_library(
     name = "cusolver",
     deps = [":cusolver_shared_library"],
-    linkopts = if_cuda_newer_than(
-        "13_0",
-        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
-        if_false = cuda_rpath_flags("nvidia/cusolver/lib"),
-    ),
     visibility = ["//visibility:public"],
 )
 

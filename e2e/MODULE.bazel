@@ -15,32 +15,15 @@ local_path_override(
 
 register_toolchains("@llvm//toolchain:all")
 
-cuda_ext = use_extension("@cuda_toolkit//extensions:cuda.bzl", "cuda_ext")
+cuda_ext = use_extension("@cuda_toolkit//extensions:cuda.bzl", "cuda")
 cuda_ext.configure(
     cuda_version = "13.1.1",
+    # cuda_version = "12.8.1",
+    # cuda_version = "12.4.1",
     cudnn_version = "9.16.0",
 )
 
 use_repo(
     cuda_ext,
     "cuda",
-    "cuda_cccl",
-    "cuda_crt",
-    "cuda_cublas",
-    "cuda_cudart",
-    "cuda_cudnn",
-    "cuda_cufft",
-    "cuda_cupti",
-    "cuda_curand",
-    "cuda_cusolver",
-    "cuda_cusparse",
-    "cuda_driver",
-    "cuda_nvcc",
-    "cuda_nvdisasm",
-    "cuda_nvjitlink",
-    "cuda_nvml",
-    "cuda_nvrtc",
-    "cuda_nvtx",
-    "cuda_nvvm",
-    "cuda_profiler_api",
 )

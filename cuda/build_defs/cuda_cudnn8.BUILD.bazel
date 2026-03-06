@@ -9,11 +9,6 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("//:version.bzl", "LIB_VERSIONS")
 
-load(
-    "@cuda//cuda:build_defs.bzl",
-    "cuda_rpath_flags",
-)
-
 cc_import(
     name = "cudnn_ops_infer",
     deps = [":headers"],
@@ -64,10 +59,9 @@ cc_library(
       ":cudnn_cnn_train",
       ":cudnn_adv_infer",
       ":cudnn_adv_train",
-      "@cuda_nvrtc//:nvrtc",
+      "@cuda//nvrtc:nvrtc",
       ":cudnn_main",
     ],
-    linkopts = cuda_rpath_flags("nvidia/cudnn/lib"),
     visibility = ["//visibility:public"],
 )
 

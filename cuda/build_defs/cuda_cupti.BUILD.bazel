@@ -9,16 +9,10 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("//:version.bzl", "LIB_VERSIONS")
 load(
-    "@cuda//cuda:build_defs.bzl",
-    "if_cuda_newer_than",
+    "@cuda//cuda:versions_helper.bzl",
     "if_version_equal_or_greater_than",
-    "cuda_rpath_flags",
 )
-_CUPTI_VERSION_PARTS = LIB_VERSIONS["libcupti"].split(".")
-_MINOR_VERSION = "{}.{}".format(
-    _CUPTI_VERSION_PARTS[0],
-    _CUPTI_VERSION_PARTS[1] if len(_CUPTI_VERSION_PARTS) > 1 else "0",
-)
+
 # Keep concrete paths explicit; reserve glob only for real patterns.
 _HEADER_FILES = [
     "include/cuda_stdint.h",
@@ -50,11 +44,6 @@ _HEADER_FILES = [
     "include/nvperf_host.h",
     "include/nvperf_target.h",
 ]
-_HEADER_GLOBS = [
-    "include/Openacc/**",
-    "include/Openmp/**",
-]
-
 
 cc_import(
     name = "cupti_shared_library",
@@ -64,34 +53,23 @@ cc_import(
 cc_library(
     name = "cupti",
     deps = [":cupti_shared_library"],
-    linkopts = if_cuda_newer_than(
-        "13_0",
-        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
-        if_false = cuda_rpath_flags("nvidia/cuda_cupti/lib"),
-    ),
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "header_list",
-    srcs = _HEADER_FILES + glob(_HEADER_GLOBS) + if_version_equal_or_greater_than(
-        _MINOR_VERSION,
-        "2024.0",
-        ["include/cupti_sass_metrics.h"],
-    ) + if_version_equal_or_greater_than(
-        _MINOR_VERSION,
-        "2024.0",
-        ["include/cupti_common.h"],
-    ) + if_version_equal_or_greater_than(
-        _MINOR_VERSION,
-        "2024.3",
-        ["include/cupti_pmsampling.h",
-        "include/cupti_profiler_host.h"],
-    ) + if_version_equal_or_greater_than(
-        _MINOR_VERSION,
-        "2023.3",
-        ["include/cupti_activity_deprecated.h"],
-    ),
+    srcs = _HEADER_FILES + glob([
+        "include/Openacc/**",
+        "include/Openmp/**",
+    ]) + if_version_equal_or_greater_than(LIB_VERSIONS["libcupti"], "2023.3", [
+        "include/cupti_activity_deprecated.h",
+    ]) + if_version_equal_or_greater_than(LIB_VERSIONS["libcupti"], "2024.0", [
+        "include/cupti_sass_metrics.h",
+        "include/cupti_common.h",
+    ]) + if_version_equal_or_greater_than(LIB_VERSIONS["libcupti"], "2024.3", [
+        "include/cupti_pmsampling.h",
+        "include/cupti_profiler_host.h",
+    ]),
     visibility = ["@cuda//cuda:__pkg__"],
 )
 

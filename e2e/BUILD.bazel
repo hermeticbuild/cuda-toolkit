@@ -1,22 +1,21 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "cuda_toolkit_all",
     deps = [
-        "@cuda_toolkit//:cuda_headers",
-        "@cuda_toolkit//:cuda",
-        "@cuda_toolkit//:cublas",
-        "@cuda_toolkit//:cublasLt",
-        "@cuda_toolkit//:cudart",
-        "@cuda_toolkit//:cudnn",
-        "@cuda_toolkit//:cufft",
-        "@cuda_toolkit//:curand",
+        "@cuda//cuda:cuda",
     ],
     data = [
-        "@cuda_toolkit//:ptxas",
-        "@cuda_toolkit//:fatbinary",
-        "@cuda_toolkit//:cuda_path",
+        "@cuda//nvcc:ptxas",
+        "@cuda//nvcc:fatbinary",
     ],
+)
+
+cc_binary(
+    name = "cuda_toolkit_all_dummy_main",
+    srcs = ["main.cc"],
+    deps = [":cuda_toolkit_all"],
 )

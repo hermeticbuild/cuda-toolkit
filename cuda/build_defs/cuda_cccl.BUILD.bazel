@@ -1,0 +1,32 @@
+"""BUILD definitions for cuda_cccl package"""
+
+# This BUILD file is used within the arch specific cuda redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_cccl proxy repository can re-export it.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@cuda//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
+load("//:version.bzl", "VERSION")
+
+_INCLUDE_PREFIX = "include" + if_version_equal_or_greater_than(VERSION, "13.0.0", "/cccl", "")
+
+filegroup(
+    name = "header_list",
+    srcs = glob([
+        _INCLUDE_PREFIX + "/cub/**",
+        _INCLUDE_PREFIX + "/cuda/**",
+        _INCLUDE_PREFIX + "/nv/**",
+        _INCLUDE_PREFIX + "/thrust/**",
+    ]),
+    visibility = ["@cuda//cuda:__pkg__"],
+)
+
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    includes = [_INCLUDE_PREFIX],
+    strip_include_prefix = _INCLUDE_PREFIX,
+    visibility = ["@cuda//cuda:__pkg__"],
+)

@@ -5,29 +5,20 @@
 # Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
 # @cuda_crt proxy repository can re-export it.
 
+# cuda_crt only exist for CUDA >= 13.0.0
+
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load(":version.bzl", "IS_PLACEHOLDER", "VERSION_MAJOR")
-_HAS_CRT_HEADERS = int(VERSION_MAJOR) >= 13
 
 filegroup(
     name = "header_list",
-    srcs = [] if IS_PLACEHOLDER else (glob(["include/crt/**"]) if _HAS_CRT_HEADERS else []),
+    srcs = glob(["include/crt/**"]),
     visibility = ["@cuda//cuda:__pkg__"],
 )
 
 cc_library(
-    name = "headers_impl",
+    name = "headers",
     hdrs = [":header_list"],
     includes = ["include"],
     strip_include_prefix = "include",
-)
-
-cc_library(
-    name = "placeholder",
-)
-
-alias(
-    name = "headers",
-    actual = ":placeholder" if IS_PLACEHOLDER else ":headers_impl",
     visibility = ["@cuda//cuda:__pkg__"],
 )

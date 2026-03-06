@@ -9,11 +9,6 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("//:version.bzl", "LIB_VERSIONS")
 
-load(
-     "@cuda//cuda:build_defs.bzl",
-     "cuda_rpath_flags",
-     "if_cuda_newer_than",
-)
 # Keep concrete paths explicit; reserve glob only for real patterns.
 _HEADER_FILES = [
     "include/cudalibxt.h",
@@ -30,11 +25,6 @@ cc_import(
 cc_library(
     name = "cufft",
     deps = [":cufft_shared_library"],
-    linkopts = if_cuda_newer_than(
-        "13_0",
-        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
-        if_false = cuda_rpath_flags("nvidia/cufft/lib"),
-    ),
     visibility = ["//visibility:public"],
 )
 

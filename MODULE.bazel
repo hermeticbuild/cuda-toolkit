@@ -10,7 +10,7 @@ bazel_dep(name = "bazel_lib", version = "3.0.0")
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "rules_cc", version = "0.2.16")
 
-cuda_ext = use_extension("//extensions:cuda.bzl", "cuda_ext")
+cuda_ext = use_extension("//extensions:cuda.bzl", "cuda")
 cuda_ext.configure(
     cuda_version = "12.8.1",
     cudnn_version = "9.16.0",
@@ -18,23 +18,4 @@ cuda_ext.configure(
 use_repo(
     cuda_ext,
     "cuda",
-    "cuda_cccl",
-    "cuda_crt",
-    "cuda_cublas",
-    "cuda_cudart",
-    "cuda_cudnn",
-    "cuda_cufft",
-    "cuda_cupti",
-    "cuda_curand",
-    "cuda_cusolver",
-    "cuda_cusparse",
-    "cuda_driver",
-    "cuda_nvcc",
-    "cuda_nvdisasm",
-    "cuda_nvjitlink",
-    "cuda_nvml",
-    "cuda_nvrtc",
-    "cuda_nvtx",
-    "cuda_nvvm",
-    "cuda_profiler_api",
 )

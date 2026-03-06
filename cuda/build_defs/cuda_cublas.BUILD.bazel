@@ -9,12 +9,6 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("//:version.bzl", "LIB_VERSIONS")
 
-load(
-     "@cuda//cuda:build_defs.bzl",
-     "cuda_rpath_flags",
-     "if_cuda_newer_than",
-)
-
 cc_import(
     name = "cublas_shared_library",
     shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
@@ -30,22 +24,12 @@ cc_library(
     name = "cublas",
     visibility = ["//visibility:public"],
     deps = [":cublas_shared_library"],
-    linkopts = if_cuda_newer_than(
-        "13_0",
-        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
-        if_false = cuda_rpath_flags("nvidia/cublas/lib"),
-    ),
 )
 
 cc_library(
     name = "cublasLt",
     visibility = ["//visibility:public"],
     deps = [":cublasLt_shared_library"],
-    linkopts = if_cuda_newer_than(
-        "13_0",
-        if_true = cuda_rpath_flags("nvidia/cu13/lib"),
-        if_false = cuda_rpath_flags("nvidia/cublas/lib"),
-    ),
 )
 
 filegroup(

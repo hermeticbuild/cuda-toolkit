@@ -17,8 +17,7 @@
 load(":cuda_version.bzl", "CUDA_VERSION")
 
 def if_cuda_newer_than(wanted_ver, if_true, if_false = []):
-    """Tests if CUDA was enabled during the configured process and if the
-    configured version is at least `wanted_ver`. `wanted_ver` needs
+    """Tests if CUDA is at least `wanted_ver`.`wanted_ver` needs
     to be provided as a string in the format `<major>_<minor>`.
     Example: `11_0`
     """
@@ -41,42 +40,39 @@ def if_cuda_newer_than(wanted_ver, if_true, if_false = []):
         return if_true
     return if_false
 
+def _compare_versions(lib_version, dist_version, operator):
+    """Helper function to compare two version strings."""
+    if not lib_version:
+        return False
+    lib_tuple = tuple([int(x) for x in lib_version.split(".")])
+    dist_tuple = tuple([int(x) for x in dist_version.split(".")])
+    
+    if operator == "<=":
+        return lib_tuple <= dist_tuple
+    elif operator == ">=":
+        return lib_tuple >= dist_tuple
+    elif operator == ">":
+        return lib_tuple > dist_tuple
+    elif operator == "<":
+        return lib_tuple < dist_tuple
+    return False
+
 def if_version_equal_or_lower_than(lib_version, dist_version, if_true, if_false = []):
-    if not lib_version:
-        return if_false
-    if tuple([int(x) for x in lib_version.split(".")]) <= tuple([
-        int(x)
-        for x in dist_version.split(".")
-    ]):
+    if _compare_versions(lib_version, dist_version, "<="):
         return if_true
     return if_false
 
-def if_version_equal_or_greater_than(
-        lib_version,
-        dist_version,
-        if_true,
-        if_false = []):
-    if not lib_version:
-        return if_false
-    if tuple([int(x) for x in lib_version.split(".")]) >= tuple([
-        int(x)
-        for x in dist_version.split(".")
-    ]):
+def if_version_equal_or_greater_than(lib_version, dist_version, if_true, if_false = []):
+    if _compare_versions(lib_version, dist_version, ">="):
         return if_true
     return if_false
 
-# Constructs rpath linker flags for use with nvidia wheel-packaged libs
-# avaialble from PyPI.
-def cuda_rpath_flags(relpath):
-    return select({
-        "@cuda_toolkit//common:enable_cuda_rpath": [
-            "-Wl,-rpath='$$ORIGIN/../../" + relpath + "'",
-            "-Wl,-rpath='$$ORIGIN/../" + relpath + "'",
-        ],
-        "//conditions:default": [],
-    })
+def if_version_greater_than(lib_version, dist_version, if_true, if_false = []):
+    if _compare_versions(lib_version, dist_version, ">"):
+        return if_true
+    return if_false
 
-def cuda_lib_header_prefix(major_version, wanted_major_version, new_header_prefix, old_header_prefix):
-    if not major_version:
-        return old_header_prefix
-    return new_header_prefix if int(major_version) >= wanted_major_version else old_header_prefix
+def if_version_lower_than(lib_version, dist_version, if_true, if_false = []):
+    if _compare_versions(lib_version, dist_version, "<"):
+        return if_true
+    return if_false
