@@ -1,6 +1,8 @@
 load("@bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@bazel_skylib//rules/directory:directory.bzl", "directory")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//cudart:version.bzl", _cudart_version = "VERSION")
 load("//cuda:cuda_version.bzl", _cuda_version = "CUDA_VERSION")
@@ -24,6 +26,11 @@ copy_to_directory(
         "//nvcc:libdevice",
     ]),
     include_external_repositories = ["**"],
+)
+
+directory(
+    name = "cuda_path_directory",
+    srcs = [":cuda_path"],
 )
 
 cc_library(

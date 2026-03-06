@@ -60,6 +60,22 @@ use_repo(
 )
 ```
 
+## CUDA tools toolchain (first implementation)
+
+Each generated `@cuda<version>` repo also exposes toolchain targets in `//toolchain`.
+
+The stable toolchain type is:
+- `@cuda_toolkit//cuda/toolchain:cuda_tools_toolchain_type`
+
+For a selected repo alias (for example `cuda = "cuda13_1_1"`), register:
+
+```starlark
+register_toolchains("@cuda//toolchain:cuda_tools_amd64_0")
+```
+
+Rules can consume it via:
+- `ctx.toolchains["@cuda_toolkit//cuda/toolchain:cuda_tools_toolchain_type"].cuda_tools`
+
 ## Notes
 
 - `cuda_umd_version` defaults to `cuda_version` when omitted.

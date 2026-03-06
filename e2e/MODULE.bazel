@@ -26,3 +26,5 @@ use_repo(
     cuda_ext,
     cuda = "cuda13_1_1",
 )
+
+register_toolchains("@cuda//toolchain:cuda_tools_amd64_0")
