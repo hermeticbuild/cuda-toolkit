@@ -127,11 +127,6 @@ def cuda_redist_repositories(
     sorted_component_specs = [
         spec
         for spec in sorted(component_specs, key = lambda spec: spec["package_name"])
-        if spec["package_name"] != "cuda_nvcc"
-    ] + [
-        spec
-        for spec in sorted(component_specs, key = lambda spec: spec["package_name"])
-        if spec["package_name"] == "cuda_nvcc"
     ]
 
     component_versions = {}
