@@ -64,6 +64,7 @@ def cudnn_redist_repository(
     per_arch_url_dict = _get_redistribution_urls(
         cudnn_redistributions["cudnn"],
         dist_name = "cudnn",
+        cuda_version_major = cuda_version.split(".")[0],
     )
     component_version = cudnn_redistributions["cudnn"].get("version")
     if not component_version:
@@ -78,7 +79,6 @@ def cudnn_redist_repository(
     available_arches = _create_component_arch_specific_repositories(
         repo_name = package_name,
         build_file = build_file,
-        cuda_version = cuda_version,
         component_version = component_version,
         per_arch_url_dict = per_arch_url_dict,
         redist_path_prefix = cudnn_redist_path_prefix,
@@ -107,6 +107,7 @@ def cuda_redist_repositories(
         per_arch_url_dict = _get_redistribution_urls(
             cuda_redistributions[redist_name],
             dist_name = redist_name,
+            cuda_version_major = cuda_version.split(".")[0],
         )
         component_version = cuda_redistributions[redist_name].get("version")
         if not component_version:
@@ -135,7 +136,6 @@ def cuda_redist_repositories(
         available_arches = _create_component_arch_specific_repositories(
             repo_name = spec["package_name"],
             build_file = spec["build_file"],
-            cuda_version = cuda_version,
             component_version = spec["component_version"],
             per_arch_url_dict = spec["per_arch_url_dict"],
             redist_path_prefix = cuda_redist_path_prefix,
@@ -151,14 +151,13 @@ def cuda_redist_repositories(
 def _create_component_arch_specific_repositories(
         repo_name,
         build_file,
-        cuda_version,
         component_version,
         per_arch_url_dict,
         redist_path_prefix):
     available_arches = []
     for arch in sorted(OS_ARCH_DICT.keys()):
         concrete_repo_name = _concrete_repo_name(repo_name, arch)
-        arch_redist = _get_arch_redistribution(per_arch_url_dict, cuda_version, arch)
+        arch_redist = _get_arch_redistribution(per_arch_url_dict, arch)
         if arch_redist:
             (url, sha256, custom_strip_prefix) = arch_redist
             redist_repository(
@@ -180,19 +179,11 @@ def _create_component_arch_specific_repositories(
 def _concrete_repo_name(repo_name, arch):
     return "{}__{}".format(repo_name, _ARCH_REPO_SUFFIX[arch])
 
-def _get_arch_redistribution(per_arch_url_dict, cuda_version, arch):
+def _get_arch_redistribution(per_arch_url_dict, arch):
     arch_key = OS_ARCH_DICT[arch]
-    per_arch_data = per_arch_url_dict.get(arch_key)
-    if per_arch_data:
-        return per_arch_data
+    return per_arch_url_dict.get(arch_key)
 
-    major_cuda_arch_key = "cuda{version}_{arch}".format(
-        version = cuda_version.split(".")[0],
-        arch = arch_key,
-    )
-    return per_arch_url_dict.get(major_cuda_arch_key)
-
-def _get_redistribution_urls(dist_info, dist_name = "<unknown>"):
+def _get_redistribution_urls(dist_info, dist_name, cuda_version_major):
     # buildifier: disable=function-docstring-return
     # buildifier: disable=function-docstring-args
     """Returns a dict of redistribution URLs and their SHA256 values."""
@@ -231,29 +222,35 @@ def _get_redistribution_urls(dist_info, dist_name = "<unknown>"):
         #     "linux-x86_64": {
         #         "cuda12": {
         #               "relative_path": "cudnn/linux-x86_64/...tar.xz",
-        for cuda_version in sorted(dist_info[arch_key].keys()):
-            data = dist_info[arch_key][cuda_version]
 
-            # CUDNN and NVSHMEM JSON might contain paths for each CUDA version.
-            if "relative_path" in data:
-                path_key = "relative_path"
-            elif "full_path" in data:
-                path_key = "full_path"
-            else:
-                fail(
-                    ("Invalid redistribution metadata for {dist_name} " +
-                     "(arch={arch}, cuda={cuda_version}): expected either " +
-                     "'relative_path' or 'full_path', got keys {keys}.").format(
-                        dist_name = dist_name,
-                        arch = arch_key,
-                        cuda_version = cuda_version,
-                        keys = sorted(data.keys()),
-                    ),
-                )
-            per_arch_url_dict["{cuda_version}_{arch}".format(
-                cuda_version = cuda_version,
-                arch = _REDIST_ARCH_DICT[arch],
-            )] = [data[path_key], data.get("sha256", ""), data.get("strip_prefix", "")]
+        cuda_variant_key = "cuda%s" % cuda_version_major
+        data = dist_info[arch_key].get(cuda_variant_key)
+        if not data:
+            fail("Missing redistribution metadata for {dist_name} (arch={arch}, cuda={cuda_version_major})".format(
+                dist_name = dist_name,
+                arch = arch_key,
+                cuda_version_major = cuda_version_major,
+            ))
+        if "relative_path" in data:
+            path_key = "relative_path"
+        elif "full_path" in data:
+            path_key = "full_path"
+        else:
+            fail(
+                ("Invalid redistribution metadata for {dist_name} " +
+                    "(arch={arch}, cuda={cuda_version_major}): expected either " +
+                    "'relative_path' or 'full_path', got keys {keys}.").format(
+                    dist_name = dist_name,
+                    arch = arch_key,
+                    cuda_version_major = cuda_version_major,
+                    keys = sorted(data.keys()),
+                ),
+            )
+        per_arch_url_dict[_REDIST_ARCH_DICT[arch]] = [
+            data[path_key],
+            data.get("sha256", ""),
+            data.get("strip_prefix", ""),
+        ]
     return per_arch_url_dict
 
 def get_build_template(version_to_template, component_version):
