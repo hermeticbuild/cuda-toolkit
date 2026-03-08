@@ -137,9 +137,9 @@ def cuda_redist_repositories(
             per_arch_url_dict = spec["per_arch_url_dict"],
             redist_path_prefix = cuda_redist_path_prefix,
         )
-        if available_arches:
-            component_versions[spec["package_name"]] = spec["component_version"]
-            component_arches[spec["package_name"]] = available_arches
+        component_versions[spec["package_name"]] = spec["component_version"]
+        component_arches[spec["package_name"]] = available_arches
+
     return {
         "component_versions": component_versions,
         "component_arches": component_arches,
