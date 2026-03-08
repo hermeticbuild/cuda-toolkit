@@ -73,7 +73,7 @@ def cudnn_redist_repository(
     )
     if component_version:
         available_arches = _create_component_arch_specific_repositories(
-            repo_name = repo_data["repo_name"],
+            repo_name = repo_data["package_name"],
             versions = versions,
             templates = templates,
             cuda_version = cuda_version,
@@ -83,8 +83,8 @@ def cudnn_redist_repository(
         )
         if available_arches:
             return {
-                "component_versions": {repo_data["repo_name"]: component_version},
-                "component_arches": {repo_data["repo_name"]: available_arches},
+                "component_versions": {repo_data["package_name"]: component_version},
+                "component_arches": {repo_data["package_name"]: available_arches},
             }
     return {
         "component_versions": {},
@@ -117,7 +117,7 @@ def cuda_redist_repositories(
             repo_data["version_to_template"],
         )
         component_specs.append({
-            "repo_name": repo_data["repo_name"],
+            "package_name": repo_data["package_name"],
             "versions": versions,
             "templates": templates,
             "component_version": component_version,
@@ -126,12 +126,12 @@ def cuda_redist_repositories(
 
     sorted_component_specs = [
         spec
-        for spec in sorted(component_specs, key = lambda spec: spec["repo_name"])
-        if spec["repo_name"] != "cuda_nvcc"
+        for spec in sorted(component_specs, key = lambda spec: spec["package_name"])
+        if spec["package_name"] != "cuda_nvcc"
     ] + [
         spec
-        for spec in sorted(component_specs, key = lambda spec: spec["repo_name"])
-        if spec["repo_name"] == "cuda_nvcc"
+        for spec in sorted(component_specs, key = lambda spec: spec["package_name"])
+        if spec["package_name"] == "cuda_nvcc"
     ]
 
     component_versions = {}
@@ -140,7 +140,7 @@ def cuda_redist_repositories(
         if not spec["component_version"]:
             continue
         available_arches = _create_component_arch_specific_repositories(
-            repo_name = spec["repo_name"],
+            repo_name = spec["package_name"],
             versions = spec["versions"],
             templates = spec["templates"],
             cuda_version = cuda_version,
@@ -149,8 +149,8 @@ def cuda_redist_repositories(
             redist_path_prefix = cuda_redist_path_prefix,
         )
         if available_arches:
-            component_versions[spec["repo_name"]] = spec["component_version"]
-            component_arches[spec["repo_name"]] = available_arches
+            component_versions[spec["package_name"]] = spec["component_version"]
+            component_arches[spec["package_name"]] = available_arches
     return {
         "component_versions": component_versions,
         "component_arches": component_arches,

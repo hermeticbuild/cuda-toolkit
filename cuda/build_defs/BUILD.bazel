@@ -1,6 +1,0 @@
-"""BUILD definitions for build_defs package"""
-
-# This BUILD file is used within the arch specific cuda redist repository.
-#
-# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
-# @build_defs proxy repository can re-export it.
