@@ -1,5 +1,3 @@
-load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
-
 package(default_visibility = ["//visibility:public"])
 
 platform(
@@ -34,10 +32,7 @@ config_setting(
     ],
 )
 
-config_setting(
+alias(
     name = "linux_aarch64",
-    constraint_values = [
-        "@platforms//os:linux",
-        "@platforms//cpu:aarch64",
-    ],
+    actual = ":linux_arm64",
 )

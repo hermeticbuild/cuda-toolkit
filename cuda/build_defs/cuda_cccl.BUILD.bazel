@@ -9,6 +9,7 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@cuda//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
 load("//:version.bzl", "VERSION")
 
+# TODO(zbarsky): these versions look not-free to compute, perhaps `version.bzl` should precompute the ones we check ?
 _INCLUDE_PREFIX = "include" + if_version_equal_or_greater_than(VERSION, "13.0.0", "/cccl", "")
 
 filegroup(
