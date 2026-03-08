@@ -58,37 +58,31 @@ def cudnn_redist_repository(
         redist_versions_to_build_templates = REDIST_VERSIONS_TO_BUILD_DEFS):
     # buildifier: disable=function-docstring-args
     """Initializes CUDNN repository."""
-    if "cudnn" in cudnn_redistributions:
-        per_arch_url_dict = _get_redistribution_urls(
-            cudnn_redistributions["cudnn"],
-            dist_name = "cudnn",
-        )
-        component_version = cudnn_redistributions["cudnn"].get("version") or fail("Missing cudnn version")
-    else:
-        per_arch_url_dict = {}
-        component_version = ""
+    if "cudnn" not in cudnn_redistributions:
+        fail("Missing cudnn redistribution metadata")
+
+    per_arch_url_dict = _get_redistribution_urls(
+        cudnn_redistributions["cudnn"],
+        dist_name = "cudnn",
+    )
+    component_version = cudnn_redistributions["cudnn"].get("version") or fail("Missing cudnn version")
+
     repo_data = redist_versions_to_build_templates["cudnn"]
     versions, templates = get_version_and_template_lists(
         repo_data["version_to_template"],
     )
-    if component_version:
-        available_arches = _create_component_arch_specific_repositories(
-            repo_name = repo_data["package_name"],
-            versions = versions,
-            templates = templates,
-            cuda_version = cuda_version,
-            component_version = component_version,
-            per_arch_url_dict = per_arch_url_dict,
-            redist_path_prefix = cudnn_redist_path_prefix,
-        )
-        if available_arches:
-            return {
-                "component_versions": {repo_data["package_name"]: component_version},
-                "component_arches": {repo_data["package_name"]: available_arches},
-            }
+    available_arches = _create_component_arch_specific_repositories(
+        repo_name = repo_data["package_name"],
+        versions = versions,
+        templates = templates,
+        cuda_version = cuda_version,
+        component_version = component_version,
+        per_arch_url_dict = per_arch_url_dict,
+        redist_path_prefix = cudnn_redist_path_prefix,
+    )
     return {
-        "component_versions": {},
-        "component_arches": {},
+        "component_versions": {repo_data["package_name"]: component_version},
+        "component_arches": {repo_data["package_name"]: available_arches},
     }
 
 def cuda_redist_repositories(
