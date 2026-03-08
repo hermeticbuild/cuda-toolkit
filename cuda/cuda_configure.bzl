@@ -95,17 +95,17 @@ def _write_proxy_packages(repository_ctx):
 def _cuda_configure_impl(repository_ctx):
     cuda_version = repository_ctx.attr.cuda_version
 
-    repository_ctx.symlink(
-        repository_ctx.attr.build_defs_file,
-        "cuda/versions_helper.bzl",
-    )
     repository_ctx.file(
         "cuda/cuda_version.bzl",
         "CUDA_VERSION = \"{}\"".format(cuda_version),
     )
-    repository_ctx.symlink(
-        repository_ctx.attr.cuda_build_file,
+    repository_ctx.template(
+        "cuda/versions_helper.bzl",
+        repository_ctx.attr._helper_file,
+    )
+    repository_ctx.template(
         "cuda/BUILD.bazel",
+        repository_ctx.attr._cuda_build_file,
     )
     repository_ctx.file(
         "BUILD.bazel",
@@ -122,7 +122,7 @@ cuda_configure = repository_rule(
         "cuda_version": attr.string(mandatory = True),
         "component_versions": attr.string_dict(default = {}),
         "component_arches": attr.string_list_dict(default = {}),
-        "build_defs_file": attr.label(default = Label("//cuda:versions_helper.bzl")),
-        "cuda_build_file": attr.label(default = Label("//cuda:cuda.BUILD.bazel")),
+        "_helper_file": attr.label(default = Label("//cuda:versions_helper.bzl")),
+        "_cuda_build_file": attr.label(default = Label("//cuda:cuda.BUILD.bazel")),
     },
 )
