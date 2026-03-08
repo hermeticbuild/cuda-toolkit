@@ -19,14 +19,12 @@ def _version_bzl_content(component_version):
     version_minor = parts[1] if len(parts) > 1 else ""
     version_patch = parts[2] if len(parts) > 2 else ""
     return """\
-IS_PLACEHOLDER = {is_placeholder}
 VERSION = "{version}"
 VERSION_MAJOR = "{version_major}"
 VERSION_MINOR = "{version_minor}"
 VERSION_PATCH = "{version_patch}"
 LIB_VERSIONS = {{}}
 """.format(
-        is_placeholder = "False" if component_version else "True",
         version = component_version,
         version_major = version_major,
         version_minor = version_minor,

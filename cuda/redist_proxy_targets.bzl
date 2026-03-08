@@ -12,7 +12,7 @@ ARCH_REPO_SUFFIX = {
 
 REPO_PUBLIC_TARGETS = {
     "cuda_cccl": ["header_list", "headers"],
-    "cuda_crt": ["header_list", "headers_impl", "placeholder", "headers"],
+    "cuda_crt": ["header_list", "headers"],
     "cuda_cublas": ["cublas_shared_library", "cublasLt_shared_library", "cublas", "cublasLt", "header_list", "headers"],
     "cuda_cudart": ["static", "cuda_stub", "cudart_shared_library", "cuda_driver", "cudart", "header_list", "headers", "cuda_header"],
     "cuda_cudnn": [

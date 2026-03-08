@@ -358,14 +358,12 @@ def _version_bzl_content(component_version, lib_versions = {}):
     version_minor = parts[1] if len(parts) > 1 else ""
     version_patch = parts[2] if len(parts) > 2 else ""
     return """\
-IS_PLACEHOLDER = {is_placeholder}
 VERSION = "{version}"
 VERSION_MAJOR = "{version_major}"
 VERSION_MINOR = "{version_minor}"
 VERSION_PATCH = "{version_patch}"
 {lib_versions}
 """.format(
-        is_placeholder = "False" if component_version else "True",
         version = component_version,
         version_major = version_major,
         version_minor = version_minor,
@@ -426,19 +424,5 @@ redist_repository = repository_rule(
         "redist_path_prefix": attr.string(),
         "sha256": attr.string(),
         "url": attr.string(mandatory = True),
-    },
-)
-
-## Placeholder
-
-def _redist_placeholder_repository_impl(repository_ctx):
-    repository_ctx.template("BUILD", repository_ctx.attr.build_template, {})
-    _create_version_file(repository_ctx, "")
-    return repository_ctx.repo_metadata(reproducible = True)
-
-redist_placeholder_repository = repository_rule(
-    implementation = _redist_placeholder_repository_impl,
-    attrs = {
-        "build_template": attr.label(mandatory = True),
     },
 )
