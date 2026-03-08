@@ -1,0 +1,37 @@
+load("@bazel_lib//:bzl_library.bzl", "bzl_library")
+
+bzl_library(
+    name = "cuda_configure",
+    srcs = ["cuda_configure.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [":redist_proxy_targets"],
+)
+
+bzl_library(
+    name = "cuda_redist_build_defs",
+    srcs = ["cuda_redist_build_defs.bzl"],
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "cuda_redist_repositories",
+    srcs = ["cuda_redist_repositories.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":cuda_redist_build_defs",
+        ":redist_proxy_targets",
+    ],
+)
+
+bzl_library(
+    name = "redist_proxy_targets",
+    srcs = ["redist_proxy_targets.bzl"],
+    visibility = ["//visibility:public"],
+)
+
+bzl_library(
+    name = "versions_helper",
+    srcs = ["versions_helper.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [":cuda_version"],
+)
