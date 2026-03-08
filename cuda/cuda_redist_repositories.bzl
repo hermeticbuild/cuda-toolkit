@@ -72,8 +72,10 @@ def cudnn_redist_repository(
         repo_data["version_to_template"],
     )
     if component_version:
+        repo_name = repo_data["repo_name"]
+
         available_arches = _create_component_arch_specific_repositories(
-            repo_name = repo_data["repo_name"],
+            repo_name = repo_name,
             versions = versions,
             templates = templates,
             cuda_version = cuda_version,
@@ -83,8 +85,8 @@ def cudnn_redist_repository(
         )
         if available_arches:
             return {
-                "component_versions": {repo_data["repo_name"]: component_version},
-                "component_arches": {repo_data["repo_name"]: available_arches},
+                "component_versions": {repo_name: component_version},
+                "component_arches": {repo_name: available_arches},
             }
     return {
         "component_versions": {},
@@ -174,6 +176,8 @@ def _create_component_arch_specific_repositories(
                 build_defs = templates,
                 cuda_version = cuda_version,
                 component_version = component_version,
+                # TODO(zbarsky): This seems unnecessarily annoying, we should just pass in the specific
+                # arch/url/sha instead of the entire dict, less branching logics.
                 per_arch_url_dict = per_arch_url_dict,
                 redist_path_prefix = redist_path_prefix,
                 target_arch = arch,
@@ -216,19 +220,20 @@ def _get_redistribution_urls(dist_info, dist_name = "<unknown>"):
         arch_key = arch
         if arch_key not in dist_info:
             continue
-        if "relative_path" in dist_info[arch_key]:
+        arch_info = dist_info[arch_key]
+        if "relative_path" in arch_info:
             per_arch_url_dict[_REDIST_ARCH_DICT[arch]] = [
-                dist_info[arch_key]["relative_path"],
-                dist_info[arch_key].get("sha256", ""),
-                dist_info[arch_key].get("strip_prefix", ""),
+                arch_info["relative_path"],
+                arch_info.get("sha256", ""),
+                arch_info.get("strip_prefix", ""),
             ]
             continue
 
-        if "full_path" in dist_info[arch_key]:
+        if "full_path" in arch_info:
             per_arch_url_dict[_REDIST_ARCH_DICT[arch]] = [
-                dist_info[arch_key]["full_path"],
-                dist_info[arch_key].get("sha256", ""),
-                dist_info[arch_key].get("strip_prefix", ""),
+                arch_info["full_path"],
+                arch_info.get("sha256", ""),
+                arch_info.get("strip_prefix", ""),
             ]
             continue
 
@@ -296,7 +301,7 @@ def get_archive_name(url):
 def _get_build_template(repository_ctx, major_lib_version):
     fallback_template = None
     template = None
-    for i in range(0, len(repository_ctx.attr.versions)):
+    for i in range(len(repository_ctx.attr.versions)):
         for dist_version in repository_ctx.attr.versions[i].split(","):
             if dist_version == "any":
                 fallback_template = repository_ctx.attr.build_defs[i]
@@ -337,6 +342,7 @@ def _create_libcuda_symlinks(
                     repository_ctx.symlink(symlink_so_1, unversioned_symlink)
 
 def _normalize_build_visibility(repository_ctx):
+    # TODO(zbarsky): Maybe better to do BUILD.bazel ...
     build_file = repository_ctx.path("BUILD")
     if not build_file.exists:
         return
@@ -400,7 +406,8 @@ def _version_bzl_content(component_version, lib_versions = {}):
     version_major = parts[0] if len(parts) > 0 else ""
     version_minor = parts[1] if len(parts) > 1 else ""
     version_patch = parts[2] if len(parts) > 2 else ""
-    return """IS_PLACEHOLDER = {is_placeholder}
+    return """\
+IS_PLACEHOLDER = {is_placeholder}
 VERSION = "{version}"
 VERSION_MAJOR = "{version_major}"
 VERSION_MINOR = "{version_minor}"
@@ -452,7 +459,7 @@ def _download_redistribution(
     repository_ctx.download_and_extract(
         url = _tf_mirror_urls(url),
         sha256 = sha256,
-        stripPrefix = custom_strip_prefix if custom_strip_prefix else archive_name,
+        strip_prefix = custom_strip_prefix or archive_name,
     )
 
 ## Redist component repository
@@ -500,6 +507,8 @@ def _redist_repository_impl(repository_ctx):
     )
     _create_version_file(repository_ctx, component_version, lib_versions)
 
+    return repository_ctx.repo_metadata(reproducible = True)
+
 redist_repository = repository_rule(
     implementation = _redist_repository_impl,
     attrs = {
@@ -518,6 +527,7 @@ redist_repository = repository_rule(
 def _redist_placeholder_repository_impl(repository_ctx):
     repository_ctx.template("BUILD", repository_ctx.attr.build_template, {})
     _create_version_file(repository_ctx, "")
+    return repository_ctx.repo_metadata(reproducible = True)
 
 redist_placeholder_repository = repository_rule(
     implementation = _redist_placeholder_repository_impl,

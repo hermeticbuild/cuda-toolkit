@@ -41,10 +41,7 @@ cuda_ext.configure(
     # Optional:
     # cuda_umd_version = "13.0.0",
 )
-use_repo(
-    cuda_ext,
-    "cuda",
-)
+use_repo(cuda_ext, "cuda")
 ```
 
 ## Notes

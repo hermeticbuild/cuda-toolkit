@@ -2,7 +2,6 @@ module(
     name = "cuda_toolkit",
     version = "0.0.0",
     bazel_compatibility = [">=7.4.0"],
-    compatibility_level = 0,
 )
 
 bazel_dep(name = "bazel_skylib", version = "1.8.2")
@@ -15,7 +14,4 @@ cuda_ext.configure(
     cuda_version = "12.8.1",
     cudnn_version = "9.16.0",
 )
-use_repo(
-    cuda_ext,
-    "cuda",
-)
+use_repo(cuda_ext, "cuda")

@@ -12,16 +12,15 @@ def _concrete_repo_name(repo_name, arch):
     return "{}__{}".format(repo_name, ARCH_REPO_SUFFIX[arch])
 
 def _proxy_package_name(repo_name):
-    if repo_name.startswith("cuda_"):
-        return repo_name[len("cuda_"):]
-    return repo_name
+    return repo_name.removeprefix("cuda_")
 
 def _version_bzl_content(component_version):
     parts = component_version.split(".") if component_version else []
     version_major = parts[0] if len(parts) > 0 else ""
     version_minor = parts[1] if len(parts) > 1 else ""
     version_patch = parts[2] if len(parts) > 2 else ""
-    return """IS_PLACEHOLDER = {is_placeholder}
+    return """\
+IS_PLACEHOLDER = {is_placeholder}
 VERSION = "{version}"
 VERSION_MAJOR = "{version_major}"
 VERSION_MINOR = "{version_minor}"
@@ -128,6 +127,8 @@ def _cuda_configure_impl(repository_ctx):
     )
 
     _write_proxy_packages(repository_ctx)
+
+    return repository_ctx.repo_metadata(reproducible = True)
 
 cuda_configure = repository_rule(
     implementation = _cuda_configure_impl,
