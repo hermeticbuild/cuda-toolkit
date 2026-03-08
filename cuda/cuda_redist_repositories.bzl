@@ -336,21 +336,6 @@ def _create_libcuda_symlinks(
                 else:
                     repository_ctx.symlink(symlink_so_1, unversioned_symlink)
 
-def _normalize_build_visibility(repository_ctx):
-    build_file = repository_ctx.path("BUILD")
-    if not build_file.exists:
-        return
-    build_content = repository_ctx.read("BUILD")
-    build_content = build_content.replace(
-        "visibility = [\"@cuda//cuda:__pkg__\"],",
-        "visibility = [\"//visibility:public\"],",
-    )
-    build_content = build_content.replace(
-        "visibility = [\"@cuda//cudart:__pkg__\"],",
-        "visibility = [\"//visibility:public\"],",
-    )
-    repository_ctx.file("BUILD", build_content)
-
 def _get_lib_versions_from_lib_dir(repository_ctx):
     lib_versions = {}
     lib_dir = repository_ctx.path("lib")
@@ -492,7 +477,6 @@ def _redist_repository_impl(repository_ctx):
         component_version.split(".")[0],
     )
     repository_ctx.template("BUILD", build_template, {})
-    _normalize_build_visibility(repository_ctx)
 
     _create_libcuda_symlinks(
         repository_ctx,
