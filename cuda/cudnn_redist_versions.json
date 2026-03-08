@@ -1,4 +1,3 @@
-// TODO(zbarsky): Can we store these in bzlmod lockfile upon first read instead of computing these all ahead of time? That will future-proof new releases...
 {
   "8.9.4.25": ["https://developer.download.nvidia.com/compute/cudnn/redist/redistrib_8.9.4.25.json", "02258dba8384860c9230fe3c78522e7bd8e350e461ccd37a8d932cb64127ba57"],
   "8.9.6": ["https://developer.download.nvidia.com/compute/cudnn/redist/redistrib_8.9.6.json", "6069ef92a2b9bb18cebfbc944964bd2b024b76f2c2c35a43812982e0bc45cf0c"],
