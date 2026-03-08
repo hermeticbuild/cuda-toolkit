@@ -72,25 +72,25 @@ def _render_proxy_build_file(repo_name, package_name, target_names, available_ar
     return "\n".join(lines)
 
 def _write_proxy_packages(repository_ctx):
-    for repo_name in sorted(REPO_PUBLIC_TARGETS.keys()):
-        component_version = repository_ctx.attr.component_versions.get(repo_name, "")
+    for repo_name, target_names in REPO_PUBLIC_TARGETS.items():
+        component_version = repository_ctx.attr.component_versions.get(repo_name)
         if not component_version:
             continue
-        available_arches = repository_ctx.attr.component_arches.get(repo_name, [])
+        available_arches = repository_ctx.attr.component_arches.get(repo_name)
         if not available_arches:
             continue
         package_name = _proxy_package_name(repo_name)
         repository_ctx.file(
-            "{}/BUILD.bazel".format(package_name),
+            package_name + "/BUILD.bazel",
             _render_proxy_build_file(
                 repo_name = repo_name,
                 package_name = package_name,
-                target_names = REPO_PUBLIC_TARGETS[repo_name],
+                target_names = target_names,
                 available_arches = available_arches,
             ),
         )
         repository_ctx.file(
-            "{}/version.bzl".format(package_name),
+            package_name + "/version.bzl",
             _version_bzl_content(component_version),
         )
 
