@@ -68,13 +68,13 @@ def cudnn_redist_repository(
     component_version = cudnn_redistributions["cudnn"].get("version") or fail("Missing cudnn version")
 
     repo_data = redist_versions_to_build_templates["cudnn"]
-    versions, templates = get_version_and_template_lists(
+    build_file = get_build_template(
         repo_data["version_to_template"],
+        component_version,
     )
     available_arches = _create_component_arch_specific_repositories(
         repo_name = repo_data["package_name"],
-        versions = versions,
-        templates = templates,
+        build_file = build_file,
         cuda_version = cuda_version,
         component_version = component_version,
         per_arch_url_dict = per_arch_url_dict,
@@ -107,13 +107,13 @@ def cuda_redist_repositories(
             per_arch_url_dict = {}
             component_version = ""
         repo_data = redist_versions_to_build_templates[redist_name]
-        versions, templates = get_version_and_template_lists(
+        build_file = get_build_template(
             repo_data["version_to_template"],
-        )
+            component_version,
+        ) if component_version else ""
         component_specs.append({
             "package_name": repo_data["package_name"],
-            "versions": versions,
-            "templates": templates,
+            "build_file": build_file,
             "component_version": component_version,
             "per_arch_url_dict": per_arch_url_dict,
         })
@@ -130,8 +130,7 @@ def cuda_redist_repositories(
             continue
         available_arches = _create_component_arch_specific_repositories(
             repo_name = spec["package_name"],
-            versions = spec["versions"],
-            templates = spec["templates"],
+            build_file = spec["build_file"],
             cuda_version = cuda_version,
             component_version = spec["component_version"],
             per_arch_url_dict = spec["per_arch_url_dict"],
@@ -147,8 +146,7 @@ def cuda_redist_repositories(
 
 def _create_component_arch_specific_repositories(
         repo_name,
-        versions,
-        templates,
+        build_file,
         cuda_version,
         component_version,
         per_arch_url_dict,
@@ -159,8 +157,7 @@ def _create_component_arch_specific_repositories(
         if _has_arch_redistribution(per_arch_url_dict, cuda_version, arch):
             redist_repository(
                 name = concrete_repo_name,
-                versions = versions,
-                build_defs = templates,
+                build_file = Label(build_file),
                 cuda_version = cuda_version,
                 component_version = component_version,
                 per_arch_url_dict = per_arch_url_dict,
@@ -251,22 +248,22 @@ def _get_redistribution_urls(dist_info, dist_name = "<unknown>"):
             )] = [data[path_key], data.get("sha256", ""), data.get("strip_prefix", "")]
     return per_arch_url_dict
 
-def get_version_and_template_lists(version_to_template):
+def get_build_template(version_to_template, component_version):
     # buildifier: disable=function-docstring-return
     # buildifier: disable=function-docstring-args
-    """Returns lists of versions and templates provided in the dict."""
-    template_to_version_map = {}
-    for version, template in version_to_template.items():
-        if template not in template_to_version_map:
-            template_to_version_map[template] = [version]
-        else:
-            template_to_version_map[template].append(version)
-    version_list = []
-    template_list = []
-    for template in sorted(template_to_version_map.keys()):
-        version_list.append(",".join(sorted(template_to_version_map[template])))
-        template_list.append(Label(template))
-    return (version_list, template_list)
+    """Returns the matching build template path for a component version."""
+    if not component_version:
+        fail("Missing component version while selecting build template")
+
+    template = version_to_template.get(component_version.split(".")[0])
+    if template:
+        return template
+
+    fallback_template = version_to_template.get("any")
+    if fallback_template:
+        return fallback_template
+
+    fail("No build template found for component version {}".format(component_version))
 
 def _get_file_name(url):
     last_slash_index = url.rfind("/")
@@ -281,25 +278,6 @@ def get_archive_name(url):
         if filename.endswith(extension):
             return filename[:-len(extension)]
     return filename
-
-def _get_build_template(repository_ctx, major_lib_version):
-    fallback_template = None
-    template = None
-    for i in range(0, len(repository_ctx.attr.versions)):
-        for dist_version in repository_ctx.attr.versions[i].split(","):
-            if dist_version == "any":
-                fallback_template = repository_ctx.attr.build_defs[i]
-            if dist_version == major_lib_version:
-                template = repository_ctx.attr.build_defs[i]
-                break
-    if not template and fallback_template:
-        template = fallback_template
-    if not template:
-        fail("No build template found for {} version {}".format(
-            repository_ctx.original_name,
-            major_lib_version,
-        ))
-    return template
 
 def _create_libcuda_symlinks(
         repository_ctx,
@@ -461,11 +439,7 @@ def _redist_repository_impl(repository_ctx):
     )
     lib_versions = _get_lib_versions_from_lib_dir(repository_ctx)
 
-    build_template = _get_build_template(
-        repository_ctx,
-        component_version.split(".")[0],
-    )
-    repository_ctx.template("BUILD", build_template, {})
+    repository_ctx.template("BUILD", repository_ctx.attr.build_file, {})
 
     _create_libcuda_symlinks(
         repository_ctx,
@@ -477,8 +451,7 @@ redist_repository = repository_rule(
     implementation = _redist_repository_impl,
     attrs = {
         "per_arch_url_dict": attr.string_list_dict(mandatory = True),
-        "versions": attr.string_list(mandatory = True),
-        "build_defs": attr.label_list(mandatory = True),
+        "build_file": attr.label(mandatory = True),
         "cuda_version": attr.string(mandatory = True),
         "component_version": attr.string(mandatory = True),
         "redist_path_prefix": attr.string(),
