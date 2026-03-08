@@ -1,0 +1,19 @@
+load("@bazel_lib//:bzl_library.bzl", "bzl_library")
+load("@stardoc//stardoc:stardoc.bzl", "stardoc")
+
+bzl_library(
+    name = "cuda",
+    srcs = ["cuda.bzl"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cuda:cuda_configure",
+        "//cuda:cuda_redist_repositories",
+    ],
+)
+
+stardoc(
+    name = "cuda-docs",
+    out = "cuda.md",
+    input = "cuda.bzl",
+    deps = [":cuda"],
+)

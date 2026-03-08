@@ -1,5 +1,7 @@
 package(default_visibility = ["//visibility:public"])
 
+# gazelle:map_kind bzl_library bzl_library @bazel_lib//:bzl_library.bzl
+
 platform(
     name = "platform_linux_amd64",
     constraint_values = [
