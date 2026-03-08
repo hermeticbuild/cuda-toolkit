@@ -97,20 +97,19 @@ def cuda_redist_repositories(
         if redist_name in ["cudnn", "cuda_nccl"]:
             continue
         # A given redist may exist in a CUDA version but not in another.
-        if redist_name in cuda_redistributions:
-            per_arch_url_dict = _get_redistribution_urls(
-                cuda_redistributions[redist_name],
-                dist_name = redist_name,
-            )
-            component_version = cuda_redistributions[redist_name].get("version") or fail("Missing {} version".format(redist_name))
-        else:
-            per_arch_url_dict = {}
-            component_version = ""
+        if redist_name not in cuda_redistributions:
+            continue
+
+        per_arch_url_dict = _get_redistribution_urls(
+            cuda_redistributions[redist_name],
+            dist_name = redist_name,
+        )
+        component_version = cuda_redistributions[redist_name].get("version") or fail("Missing {} version".format(redist_name))
         repo_data = redist_versions_to_build_templates[redist_name]
         build_file = get_build_template(
             repo_data["version_to_template"],
             component_version,
-        ) if component_version else ""
+        )
         component_specs.append({
             "package_name": repo_data["package_name"],
             "build_file": build_file,
@@ -126,8 +125,6 @@ def cuda_redist_repositories(
     component_versions = {}
     component_arches = {}
     for spec in sorted_component_specs:
-        if not spec["component_version"]:
-            continue
         available_arches = _create_component_arch_specific_repositories(
             repo_name = spec["package_name"],
             build_file = spec["build_file"],
