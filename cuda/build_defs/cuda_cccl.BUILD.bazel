@@ -20,7 +20,7 @@ filegroup(
         _INCLUDE_PREFIX + "/nv/**",
         _INCLUDE_PREFIX + "/thrust/**",
     ]),
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 
@@ -29,5 +29,5 @@ cc_library(
     hdrs = [":header_list"],
     includes = [_INCLUDE_PREFIX],
     strip_include_prefix = _INCLUDE_PREFIX,
-    visibility = ["@cuda//cuda:__pkg__"],
+    visibility = ["//visibility:public"],
 )

@@ -4,7 +4,6 @@ load(
     "//cuda:redist_proxy_targets.bzl",
     "ARCH_REPO_SUFFIX",
     "PROXY_ARCH_CONDITIONS",
-    "PROXY_TARGET_OVERRIDES",
     "REPO_PUBLIC_TARGETS",
 )
 
@@ -41,17 +40,6 @@ def _render_proxy_build_file(repo_name, package_name, target_names, available_ar
     ]
 
     for target_name in target_names:
-        target_overrides = PROXY_TARGET_OVERRIDES.get(repo_name, {})
-        if target_name in target_overrides:
-            lines.extend([
-                "alias(",
-                "    name = \"{}\",".format(target_name),
-                "    actual = \"{}\",".format(target_overrides[target_name]),
-                ")",
-                "",
-            ])
-            continue
-
         select_entries = []
         no_match_error = "@cuda//{}: platform-specific target '{}' unavailable for selected platform".format(
             package_name,

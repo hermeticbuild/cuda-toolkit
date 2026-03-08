@@ -50,7 +50,7 @@ REPO_PUBLIC_TARGETS = {
         "include_cuda_umd_libs",
         "cuda_umd_libs",
     ],
-    "cuda_nvcc": ["nvcc_directory", "libdevice", "nvdisasm", "nvlink", "fatbinary", "bin2c", "ptxas", "bin", "link_stub", "header_list", "headers"],
+    "cuda_nvcc": ["nvcc_directory", "libdevice", "nvlink", "fatbinary", "bin2c", "ptxas", "bin", "link_stub", "header_list", "headers"],
     "cuda_nvdisasm": ["nvdisasm"],
     "cuda_nvjitlink": ["nvjitlink_shared_library", "nvjitlink", "header_list", "headers"],
     "cuda_nvml": ["header_list", "headers", "nvidia-ml_stub", "nvml"],
@@ -59,10 +59,4 @@ REPO_PUBLIC_TARGETS = {
     "cuda_nvtx": ["header_list", "headers"],
     "cuda_nvvm": ["cicc", "libdevice"],
     "cuda_profiler_api": ["header_list", "headers"],
-}
-
-PROXY_TARGET_OVERRIDES = {
-    "cuda_nvcc": {
-        "nvdisasm": "@cuda//nvdisasm:nvdisasm",
-    },
 }
