@@ -65,7 +65,9 @@ def cudnn_redist_repository(
         cudnn_redistributions["cudnn"],
         dist_name = "cudnn",
     )
-    component_version = cudnn_redistributions["cudnn"].get("version") or fail("Missing cudnn version")
+    component_version = cudnn_redistributions["cudnn"].get("version")
+    if not component_version:
+        fail("Missing cudnn version")
 
     repo_data = redist_versions_to_build_templates["cudnn"]
     build_file = get_build_template(
@@ -97,6 +99,7 @@ def cuda_redist_repositories(
     for redist_name in sorted(redist_versions_to_build_templates.keys()):
         if redist_name in ["cudnn", "cuda_nccl"]:
             continue
+
         # A given redist may exist in a CUDA version but not in another.
         if redist_name not in cuda_redistributions:
             continue
@@ -105,7 +108,10 @@ def cuda_redist_repositories(
             cuda_redistributions[redist_name],
             dist_name = redist_name,
         )
-        component_version = cuda_redistributions[redist_name].get("version") or fail("Missing {} version".format(redist_name))
+        component_version = cuda_redistributions[redist_name].get("version")
+        if not component_version:
+            fail("Missing {} version".format(redist_name))
+
         repo_data = redist_versions_to_build_templates[redist_name]
         build_file = get_build_template(
             repo_data["version_to_template"],
@@ -152,17 +158,17 @@ def _create_component_arch_specific_repositories(
     available_arches = []
     for arch in sorted(OS_ARCH_DICT.keys()):
         concrete_repo_name = _concrete_repo_name(repo_name, arch)
-        if _has_arch_redistribution(per_arch_url_dict, cuda_version, arch):
+        arch_redist = _get_arch_redistribution(per_arch_url_dict, cuda_version, arch)
+        if arch_redist:
+            (url, sha256, custom_strip_prefix) = arch_redist
             redist_repository(
                 name = concrete_repo_name,
                 build_file = Label(build_file),
-                cuda_version = cuda_version,
                 component_version = component_version,
-                # TODO(zbarsky): This seems unnecessarily annoying, we should just pass in the specific
-                # arch/url/sha instead of the entire dict, less branching logics.
-                per_arch_url_dict = per_arch_url_dict,
+                custom_strip_prefix = custom_strip_prefix,
                 redist_path_prefix = redist_path_prefix,
-                target_arch = arch,
+                sha256 = sha256,
+                url = url,
             )
             if arch in PROXY_ARCH_CONDITIONS:
                 available_arches.append(arch)
@@ -174,16 +180,17 @@ def _create_component_arch_specific_repositories(
 def _concrete_repo_name(repo_name, arch):
     return "{}__{}".format(repo_name, _ARCH_REPO_SUFFIX[arch])
 
-def _has_arch_redistribution(per_arch_url_dict, cuda_version, arch):
+def _get_arch_redistribution(per_arch_url_dict, cuda_version, arch):
     arch_key = OS_ARCH_DICT[arch]
-    if arch_key in per_arch_url_dict:
-        return True
+    per_arch_data = per_arch_url_dict.get(arch_key)
+    if per_arch_data:
+        return per_arch_data
+
     major_cuda_arch_key = "cuda{version}_{arch}".format(
         version = cuda_version.split(".")[0],
         arch = arch_key,
     )
-    return major_cuda_arch_key in per_arch_url_dict
-
+    return per_arch_url_dict.get(major_cuda_arch_key)
 
 def _get_redistribution_urls(dist_info, dist_name = "<unknown>"):
     # buildifier: disable=function-docstring-return
@@ -378,35 +385,19 @@ def _create_version_file(repository_ctx, component_version, lib_versions = {}):
         _version_bzl_content(component_version, lib_versions),
     )
 
-#TODO(cerisier): remove me
-def _tf_mirror_urls(url):
-    """A helper for generating TF-mirror versions of URLs.
-
-    Given a URL, it returns a list of the TF-mirror cache version of that URL
-    and the original URL, suitable for use in `urls` field of `tf_http_archive`.
-    """
-    if not url.startswith("https://"):
-        return [url]
-    return [
-        "https://storage.googleapis.com/mirror.tensorflow.org/%s" % url[8:],
-        url,
-    ]
-
-def _download_redistribution(
-        repository_ctx,
-        arch_key,
-        path_prefix):
+def _download_redistribution(rctx):
     """Downloads and extracts NVIDIA redistribution."""
-    (url, sha256, custom_strip_prefix) = repository_ctx.attr.per_arch_url_dict[arch_key]
 
     # If url is not relative, then appending prefix is not needed.
+    url = rctx.attr.url
     if not (url.startswith("http") or url.startswith("file:///")):
-        url = path_prefix + url
+        url = rctx.attr.redist_path_prefix + url
+
     archive_name = get_archive_name(url)
-    repository_ctx.download_and_extract(
-        url = _tf_mirror_urls(url),
-        sha256 = sha256,
-        strip_prefix = custom_strip_prefix or archive_name,
+    rctx.download_and_extract(
+        url = url,
+        sha256 = rctx.attr.sha256,
+        strip_prefix = rctx.attr.custom_strip_prefix or archive_name,
     )
 
 ## Redist component repository
@@ -415,30 +406,8 @@ def _redist_repository_impl(repository_ctx):
     # buildifier: disable=function-docstring-args
     """ Downloads redistribution and initializes hermetic repository."""
     component_version = repository_ctx.attr.component_version
-    cuda_version = repository_ctx.attr.cuda_version
 
-    arch_key = OS_ARCH_DICT[repository_ctx.attr.target_arch]
-    if arch_key not in repository_ctx.attr.per_arch_url_dict:
-        arch_key = "cuda{version}_{arch}".format(
-            version = cuda_version.split(".")[0],
-            arch = arch_key,
-        )
-    if arch_key not in repository_ctx.attr.per_arch_url_dict:
-        fail(
-            ("{dist_name}: The supported platforms are {supported_platforms}." +
-             " Platform {platform} is not supported.")
-                .format(
-                supported_platforms = sorted(repository_ctx.attr.per_arch_url_dict.keys()),
-                platform = arch_key,
-                dist_name = repository_ctx.original_name,
-            ),
-        )
-
-    _download_redistribution(
-        repository_ctx,
-        arch_key,
-        repository_ctx.attr.redist_path_prefix,
-    )
+    _download_redistribution(repository_ctx)
     lib_versions = _get_lib_versions_from_lib_dir(repository_ctx)
 
     repository_ctx.template("BUILD", repository_ctx.attr.build_file, {})
@@ -454,12 +423,12 @@ def _redist_repository_impl(repository_ctx):
 redist_repository = repository_rule(
     implementation = _redist_repository_impl,
     attrs = {
-        "per_arch_url_dict": attr.string_list_dict(mandatory = True),
         "build_file": attr.label(mandatory = True),
-        "cuda_version": attr.string(mandatory = True),
         "component_version": attr.string(mandatory = True),
+        "custom_strip_prefix": attr.string(),
         "redist_path_prefix": attr.string(),
-        "target_arch": attr.string(mandatory = True),
+        "sha256": attr.string(),
+        "url": attr.string(mandatory = True),
     },
 )
 
