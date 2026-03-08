@@ -1,5 +1,5 @@
 {
-  "homepage": "https://github.com/hermeticbuild/cuda_toolkit",
+  "homepage": "https://github.com/hermeticbuild/cuda-toolkit",
   "maintainers": [
     {
       "name": "Corentin Kerisit",
@@ -13,7 +13,7 @@
     }
   ],
   "repository": [
-    "github:hermeticbuild/cuda_toolkit"
+    "github:hermeticbuild/cuda-toolkit"
   ],
   "versions": [],
   "yanked_versions": {}
