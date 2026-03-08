@@ -6,14 +6,16 @@
 # @cuda_nvcc proxy repository can re-export it.
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@cuda//cuda:versions_helper.bzl", "if_cuda_newer_than")
+load("@cuda//cuda:cuda_version.bzl", "CUDA_VERSION")
+load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
 load("@bazel_skylib//rules/directory:directory.bzl", "directory")
 load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 filegroup(
     name = "libdevice",
-    srcs = if_cuda_newer_than(
-        "13_0",
+    srcs = if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
         if_true = [],
         if_false = ["nvvm/libdevice/libdevice.10.bc"],
     ),
@@ -56,8 +58,9 @@ filegroup(
     name = "bin",
     srcs = glob([
         "bin/**",
-    ]) + if_cuda_newer_than(
-        "13_0",
+    ]) + if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
         if_true = [],
         if_false = ["nvvm/bin/cicc"],
     ),
@@ -76,12 +79,14 @@ filegroup(
     name = "header_list",
     srcs = [
         "include/fatbinary_section.h",
-    ] + if_cuda_newer_than(
-        "13_0",
+    ] + if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
         if_true = [],
         if_false = ["include/nvPTXCompiler.h"],
-    ) + if_cuda_newer_than(
-        "13_0",
+    ) + if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
         if_true = [],
         if_false = glob(
             ["include/crt/**"],

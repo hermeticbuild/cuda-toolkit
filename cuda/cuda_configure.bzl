@@ -100,10 +100,6 @@ def _cuda_configure_impl(repository_ctx):
         "CUDA_VERSION = \"{}\"".format(cuda_version),
     )
     repository_ctx.template(
-        "cuda/versions_helper.bzl",
-        repository_ctx.attr._helper_file,
-    )
-    repository_ctx.template(
         "cuda/BUILD.bazel",
         repository_ctx.attr._cuda_build_file,
     )
@@ -122,7 +118,6 @@ cuda_configure = repository_rule(
         "cuda_version": attr.string(mandatory = True),
         "component_versions": attr.string_dict(default = {}),
         "component_arches": attr.string_list_dict(default = {}),
-        "_helper_file": attr.label(default = Label("//cuda:versions_helper.bzl")),
         "_cuda_build_file": attr.label(default = Label("//cuda:cuda.BUILD.bazel")),
     },
 )

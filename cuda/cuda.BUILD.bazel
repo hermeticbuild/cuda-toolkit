@@ -5,7 +5,7 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@cuda//cudart:version.bzl", _cudart_version = "VERSION")
 load("@cuda//cuda:cuda_version.bzl", _cuda_version = "CUDA_VERSION")
 load(
-     "@cuda//cuda:versions_helper.bzl",
+     "@cuda_toolkit//cuda:versions_helper.bzl",
      "if_version_equal_or_greater_than",
 )
 

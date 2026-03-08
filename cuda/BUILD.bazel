@@ -33,5 +33,4 @@ bzl_library(
     name = "versions_helper",
     srcs = ["versions_helper.bzl"],
     visibility = ["//visibility:public"],
-    deps = [":cuda_version"],
 )

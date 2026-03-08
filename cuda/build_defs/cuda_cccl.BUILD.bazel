@@ -6,7 +6,7 @@
 # @cuda_cccl proxy repository can re-export it.
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@cuda//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
+load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
 load("//:version.bzl", "VERSION")
 
 # TODO(zbarsky): these versions look not-free to compute, perhaps `version.bzl` should precompute the ones we check ?

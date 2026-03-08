@@ -8,7 +8,7 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load(
-    "@cuda//cuda:versions_helper.bzl",
+    "@cuda_toolkit//cuda:versions_helper.bzl",
     "if_version_equal_or_greater_than",
     "if_version_lower_than",
 )

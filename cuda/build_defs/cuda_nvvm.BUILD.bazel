@@ -5,7 +5,8 @@
 # Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
 # @cuda_nvvm proxy repository can re-export it.
 
-load("@cuda//cuda:versions_helper.bzl", "if_cuda_newer_than")
+load("@cuda//cuda:cuda_version.bzl", "CUDA_VERSION")
+load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
 
 exports_files([
     "nvvm/bin/cicc",
@@ -14,8 +15,9 @@ exports_files([
 
 filegroup(
     name = "cicc",
-    srcs = if_cuda_newer_than(
-        "13_0",
+    srcs = if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
         if_true = ["nvvm/bin/cicc"],
         if_false = [],
     ),
@@ -24,8 +26,9 @@ filegroup(
 
 filegroup(
     name = "libdevice",
-    srcs = if_cuda_newer_than(
-        "13_0",
+    srcs = if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
         if_true = ["nvvm/libdevice/libdevice.10.bc"],
         if_false = [],
     ),

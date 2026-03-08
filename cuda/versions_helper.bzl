@@ -14,32 +14,6 @@
 
 # Macros for building CUDA code.
 
-load(":cuda_version.bzl", "CUDA_VERSION")
-
-def if_cuda_newer_than(wanted_ver, if_true, if_false = []):
-    """Tests if CUDA is at least `wanted_ver`.`wanted_ver` needs
-    to be provided as a string in the format `<major>_<minor>`.
-    Example: `11_0`
-    """
-
-    wanted_major = int(wanted_ver.split("_")[0])
-    wanted_minor = int(wanted_ver.split("_")[1])
-
-    # Strip "64_" which appears in the CUDA version on Windows.
-    configured_version = CUDA_VERSION.rsplit("_", 1)[-1]
-    configured_version_parts = configured_version.split(".")
-
-    # On Windows, the major and minor versions are concatenated without a period and the minor only contains one digit.
-    if len(configured_version_parts) == 1:
-        configured_version_parts = [configured_version[0:-1], configured_version[-1:]]
-
-    configured_major = int(configured_version_parts[0])
-    configured_minor = int(configured_version_parts[1])
-
-    if (wanted_major, wanted_minor) <= (configured_major, configured_minor):
-        return if_true
-    return if_false
-
 def _compare_versions(lib_version, dist_version, operator):
     """Helper function to compare two version strings."""
     if not lib_version:
