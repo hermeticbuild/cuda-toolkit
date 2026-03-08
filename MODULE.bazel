@@ -12,10 +12,3 @@ bazel_dep(name = "rules_cc", version = "0.2.16")
 bazel_dep(name = "stardoc", version = "0.8.1", dev_dependency = True)
 bazel_dep(name = "gazelle", version = "0.47.0", dev_dependency = True)
 bazel_dep(name = "bazel_skylib_gazelle_plugin", version = "1.9.0", dev_dependency = True)
-
-cuda_ext = use_extension("//extensions:cuda.bzl", "cuda")
-cuda_ext.configure(
-    cuda_version = "12.8.1",
-    cudnn_version = "9.16.0",
-)
-use_repo(cuda_ext, "cuda")
