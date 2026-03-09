@@ -1,37 +1,25 @@
 """Unified CUDA module extension."""
 
-load(
-    "//cuda:cuda_component_proxy.bzl",
-    "cuda_component_proxy",
-)
-load(
-    "//cuda:cuda_configure.bzl",
-    "cuda_configure",
-)
-load(
-    "//cuda:cuda_redist_repositories.bzl",
-    "cuda_redist_repositories",
-    # "cudnn_redist_repository",
-)
+load("//cuda:cuda_component_proxy.bzl", "cuda_component_proxy")
+load("//cuda:cuda_redist_repository.bzl", "cuda_redist_repository")
+load("//cuda:cuda_global.bzl", "cuda_global")
+load("//cuda:cuda_redist_repositories.bzl", "cuda_redist_repositories")
 
 _CUDA_REDIST_VERSIONS_JSON = Label("//cuda:cuda_redist_versions.json")
-_CUDNN_REDIST_VERSIONS_JSON = Label("//cuda:cudnn_redist_versions.json")
 
-def _single_redist_tag(mctx):
-    latest_tag = None
-    root_latest_tag = None
+def _collect_redist_tags(mctx):
+    all_tags = []
+    root_tags = []
     for mod in mctx.modules:
         for tag in mod.tags.redist:
-            latest_tag = tag
+            all_tags.append(tag)
             if mod.is_root:
-                root_latest_tag = tag
+                root_tags.append(tag)
 
-    if root_latest_tag:
-        return root_latest_tag
-    if latest_tag:
-        return latest_tag
-
-    fail("cuda extension requires at least one redist tag")
+    tags = root_tags if root_tags else all_tags
+    if not tags:
+        fail("cuda extension requires at least one redist tag")
+    return tags
 
 def _get_url_sha_from_version_map(version, version_to_url_sha, toolkit_name):
     url_sha = version_to_url_sha.get(version)
@@ -63,102 +51,84 @@ def _read_downloaded_json(mctx, pending_download):
 
 def _cuda_impl(mctx):
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
-    # cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
 
-    tag = _single_redist_tag(mctx)
+    tags = _collect_redist_tags(mctx)
 
-    (cuda_redist_url, cuda_redist_sha256) = _get_url_sha_from_version_map(
-        version = tag.version,
-        version_to_url_sha = cuda_version_map,
-        toolkit_name = "CUDA",
-    )
-    # (cuda_umd_redist_url, cuda_umd_redist_sha256) = _get_url_sha_from_version_map(
-    #     version = cuda_umd_version,
-    #     version_to_url_sha = cuda_version_map,
-    #     toolkit_name = "CUDA_UMD",
-    # )
-    # (cudnn_redist_url, cudnn_redist_sha256) = _get_url_sha_from_version_map(
-    #     version = tag.cudnn_version,
-    #     version_to_url_sha = cudnn_version_map,
-    #     toolkit_name = "CUDNN",
-    # )
+    seen_repo_names = {}
+    versions = []
 
-    cuda_redistributions_download = _json_from_url_future(
-        mctx = mctx,
-        url = cuda_redist_url,
-        sha256 = cuda_redist_sha256,
-        output_path = "redistrib_cuda_%s.json" % tag.version,
-    )
-    # cuda_umd_redistributions_download = _json_from_url_future(
-    #     mctx = mctx,
-    #     url = cuda_umd_redist_url,
-    #     sha256 = cuda_umd_redist_sha256,
-    #     output_path = "redistrib_cuda_umd_%s.json" % cuda_umd_version,
-    # )
-    # cudnn_redistributions_download = _json_from_url_future(
-    #     mctx = mctx,
-    #     url = cudnn_redist_url,
-    #     sha256 = cudnn_redist_sha256,
-    #     output_path = "redistrib_cudnn_%s.json" % tag.cudnn_version,
-    # )
+    redistributions_by_version = {}
+    for tag in tags:
+        if tag.name == "cuda":
+            fail("redist name 'cuda' is reserved for the global aggregated CUDA repository")
 
-    cuda_redistributions = _read_downloaded_json(mctx, cuda_redistributions_download)
-    # cuda_umd_redistributions = _read_downloaded_json(mctx, cuda_umd_redistributions_download)
-    # cudnn_redistributions = _read_downloaded_json(mctx, cudnn_redistributions_download)
+        if tag.name in seen_repo_names:
+            fail("Duplicate redist name '{}'".format(tag.name))
+        seen_repo_names[tag.name] = True
+        versions.append(tag.version)
 
-    generated_repos = cuda_redist_repositories(
-        redist = cuda_redistributions,
-        cuda_repo_name = tag.name,
-        # cuda_redistributions = dict(
-        #     cuda_redistributions,
-        #     nvidia_driver = cuda_umd_redistributions.get("nvidia_driver", {}),
-        # ),
-        cuda_version = tag.version,
-    )
-    # cudnn_proxy_data = cudnn_redist_repository(
-    #     cudnn_redistributions = cudnn_redistributions,
-    #     cuda_version = tag.cuda_version,
-    # )
+        if tag.version not in redistributions_by_version:
+            (cuda_redist_url, cuda_redist_sha256) = _get_url_sha_from_version_map(
+                version = tag.version,
+                version_to_url_sha = cuda_version_map,
+                toolkit_name = "CUDA",
+            )
+            cuda_redistributions_download = _json_from_url_future(
+                mctx = mctx,
+                url = cuda_redist_url,
+                sha256 = cuda_redist_sha256,
+                output_path = "redistrib_cuda_%s.json" % tag.version,
+            )
+            redistributions_by_version[tag.version] = _read_downloaded_json(mctx, cuda_redistributions_download)
 
-    component_proxy_specs = {}
-    for generated in generated_repos:
-        repo_name = generated["component_repo_name"]
-        spec = component_proxy_specs.get(repo_name)
-        if not spec:
-            spec = {
-                "version": generated["version"],
-                "targets": generated["targets"],
-                "platform_repo_mappings": {},
-            }
-            component_proxy_specs[repo_name] = spec
-
-        spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
-
-    # Generate repository that re-exports the component targets for each platform
-    for repo_name, spec in component_proxy_specs.items():
-        cuda_component_proxy(
-            name = repo_name,
-            version = spec["version"],
-            platform_repo_mappings = spec["platform_repo_mappings"],
-            targets = spec["targets"],
+        generated_repos = cuda_redist_repositories(
+            redist = redistributions_by_version[tag.version],
+            cuda_repo_name = tag.name,
+            cuda_version = tag.version,
         )
 
-    # Generate a repository that re-exports all component targets under a //<component> package.
-    cuda_configure(
-        name = tag.name,
-        cuda_version = tag.version,
-        component_versions = {generated["component_repo_name"]: generated["version"] for generated in generated_repos},
+        component_proxy_specs = {}
+        for generated in generated_repos:
+            repo_name = generated["component_repo_name"]
+            spec = component_proxy_specs.get(repo_name)
+            if not spec:
+                spec = {
+                    "version": generated["version"],
+                    "targets": generated["targets"],
+                    "platform_repo_mappings": {},
+                }
+                component_proxy_specs[repo_name] = spec
+            spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
+
+        component_versions = {}
+        component_mappings = {}
+        for repo_name, spec in component_proxy_specs.items():
+            component_proxy_repo_name = "{}__{}".format(tag.name, repo_name)
+
+            # Re-exports targets from platform-specific repositories under a unified repository.
+            cuda_component_proxy(
+                name = component_proxy_repo_name,
+                version = spec["version"],
+                platform_repo_mappings = spec["platform_repo_mappings"],
+                targets = spec["targets"],
+            )
+            component_versions[repo_name] = spec["version"]
+            component_mappings[repo_name] = component_proxy_repo_name
+
+        # Re-exports all unified repositories under a //<component> convenient package.
+        cuda_redist_repository(
+            name = tag.name,
+            cuda_version = tag.version,
+            component_mappings = component_mappings,
+            component_versions = component_versions,
+        )
+
+    cuda_global(
+        name = "cuda",
+        cuda_versions = sorted(versions),
     )
 
     return mctx.extension_metadata(reproducible = True)
-
-# _configure_tag = tag_class(
-#     attrs = {
-#         "cuda_version": attr.string(mandatory = True),
-#         "cudnn_version": attr.string(mandatory = True),
-#         "cuda_umd_version": attr.string(mandatory = False),
-#     },
-# )
 
 _redist = tag_class(
     attrs = {

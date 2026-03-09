@@ -15,7 +15,6 @@
 """Hermetic CUDA redistribution utilities."""
 
 CUDA_REDIST_PATH_PREFIX = "https://developer.download.nvidia.com/compute/cuda/redist/"
-CUDNN_REDIST_PATH_PREFIX = "https://developer.download.nvidia.com/compute/cudnn/redist/"
 
 COMPONENTS_REGISTRY = {
     "nvidia_driver": {
@@ -34,20 +33,6 @@ COMPONENTS_REGISTRY = {
             "520": "//cuda/build_defs:cuda_driver.BUILD.bazel",
         },
     },
-    # "cuda_nccl": {
-    #     "repo_name": "cuda_nccl",
-    #     "version_to_template": {
-    #         "2": "//gpu/nccl:cuda_nccl.BUILD.tpl",
-    #     },
-    # },
-    # "cudnn": {
-    #     "repo_name": "cuda_cudnn",
-    #     "version_to_template": {
-    #         "10": "//cuda/build_defs:cuda_cudnn.BUILD.bazel",
-    #         "9": "//cuda/build_defs:cuda_cudnn.BUILD.bazel",
-    #         "8": "//cuda/build_defs:cuda_cudnn8.BUILD.bazel",
-    #     },
-    # },
     "libcublas": {
         "repo_name": "cuda_cublas",
         "version_to_template": {

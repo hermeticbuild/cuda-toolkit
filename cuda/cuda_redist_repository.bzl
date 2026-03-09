@@ -26,7 +26,10 @@ LIB_VERSIONS = {{}}
         version_patch = version_patch,
     )
 
-def _render_proxy_build_file(repo_name, target_names):
+def _component_proxy_repo_name(cuda_repo_name, component_repo_name):
+    return "{}__{}".format(cuda_repo_name, component_repo_name)
+
+def _render_proxy_build_file(actual_repo_name, target_names):
     lines = [
         "package(default_visibility = [\"//visibility:public\"])",
         "",
@@ -36,24 +39,21 @@ def _render_proxy_build_file(repo_name, target_names):
         lines.extend([
             "alias(",
             "    name = \"{}\",".format(target_name),
-            "    actual = \"@{}//:{}\",".format(repo_name, target_name),
+            "    actual = \"@{}//:{}\",".format(actual_repo_name, target_name),
             ")",
             "",
         ])
     return "\n".join(lines)
 
 def _write_proxy_packages(repository_ctx):
-    for repo_name in sorted(repository_ctx.attr.component_versions.keys()):
-        component_version = repository_ctx.attr.component_versions[repo_name]
-        target_names = REPO_PUBLIC_TARGETS.get(repo_name)
-        if not target_names:
-            continue
+    for repo_name, proxy_repo_name in repository_ctx.attr.component_mappings.items():
+        component_version = repository_ctx.attr.component_versions.get(repo_name)
         package_name = _proxy_package_name(repo_name)
         repository_ctx.file(
             package_name + "/BUILD.bazel",
             _render_proxy_build_file(
-                repo_name = repo_name,
-                target_names = target_names,
+                actual_repo_name = proxy_repo_name,
+                target_names = REPO_PUBLIC_TARGETS.get(repo_name),
             ),
         )
         repository_ctx.file(
@@ -61,31 +61,23 @@ def _write_proxy_packages(repository_ctx):
             _version_bzl_content(component_version),
         )
 
-def _cuda_configure_impl(repository_ctx):
-    cuda_version = repository_ctx.attr.cuda_version
-
-    repository_ctx.file(
-        "cuda/cuda_version.bzl",
-        "CUDA_VERSION = \"{}\"".format(cuda_version),
-    )
-    repository_ctx.template(
-        "cuda/BUILD.bazel",
-        repository_ctx.attr._cuda_build_file,
-    )
-    repository_ctx.file(
-        "BUILD.bazel",
-        "",
-    )
+def _cuda_redist_repository_impl(repository_ctx):
 
     _write_proxy_packages(repository_ctx)
 
+    repository_ctx.file("BUILD.bazel", "")
+    repository_ctx.file(
+        "version.bzl",
+        "CUDA_VERSION = \"{}\"".format(repository_ctx.attr.cuda_version),
+    )
+
     return repository_ctx.repo_metadata(reproducible = True)
 
-cuda_configure = repository_rule(
-    implementation = _cuda_configure_impl,
+cuda_redist_repository = repository_rule(
+    implementation = _cuda_redist_repository_impl,
     attrs = {
         "cuda_version": attr.string(mandatory = True),
-        "component_versions": attr.string_dict(default = {}),
-        "_cuda_build_file": attr.label(default = Label("//cuda:cuda.BUILD.bazel")),
+        "component_mappings": attr.string_dict(mandatory = True),
+        "component_versions": attr.string_dict(mandatory = True),
     },
 )

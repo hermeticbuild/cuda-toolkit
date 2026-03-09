@@ -5,7 +5,7 @@
 # Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
 # @cuda_nvvm proxy repository can re-export it.
 
-load("@{cuda_redist_repo}//cuda:cuda_version.bzl", "CUDA_VERSION")
+load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
 
 exports_files([
