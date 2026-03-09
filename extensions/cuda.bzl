@@ -17,10 +17,6 @@ load(
 _CUDA_REDIST_VERSIONS_JSON = Label("//cuda:cuda_redist_versions.json")
 _CUDNN_REDIST_VERSIONS_JSON = Label("//cuda:cudnn_redist_versions.json")
 
-def _is_valid_version(version):
-    parts = version.split(".")
-    return parts and all([p.isdigit() for p in parts])
-
 def _single_redist_tag(mctx):
     latest_tag = None
     root_latest_tag = None
@@ -66,17 +62,10 @@ def _read_downloaded_json(mctx, pending_download):
     return json.decode(mctx.read(pending_download.output_path))
 
 def _cuda_impl(mctx):
-    tag = _single_redist_tag(mctx)
-    if not _is_valid_version(tag.version):
-        fail("Invalid cuda_version '{}': expected digits separated by dots".format(tag.version))
-        # if not _is_valid_version(tag.cudnn_version):
-        #     fail("Invalid cudnn_version '{}': expected digits separated by dots".format(tag.cudnn_version))
-        # cuda_umd_version = tag.cuda_umd_version or tag.version
-        # if not _is_valid_version(cuda_umd_version):
-        #     fail("Invalid cuda_umd_version '{}': expected digits separated by dots".format(cuda_umd_version))
-
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
     # cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
+
+    tag = _single_redist_tag(mctx)
 
     (cuda_redist_url, cuda_redist_sha256) = _get_url_sha_from_version_map(
         version = tag.version,
