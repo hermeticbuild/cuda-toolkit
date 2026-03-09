@@ -1,15 +1,5 @@
 """Shared catalog for CUDA proxy package generation."""
 
-PROXY_ARCH_CONDITIONS = {
-    "amd64": ["@cuda_toolkit//:linux_amd64"],
-    "aarch64": ["@cuda_toolkit//:linux_arm64"],
-}
-
-ARCH_REPO_SUFFIX = {
-    "amd64": "amd64",
-    "aarch64": "aarch64",
-}
-
 REPO_PUBLIC_TARGETS = {
     "cuda_cccl": ["header_list", "headers"],
     "cuda_crt": ["header_list", "headers"],

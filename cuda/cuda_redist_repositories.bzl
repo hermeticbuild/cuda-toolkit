@@ -8,23 +8,22 @@ load(
 )
 load(
     "//cuda:redist_proxy_targets.bzl",
-    "ARCH_REPO_SUFFIX",
-    "PROXY_ARCH_CONDITIONS",
     "REPO_PUBLIC_TARGETS",
 )
 
 _PLATFORM_SPECS = {
     "linux_amd64": {
         "redist_key": "linux-x86_64",
-        "repo_suffix": ARCH_REPO_SUFFIX["amd64"],
-        "config_settings": PROXY_ARCH_CONDITIONS["amd64"],
+        "repo_suffix": "linux_x86_64",
+        "config_setting": "@cuda_toolkit//:linux_amd64",
     },
     "linux_aarch64": {
         "redist_key": "linux-sbsa",
-        "repo_suffix": ARCH_REPO_SUFFIX["aarch64"],
-        "config_settings": PROXY_ARCH_CONDITIONS["aarch64"],
+        "repo_suffix": "linux_sbsa",
+        "config_setting": "@cuda_toolkit//:linux_arm64",
     },
 }
+
 _REPO_PUBLIC_TARGETS = REPO_PUBLIC_TARGETS
 _SUPPORTED_ARCHIVE_EXTENSIONS = [
     # we use suffix match, so suffix specializations should be
@@ -140,7 +139,7 @@ def cuda_redist_repositories(
                     "component_repo_name": repo_data["repo_name"],
                     "concrete_repo_name": concrete_repo_name,
                     "platform": platform,
-                    "platforms": platform_spec["config_settings"],
+                    "config_setting": platform_spec["config_setting"],
                     "version": component_version,
                     "targets": _REPO_PUBLIC_TARGETS.get(repo_data["repo_name"], []),
                 })

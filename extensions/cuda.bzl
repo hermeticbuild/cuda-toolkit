@@ -131,7 +131,6 @@ def _cuda_impl(mctx):
     # )
 
     component_proxy_specs = {}
-    component_versions = {}
     for generated in generated_repos:
         repo_name = generated["component_repo_name"]
         spec = component_proxy_specs.get(repo_name)
@@ -142,24 +141,11 @@ def _cuda_impl(mctx):
                 "platform_repo_mappings": {},
             }
             component_proxy_specs[repo_name] = spec
-            component_versions[repo_name] = generated["version"]
 
-        concrete_repo_name = generated["concrete_repo_name"]
-        for platform in generated["platforms"]:
-            existing = spec["platform_repo_mappings"].get(platform)
-            if existing and existing != concrete_repo_name:
-                fail(
-                    "Conflicting platform mapping for {} on {}: {} vs {}".format(
-                        repo_name,
-                        platform,
-                        existing,
-                        concrete_repo_name,
-                    ),
-                )
-            spec["platform_repo_mappings"][platform] = concrete_repo_name
+        spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
 
-    for repo_name in sorted(component_proxy_specs.keys()):
-        spec = component_proxy_specs[repo_name]
+    # Generate repository that re-exports the component targets for each platform
+    for repo_name, spec in component_proxy_specs.items():
         cuda_component_proxy(
             name = repo_name,
             version = spec["version"],
@@ -167,10 +153,11 @@ def _cuda_impl(mctx):
             targets = spec["targets"],
         )
 
+    # Generate a repository that re-exports all component targets under a //<component> package.
     cuda_configure(
         name = tag.name,
         cuda_version = tag.version,
-        component_versions = component_versions,
+        component_versions = {generated["component_repo_name"]: generated["version"] for generated in generated_repos},
     )
 
     return mctx.extension_metadata(reproducible = True)
