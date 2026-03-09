@@ -1,8 +1,8 @@
 """Unified CUDA module extension."""
 
 load(
-    "//cuda:cuda_configure.bzl",
-    "cuda_configure",
+    "//cuda:cuda_component_proxy.bzl",
+    "cuda_component_proxy",
 )
 load(
     "//cuda:cuda_redist_repositories.bzl",
@@ -113,8 +113,8 @@ def _cuda_impl(mctx):
     # cuda_umd_redistributions = _read_downloaded_json(mctx, cuda_umd_redistributions_download)
     # cudnn_redistributions = _read_downloaded_json(mctx, cudnn_redistributions_download)
 
-    cuda_proxy_data = cuda_redist_repositories(
-        cuda_redistributions = cuda_redistributions,
+    generated_repos = cuda_redist_repositories(
+        redist = cuda_redistributions,
         # cuda_redistributions = dict(
         #     cuda_redistributions,
         #     nvidia_driver = cuda_umd_redistributions.get("nvidia_driver", {}),
@@ -126,26 +126,31 @@ def _cuda_impl(mctx):
     #     cuda_version = tag.cuda_version,
     # )
 
-    component_versions = dict(cuda_proxy_data["component_versions"])
-    # component_versions.update(cudnn_proxy_data["component_versions"])
-    component_arches = dict(cuda_proxy_data["component_arches"])
-    # component_arches.update(cudnn_proxy_data["component_arches"])
+    component_proxy_specs = {}
+    for generated in generated_repos:
+        repo_name = generated["repo_name"]
+        spec = component_proxy_specs.get(repo_name)
+        if not spec:
+            spec = {
+                "repo_name": generated["repo_name"],
+                "version": generated["version"],
+                "targets": generated["targets"],
+                "platform_repo_mappings": {},
+            }
+            component_proxy_specs[repo_name] = spec
 
+        concrete_repo_name = generated["concrete_repo_name"]
+        for platform in generated["platforms"]:
+            existing = spec["platform_repo_mappings"].get(platform)
+            spec["platform_repo_mappings"][platform] = concrete_repo_name
 
-    for entry in cuda_proxy_data:
+    for repo_name, spec in component_proxy_specs.items():
         cuda_component_proxy(
-            name = entry["repo_name"],
-            version = entry["version"],
-            platform_mappings = entry["platform_mappings"],
-            targets = REPO_PUBLIC_TARGETS[entry["repo_name"]],
+            name = repo_name,
+            version = spec["version"],
+            platform_repo_mappings = spec["platform_repo_mappings"],
+            targets = spec["targets"],
         )
-
-    cuda_configure(
-        name = "cuda",
-        cuda_version = tag.version,
-        component_versions = component_versions,
-        component_arches = component_arches,
-    )
 
     return mctx.extension_metadata(reproducible = True)
 
