@@ -131,6 +131,15 @@ def _cuda_impl(mctx):
     component_arches = dict(cuda_proxy_data["component_arches"])
     # component_arches.update(cudnn_proxy_data["component_arches"])
 
+
+    for entry in cuda_proxy_data:
+        cuda_component_proxy(
+            name = entry["repo_name"],
+            version = entry["version"],
+            platform_mappings = entry["platform_mappings"],
+            targets = REPO_PUBLIC_TARGETS[entry["repo_name"]],
+        )
+
     cuda_configure(
         name = "cuda",
         cuda_version = tag.version,
