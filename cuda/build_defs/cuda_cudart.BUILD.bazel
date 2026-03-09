@@ -123,9 +123,9 @@ cc_library(
 cc_library(
     name = "cudart",
     deps = select({
-        "@cuda//driver:cuda_umd_libs": [
-            "@cuda//driver:nvidia_driver",
-            "@cuda//driver:nvidia_ptxjitcompiler",
+        "@{cuda_redist_repo}//driver:cuda_umd_libs": [
+            "@{cuda_redist_repo}//driver:nvidia_driver",
+            "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
         ],
         "//conditions:default": [":cuda_driver"],
     }) + [

@@ -90,6 +90,7 @@ _SUPPORTED_ARCHIVE_EXTENSIONS = [
 def cuda_redist_repositories(
         redist,
         cuda_version,
+        cuda_repo_name = "cuda",
         cuda_redist_path_prefix = CUDA_REDIST_PATH_PREFIX,
         components_registry = COMPONENTS_REGISTRY):
     # buildifier: disable=function-docstring-args
@@ -131,6 +132,7 @@ def cuda_redist_repositories(
                     build_file = Label(build_file),
                     component_version = component_version,
                     cuda_version = cuda_version,
+                    cuda_repo_name = cuda_repo_name,
                     strip_prefix = strip_prefix,
                     sha256 = sha256,
                     url = url,
@@ -366,12 +368,10 @@ def _redist_repository_impl(repository_ctx):
     _download_redistribution(repository_ctx)
     lib_versions = _get_lib_versions_from_lib_dir(repository_ctx)
 
-    repository_ctx.template("BUILD", repository_ctx.attr.build_file, {})
-
-    # write cuda version in cuda_version.bzl
-    repository_ctx.file(
-        "cuda_version.bzl",
-        "CUDA_VERSION = \"{}\"".format(repository_ctx.attr.cuda_version),
+    repository_ctx.template(
+        "BUILD",
+        repository_ctx.attr.build_file,
+        {"{cuda_redist_repo}": repository_ctx.attr.cuda_repo_name},
     )
 
     _create_libcuda_symlinks(
@@ -388,6 +388,7 @@ redist_repository = repository_rule(
         "build_file": attr.label(mandatory = True),
         "component_version": attr.string(mandatory = True),
         "cuda_version": attr.string(mandatory = True),
+        "cuda_repo_name": attr.string(mandatory = True),
         "strip_prefix": attr.string(),
         "sha256": attr.string(),
         "url": attr.string(mandatory = True),

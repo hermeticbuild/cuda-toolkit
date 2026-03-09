@@ -108,6 +108,7 @@ def _cuda_impl(mctx):
 
     generated_repos = cuda_redist_repositories(
         redist = cuda_redistributions,
+        cuda_repo_name = tag.name,
         # cuda_redistributions = dict(
         #     cuda_redistributions,
         #     nvidia_driver = cuda_umd_redistributions.get("nvidia_driver", {}),

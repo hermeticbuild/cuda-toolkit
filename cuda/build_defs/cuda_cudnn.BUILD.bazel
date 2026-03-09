@@ -66,7 +66,7 @@ cc_library(
       ":cudnn_adv",
       ":cudnn_engines_runtime_compiled",
       ":cudnn_heuristic",
-      "@cuda//nvrtc:nvrtc",
+      "@{cuda_redist_repo}//nvrtc:nvrtc",
       ":cudnn_main",
     ],
     visibility = ["//visibility:public"],
