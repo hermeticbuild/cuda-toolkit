@@ -2,8 +2,7 @@ load("@bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@cuda//cudart:version.bzl", _cudart_version = "VERSION")
-load("@cuda//cuda:cuda_version.bzl", _cuda_version = "CUDA_VERSION")
+load(":cuda_version.bzl", _cuda_version = "CUDA_VERSION")
 load(
      "@cuda_toolkit//cuda:versions_helper.bzl",
      "if_version_equal_or_greater_than",

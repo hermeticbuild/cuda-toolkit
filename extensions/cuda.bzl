@@ -5,6 +5,10 @@ load(
     "cuda_component_proxy",
 )
 load(
+    "//cuda:cuda_configure.bzl",
+    "cuda_configure",
+)
+load(
     "//cuda:cuda_redist_repositories.bzl",
     "cuda_redist_repositories",
     # "cudnn_redist_repository",
@@ -127,30 +131,47 @@ def _cuda_impl(mctx):
     # )
 
     component_proxy_specs = {}
+    component_versions = {}
     for generated in generated_repos:
-        repo_name = generated["repo_name"]
+        repo_name = generated["component_repo_name"]
         spec = component_proxy_specs.get(repo_name)
         if not spec:
             spec = {
-                "repo_name": generated["repo_name"],
                 "version": generated["version"],
                 "targets": generated["targets"],
                 "platform_repo_mappings": {},
             }
             component_proxy_specs[repo_name] = spec
+            component_versions[repo_name] = generated["version"]
 
         concrete_repo_name = generated["concrete_repo_name"]
         for platform in generated["platforms"]:
             existing = spec["platform_repo_mappings"].get(platform)
+            if existing and existing != concrete_repo_name:
+                fail(
+                    "Conflicting platform mapping for {} on {}: {} vs {}".format(
+                        repo_name,
+                        platform,
+                        existing,
+                        concrete_repo_name,
+                    ),
+                )
             spec["platform_repo_mappings"][platform] = concrete_repo_name
 
-    for repo_name, spec in component_proxy_specs.items():
+    for repo_name in sorted(component_proxy_specs.keys()):
+        spec = component_proxy_specs[repo_name]
         cuda_component_proxy(
             name = repo_name,
             version = spec["version"],
             platform_repo_mappings = spec["platform_repo_mappings"],
             targets = spec["targets"],
         )
+
+    cuda_configure(
+        name = tag.name,
+        cuda_version = tag.version,
+        component_versions = component_versions,
+    )
 
     return mctx.extension_metadata(reproducible = True)
 

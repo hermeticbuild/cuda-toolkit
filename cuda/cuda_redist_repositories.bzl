@@ -106,10 +106,13 @@ def cuda_redist_repositories(
             continue
 
         component_redist_entry = redist[component_name]
+        component_version = component_redist_entry.get("version")
+        if not component_version:
+            fail("Missing {} version".format(component_name))
         repo_data = components_registry[component_name]
         build_file = get_build_template(
             repo_data["version_to_template"],
-            component_redist_entry.get("version"),
+            component_version,
         )
         for platform in sorted(_PLATFORM_SPECS.keys()):
             platform_spec = _PLATFORM_SPECS[platform]
@@ -128,6 +131,7 @@ def cuda_redist_repositories(
                     name = concrete_repo_name,
                     build_file = Label(build_file),
                     component_version = component_version,
+                    cuda_version = cuda_version,
                     strip_prefix = strip_prefix,
                     sha256 = sha256,
                     url = url,
@@ -365,6 +369,12 @@ def _redist_repository_impl(repository_ctx):
 
     repository_ctx.template("BUILD", repository_ctx.attr.build_file, {})
 
+    # write cuda version in cuda_version.bzl
+    repository_ctx.file(
+        "cuda_version.bzl",
+        "CUDA_VERSION = \"{}\"".format(repository_ctx.attr.cuda_version),
+    )
+
     _create_libcuda_symlinks(
         repository_ctx,
         component_version,
@@ -378,6 +388,7 @@ redist_repository = repository_rule(
     attrs = {
         "build_file": attr.label(mandatory = True),
         "component_version": attr.string(mandatory = True),
+        "cuda_version": attr.string(mandatory = True),
         "strip_prefix": attr.string(),
         "sha256": attr.string(),
         "url": attr.string(mandatory = True),

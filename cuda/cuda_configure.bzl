@@ -2,13 +2,8 @@
 
 load(
     "//cuda:redist_proxy_targets.bzl",
-    "ARCH_REPO_SUFFIX",
-    "PROXY_ARCH_CONDITIONS",
     "REPO_PUBLIC_TARGETS",
 )
-
-def _concrete_repo_name(repo_name, arch):
-    return "{}__{}".format(repo_name, ARCH_REPO_SUFFIX[arch])
 
 def _proxy_package_name(repo_name):
     return repo_name.removeprefix("cuda_")
@@ -31,60 +26,34 @@ LIB_VERSIONS = {{}}
         version_patch = version_patch,
     )
 
-def _render_proxy_build_file(repo_name, package_name, target_names, available_arches):
+def _render_proxy_build_file(repo_name, target_names):
     lines = [
         "package(default_visibility = [\"//visibility:public\"])",
         "",
     ]
 
     for target_name in target_names:
-        select_entries = []
-        no_match_error = "@cuda//{}: platform-specific target '{}' unavailable for selected platform".format(
-            package_name,
-            target_name,
-        )
         lines.extend([
             "alias(",
             "    name = \"{}\",".format(target_name),
-            "    actual = select({",
-        ])
-        for arch in sorted(available_arches):
-            if arch not in PROXY_ARCH_CONDITIONS:
-                continue
-            resolved_label = "@{}//:{}".format(_concrete_repo_name(repo_name, arch), target_name)
-            for config_setting_name in PROXY_ARCH_CONDITIONS[arch]:
-                select_entries.append((config_setting_name, resolved_label))
-
-        for (config_setting_name, resolved_label) in select_entries:
-            lines.append("        \"{}\": \"{}\",".format(
-                config_setting_name,
-                resolved_label,
-            ))
-        lines.extend([
-            "    }}, no_match_error = \"{}\"),".format(
-                no_match_error,
-            ),
+            "    actual = \"@{}//:{}\",".format(repo_name, target_name),
             ")",
             "",
         ])
     return "\n".join(lines)
 
 def _write_proxy_packages(repository_ctx):
-    for repo_name, target_names in REPO_PUBLIC_TARGETS.items():
-        component_version = repository_ctx.attr.component_versions.get(repo_name)
-        if not component_version:
-            continue
-        available_arches = repository_ctx.attr.component_arches.get(repo_name)
-        if not available_arches:
+    for repo_name in sorted(repository_ctx.attr.component_versions.keys()):
+        component_version = repository_ctx.attr.component_versions[repo_name]
+        target_names = REPO_PUBLIC_TARGETS.get(repo_name)
+        if not target_names:
             continue
         package_name = _proxy_package_name(repo_name)
         repository_ctx.file(
             package_name + "/BUILD.bazel",
             _render_proxy_build_file(
                 repo_name = repo_name,
-                package_name = package_name,
                 target_names = target_names,
-                available_arches = available_arches,
             ),
         )
         repository_ctx.file(
@@ -117,7 +86,6 @@ cuda_configure = repository_rule(
     attrs = {
         "cuda_version": attr.string(mandatory = True),
         "component_versions": attr.string_dict(default = {}),
-        "component_arches": attr.string_list_dict(default = {}),
         "_cuda_build_file": attr.label(default = Label("//cuda:cuda.BUILD.bazel")),
     },
 )
