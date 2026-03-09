@@ -9,6 +9,9 @@ hermetically using Bazel.
 
 It is meant to be consumed by other Bazel projects, notably rulesets and toolchains.
 
+This project had been started to address limitations of the `rules_cuda` module at the time it was started.
+`rules_cuda` now provides the same cuda toolkit configuration, including its own toolchain while this module only provides the toolkit.
+
 ## Supported versions
 
 Supported versions are defined in:
