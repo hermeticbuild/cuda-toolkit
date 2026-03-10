@@ -65,8 +65,9 @@ def cuda_redist_repositories(
         component_version = component_redist_entry["version"]
         repo_data = components_registry[component_name]
         build_file = get_build_template(
-            repo_data["version_to_template"],
+            component_name,
             component_version,
+            repo_data["version_to_template"],
         )
         for platform, platform_spec in _PLATFORM_SPECS.items():
 
@@ -109,7 +110,7 @@ def _concrete_repo_name(repo_name, platform, cuda_repo_name):
         _PLATFORM_SPECS[platform]["repo_suffix"],
     )
 
-def get_build_template(version_to_template, component_version):
+def get_build_template(component_name, component_version, version_to_template):
     if not component_version:
         fail("Missing component version while selecting build template")
 
@@ -121,7 +122,7 @@ def get_build_template(version_to_template, component_version):
     if fallback_template:
         return fallback_template
 
-    fail("No build template found for component version {}".format(component_version))
+    fail("No build template found for {} {}".format(component_name, component_version))
 
 def get_archive_name(url):
     last_slash_index = url.rfind("/")
