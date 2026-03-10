@@ -5,8 +5,6 @@ load(
     "REPO_PUBLIC_TARGETS",
 )
 
-_DUMMY_TARGET = "@cuda_toolkit//cuda/dummy:dummy"
-
 def _proxy_package_name(repo_name):
     return repo_name.removeprefix("cuda_")
 
@@ -47,7 +45,7 @@ def _render_proxy_build_file(actual_repo_name, target_names):
         ])
     return "\n".join(lines)
 
-def _render_placeholder_build_file(target_names):
+def _render_placeholder_build_file(target_names, cuda_version):
     lines = [
         "package(default_visibility = [\"//visibility:public\"])",
         "",
@@ -57,7 +55,9 @@ def _render_placeholder_build_file(target_names):
         lines.extend([
             "alias(",
             "    name = \"{}\",".format(target_name),
-            "    actual = \"{}\",".format(_DUMMY_TARGET),
+            "    actual = select({",
+            "        \"@platforms//:incompatible\": \"unused\",",
+            "    }}, no_match_error = \"This target is not provided by CUDA {}\"),".format(cuda_version),
             ")",
             "",
         ])
@@ -71,6 +71,7 @@ def _write_proxy_packages(repository_ctx):
         proxy_repo_name = repository_ctx.attr.available_component_mappings.get(repo_name)
 
         build_file_content = _render_placeholder_build_file(
+            cuda_version = repository_ctx.attr.cuda_version,
             target_names = REPO_PUBLIC_TARGETS[repo_name],
         )
         if proxy_repo_name:

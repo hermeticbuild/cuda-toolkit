@@ -56,7 +56,7 @@ def _render_component_alias_build_file(package_name, target_names, version_to_re
             )
 
         # add //conditions:default to max version
-        # So that if users don't constraint, they get max version by default.
+        # So that if users don't set a constraint, they get max version by default.
         max_version = sorted(version_to_redist_repo_name.keys())[-1]
         lines.append("        \"//conditions:default\": \"@{repo}//{package}:{target}\",".format(
             repo = version_to_redist_repo_name[max_version],
