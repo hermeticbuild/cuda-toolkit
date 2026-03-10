@@ -6,6 +6,7 @@ COMPONENTS_REGISTRY = {
     "nvidia_driver": {
         "repo_name": "cuda_driver",
         "version_to_template": {
+            "595": "//cuda/build_defs:cuda_driver.BUILD.bazel",
             "590": "//cuda/build_defs:cuda_driver.BUILD.bazel",
             "580": "//cuda/build_defs:cuda_driver.BUILD.bazel",
             "575": "//cuda/build_defs:cuda_driver.BUILD.bazel",
