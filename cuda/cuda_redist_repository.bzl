@@ -5,6 +5,8 @@ load(
     "REPO_PUBLIC_TARGETS",
 )
 
+_DUMMY_TARGET = "@cuda_toolkit//cuda/dummy:dummy"
+
 def _proxy_package_name(repo_name):
     return repo_name.removeprefix("cuda_")
 
@@ -45,16 +47,41 @@ def _render_proxy_build_file(actual_repo_name, target_names):
         ])
     return "\n".join(lines)
 
+def _render_placeholder_build_file(target_names):
+    lines = [
+        "package(default_visibility = [\"//visibility:public\"])",
+        "",
+    ]
+
+    for target_name in target_names:
+        lines.extend([
+            "alias(",
+            "    name = \"{}\",".format(target_name),
+            "    actual = \"{}\",".format(_DUMMY_TARGET),
+            ")",
+            "",
+        ])
+
+    return "\n".join(lines)
+
 def _write_proxy_packages(repository_ctx):
-    for repo_name, proxy_repo_name in repository_ctx.attr.component_mappings.items():
-        component_version = repository_ctx.attr.component_versions.get(repo_name)
+    for repo_name in sorted(REPO_PUBLIC_TARGETS.keys()):
+        component_version = repository_ctx.attr.available_component_versions.get(repo_name)
         package_name = _proxy_package_name(repo_name)
+        proxy_repo_name = repository_ctx.attr.available_component_mappings.get(repo_name)
+
+        build_file_content = _render_placeholder_build_file(
+            target_names = REPO_PUBLIC_TARGETS[repo_name],
+        )
+        if proxy_repo_name:
+            build_file_content = _render_proxy_build_file(
+                actual_repo_name = proxy_repo_name,
+                target_names = REPO_PUBLIC_TARGETS[repo_name],
+            )
+
         repository_ctx.file(
             package_name + "/BUILD.bazel",
-            _render_proxy_build_file(
-                actual_repo_name = proxy_repo_name,
-                target_names = REPO_PUBLIC_TARGETS.get(repo_name),
-            ),
+            build_file_content,
         )
         repository_ctx.file(
             package_name + "/version.bzl",
@@ -77,7 +104,7 @@ cuda_redist_repository = repository_rule(
     implementation = _cuda_redist_repository_impl,
     attrs = {
         "cuda_version": attr.string(mandatory = True),
-        "component_mappings": attr.string_dict(mandatory = True),
-        "component_versions": attr.string_dict(mandatory = True),
+        "available_component_mappings": attr.string_dict(mandatory = True),
+        "available_component_versions": attr.string_dict(mandatory = True),
     },
 )

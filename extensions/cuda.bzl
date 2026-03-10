@@ -100,8 +100,8 @@ def _cuda_impl(mctx):
                 component_proxy_specs[repo_name] = spec
             spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
 
-        component_versions = {}
-        component_mappings = {}
+        available_component_versions = {}
+        available_component_mappings = {}
         for repo_name, spec in component_proxy_specs.items():
             component_proxy_repo_name = "{}__{}".format(tag.name, repo_name)
 
@@ -112,20 +112,24 @@ def _cuda_impl(mctx):
                 platform_repo_mappings = spec["platform_repo_mappings"],
                 targets = spec["targets"],
             )
-            component_versions[repo_name] = spec["version"]
-            component_mappings[repo_name] = component_proxy_repo_name
+            available_component_versions[repo_name] = spec["version"]
+            available_component_mappings[repo_name] = component_proxy_repo_name
 
         # Re-exports all unified repositories under a //<component> convenient package.
         cuda_redist_repository(
             name = tag.name,
             cuda_version = tag.version,
-            component_mappings = component_mappings,
-            component_versions = component_versions,
+            available_component_mappings = available_component_mappings,
+            available_component_versions = available_component_versions,
         )
 
     cuda_global(
         name = "cuda",
         cuda_versions = sorted(versions),
+        version_to_redist_repo_name = {
+            tag.version: tag.name
+            for tag in tags
+        },
     )
 
     return mctx.extension_metadata(reproducible = True)
