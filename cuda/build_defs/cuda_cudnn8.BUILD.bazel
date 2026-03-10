@@ -59,7 +59,7 @@ cc_library(
       ":cudnn_cnn_train",
       ":cudnn_adv_infer",
       ":cudnn_adv_train",
-      "@cuda//nvrtc:nvrtc",
+      "@{cuda_redist_repo}//nvrtc:nvrtc",
       ":cudnn_main",
     ],
     visibility = ["//visibility:public"],

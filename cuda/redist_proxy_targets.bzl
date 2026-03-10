@@ -1,39 +1,10 @@
 """Shared catalog for CUDA proxy package generation."""
 
-PROXY_ARCH_CONDITIONS = {
-    "amd64": ["@cuda_toolkit//:linux_amd64"],
-    "aarch64": ["@cuda_toolkit//:linux_arm64"],
-}
-
-ARCH_REPO_SUFFIX = {
-    "amd64": "amd64",
-    "aarch64": "aarch64",
-}
-
 REPO_PUBLIC_TARGETS = {
     "cuda_cccl": ["header_list", "headers"],
     "cuda_crt": ["header_list", "headers"],
     "cuda_cublas": ["cublas_shared_library", "cublasLt_shared_library", "cublas", "cublasLt", "header_list", "headers"],
     "cuda_cudart": ["static", "cuda_stub", "cudart_shared_library", "cuda_driver", "cudart", "header_list", "headers", "cuda_header"],
-    "cuda_cudnn": [
-        "cudnn_ops",
-        "cudnn_cnn",
-        "cudnn_adv",
-        "cudnn_graph",
-        "cudnn_engines_precompiled",
-        "cudnn_engines_runtime_compiled",
-        "cudnn_heuristic",
-        "cudnn_main",
-        "cudnn_ops_infer",
-        "cudnn_cnn_infer",
-        "cudnn_ops_train",
-        "cudnn_cnn_train",
-        "cudnn_adv_infer",
-        "cudnn_adv_train",
-        "cudnn",
-        "header_list",
-        "headers",
-    ],
     "cuda_cufft": ["cufft_shared_library", "cufft", "header_list", "headers"],
     "cuda_cupti": ["cupti_shared_library", "cupti", "header_list", "headers"],
     "cuda_curand": ["curand_shared_library", "curand", "header_list", "headers"],

@@ -2,12 +2,11 @@ load("@bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@cuda//cudart:version.bzl", _cudart_version = "VERSION")
-load("@cuda//cuda:cuda_version.bzl", _cuda_version = "CUDA_VERSION")
 load(
      "@cuda_toolkit//cuda:versions_helper.bzl",
      "if_version_equal_or_greater_than",
 )
+load("@cuda//cuda:selects.bzl", "if_cuda_version")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -18,12 +17,28 @@ copy_to_directory(
         "@cuda//cudart:cuda_header",
         "@cuda//nvcc:ptxas",
         "@cuda//nvcc:fatbinary",
-    ] + if_version_equal_or_greater_than(_cuda_version, "13.0.0", if_true = [
-        "@cuda//nvvm:libdevice",
-    ], if_false = [
-        "@cuda//nvcc:libdevice",
-    ]),
+        ":libdevice",
+    ],
     include_external_repositories = ["**"],
+)
+
+alias(
+    name = "ptxas",
+    actual = "@cuda//nvcc:ptxas",
+)
+
+alias(
+    name = "fatbinary",
+    actual = "@cuda//nvcc:fatbinary",
+)
+
+alias(
+    name = "libdevice",
+    actual = if_cuda_version(
+        ">=13",
+        "@cuda//nvvm:libdevice",
+        "@cuda//nvcc:libdevice",
+    ),
 )
 
 cc_library(
@@ -32,7 +47,6 @@ cc_library(
         "@cuda//cccl:headers",
         "@cuda//cublas:headers",
         "@cuda//cudart:headers",
-        "@cuda//cudnn:headers",
         "@cuda//cufft:headers",
         "@cuda//cupti:headers",
         "@cuda//curand:headers",
@@ -44,9 +58,10 @@ cc_library(
         "@cuda//nvrtc:headers",
         "@cuda//nvtx:headers",
         "@cuda//profiler_api:headers",
-    ] + if_version_equal_or_greater_than(_cuda_version, "13.0", [
-        "@cuda//crt:headers",
-    ]),
+    ] + if_cuda_version(
+        ">=13",
+        ["@cuda//crt:crt_header"],
+    ),
 )
 
 # This target is needed if users want to have implicit cuda_headers dependencies
@@ -64,7 +79,6 @@ cc_library(
         "@cuda//cublas",
         "@cuda//cublas:cublasLt",
         "@cuda//cudart",
-        "@cuda//cudnn",
         "@cuda//cufft",
         "@cuda//curand",
     ],
@@ -76,12 +90,4 @@ alias(
         "@cuda//driver:cuda_umd_libs": "@cuda//driver:nvidia_driver",
         "//conditions:default": "@cuda//cudart:cuda_driver",
     }),
-)
-
-bzl_library(
-    name = "build_defs_bzl",
-    srcs = ["versions_helper.bzl"],
-    deps = [
-        "@bazel_skylib//lib:selects",
-    ],
 )

@@ -15,11 +15,18 @@ local_path_override(
 register_toolchains("@llvm//toolchain:all")
 
 cuda_ext = use_extension("@cuda_toolkit//extensions:cuda.bzl", "cuda")
-cuda_ext.configure(
-    cuda_version = "13.1.1",
-    # cuda_version = "12.8.1",
-    # cuda_version = "12.4.1",
-    cudnn_version = "9.16.0",
+cuda_ext.redist(
+    name = "cuda_13_1_1",
+    version = "13.1.1",
+)
+cuda_ext.redist(
+    name = "cuda_13_0_2",
+    version = "13.0.2",
 )
 
-use_repo(cuda_ext, "cuda")
+use_repo(
+    cuda_ext,
+    "cuda",
+    "cuda_13_1_1",
+    "cuda_13_0_2",
+)

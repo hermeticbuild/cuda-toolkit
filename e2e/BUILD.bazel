@@ -1,5 +1,6 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@cuda//cuda:selects.bzl", "if_cuda_version")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -18,4 +19,13 @@ cc_binary(
     name = "cuda_toolkit_all_dummy_main",
     srcs = ["main.cc"],
     deps = [":cuda_toolkit_all"],
+)
+
+cc_library(
+    name = "cuda_version_helper_smoke",
+    deps = if_cuda_version(
+        ">=13",
+        if_true = ["@cuda//nvvm:libdevice"],
+        if_false = ["@cuda//nvcc:libdevice"],
+    ),
 )

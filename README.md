@@ -16,7 +16,6 @@ This project had been started to address limitations of the `rules_cuda` module 
 
 Supported versions are defined in:
 - `cuda/cuda_redist_versions.json`
-- `cuda/cudnn_redist_versions.json`
 
 ## Supported platforms
 
@@ -40,9 +39,6 @@ Example `MODULE.bazel` setup:
 cuda_ext = use_extension("//extensions:cuda.bzl", "cuda")
 cuda_ext.configure(
     cuda_version = "12.9.1",
-    cudnn_version = "9.8.0",
-    # Optional:
-    # cuda_umd_version = "13.0.0",
 )
 use_repo(cuda_ext, "cuda")
 ```

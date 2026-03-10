@@ -12,10 +12,10 @@ cc_import(
     name = "cusolver_shared_library",
     shared_library = "lib/libcusolver.so." + LIB_VERSIONS["libcusolver"],
     deps = [
-        "@cuda//nvjitlink:nvjitlink",
-        "@cuda//cusparse:cusparse",
-        "@cuda//cublas:cublas",
-        "@cuda//cublas:cublasLt",
+        "@{cuda_redist_repo}//nvjitlink:nvjitlink",
+        "@{cuda_redist_repo}//cusparse:cusparse",
+        "@{cuda_redist_repo}//cublas:cublas",
+        "@{cuda_redist_repo}//cublas:cublasLt",
         ":headers",
     ],
 )

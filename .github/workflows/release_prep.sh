@@ -31,11 +31,8 @@ cat << EOF
 bazel_dep(name = "cuda_toolkit", version = "$VERSION")
 
 cuda_ext = use_extension("//extensions:cuda.bzl", "cuda")
-cuda_ext.configure(
-    cuda_version = "13.1.1",
-    cudnn_version = "9.8.0",
-    # Optional:
-    # cuda_umd_version = "13.0.0",
+cuda_ext.redist(
+    version = "13.1.1",
 )
 use_repo(cuda_ext, "cuda")
 \`\`\`

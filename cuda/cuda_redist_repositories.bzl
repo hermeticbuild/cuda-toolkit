@@ -3,28 +3,26 @@
 load(
     "//cuda:cuda_redist_build_defs.bzl",
     "CUDA_REDIST_PATH_PREFIX",
-    "CUDNN_REDIST_PATH_PREFIX",
-    "REDIST_VERSIONS_TO_BUILD_DEFS",
+    "COMPONENTS_REGISTRY",
 )
 load(
     "//cuda:redist_proxy_targets.bzl",
-    "ARCH_REPO_SUFFIX",
-    "PROXY_ARCH_CONDITIONS",
     "REPO_PUBLIC_TARGETS",
 )
 
-OS_ARCH_DICT = {
-    "amd64": "x86_64-unknown-linux-gnu",
-    "aarch64": "aarch64-unknown-linux-gnu",
+_PLATFORM_SPECS = {
+    "linux_amd64": {
+        "redist_platform_key": "linux-x86_64",
+        "repo_suffix": "linux_x86_64",
+        "config_setting": "@cuda_toolkit//:linux_amd64",
+    },
+    "linux_aarch64": {
+        "redist_platform_key": "linux-sbsa",
+        "repo_suffix": "linux_sbsa",
+        "config_setting": "@cuda_toolkit//:linux_arm64",
+    },
 }
-_ARCH_REPO_SUFFIX = {
-    "amd64": ARCH_REPO_SUFFIX["amd64"],
-    "aarch64": ARCH_REPO_SUFFIX["aarch64"],
-}
-_REDIST_ARCH_DICT = {
-    "linux-x86_64": "x86_64-unknown-linux-gnu",
-    "linux-sbsa": "aarch64-unknown-linux-gnu",
-}
+
 _REPO_PUBLIC_TARGETS = REPO_PUBLIC_TARGETS
 _SUPPORTED_ARCHIVE_EXTENSIONS = [
     # we use suffix match, so suffix specializations should be
@@ -47,216 +45,71 @@ _SUPPORTED_ARCHIVE_EXTENSIONS = [
     ".whl",
 ]
 
-# -----------------------------------------------------------------------------
-# Public macros
-# -----------------------------------------------------------------------------
-
-def cudnn_redist_repository(
-        cudnn_redistributions,
-        cuda_version,
-        cudnn_redist_path_prefix = CUDNN_REDIST_PATH_PREFIX,
-        redist_versions_to_build_templates = REDIST_VERSIONS_TO_BUILD_DEFS):
-    # buildifier: disable=function-docstring-args
-    """Initializes CUDNN repository."""
-    if "cudnn" not in cudnn_redistributions:
-        fail("Missing cudnn redistribution metadata")
-
-    per_arch_url_dict = _get_redistribution_urls(
-        cudnn_redistributions["cudnn"],
-        dist_name = "cudnn",
-        cuda_version_major = cuda_version.split(".")[0],
-    )
-    component_version = cudnn_redistributions["cudnn"].get("version")
-    if not component_version:
-        fail("Missing cudnn version")
-
-    repo_data = redist_versions_to_build_templates["cudnn"]
-    build_file = get_build_template(
-        repo_data["version_to_template"],
-        component_version,
-    )
-    package_name = repo_data["package_name"]
-    available_arches = _create_component_arch_specific_repositories(
-        repo_name = package_name,
-        build_file = build_file,
-        component_version = component_version,
-        per_arch_url_dict = per_arch_url_dict,
-        redist_path_prefix = cudnn_redist_path_prefix,
-    )
-    return {
-        "component_versions": {package_name: component_version},
-        "component_arches": {package_name: available_arches},
-    }
-
 def cuda_redist_repositories(
-        cuda_redistributions,
+        redist,
         cuda_version,
+        cuda_repo_name = "cuda",
         cuda_redist_path_prefix = CUDA_REDIST_PATH_PREFIX,
-        redist_versions_to_build_templates = REDIST_VERSIONS_TO_BUILD_DEFS):
-    # buildifier: disable=function-docstring-args
-    """Initializes CUDA repositories."""
-    component_specs = []
-    for redist_name in sorted(redist_versions_to_build_templates.keys()):
-        if redist_name in ["cudnn", "cuda_nccl"]:
-            continue
+        components_registry = COMPONENTS_REGISTRY):
+    cuda_version_major = cuda_version.split(".")[0]
+    generated_repos = []
+    for component_name in sorted(components_registry.keys()):
 
         # A given redist may exist in a CUDA version but not in another.
-        if redist_name not in cuda_redistributions:
+        if component_name not in redist:
+            # buildifier: disable=print
+            print("Component '{}' is missing from CUDA {} redist".format(component_name, cuda_version)) 
             continue
 
-        per_arch_url_dict = _get_redistribution_urls(
-            cuda_redistributions[redist_name],
-            dist_name = redist_name,
-            cuda_version_major = cuda_version.split(".")[0],
-        )
-        component_version = cuda_redistributions[redist_name].get("version")
-        if not component_version:
-            fail("Missing {} version".format(redist_name))
-
-        repo_data = redist_versions_to_build_templates[redist_name]
+        component_redist_entry = redist[component_name]
+        component_version = component_redist_entry["version"]
+        repo_data = components_registry[component_name]
         build_file = get_build_template(
             repo_data["version_to_template"],
             component_version,
         )
-        component_specs.append({
-            "package_name": repo_data["package_name"],
-            "build_file": build_file,
-            "component_version": component_version,
-            "per_arch_url_dict": per_arch_url_dict,
-        })
+        for platform, platform_spec in _PLATFORM_SPECS.items():
 
-    sorted_component_specs = [
-        spec
-        for spec in sorted(component_specs, key = lambda spec: spec["package_name"])
-    ]
+            platform_key = platform_spec["redist_platform_key"]
+            if platform_key not in component_redist_entry:
+                # Component may not be available for that platform
+                # buildifier: disable=print
+                print("Component '{}' is missing for platform '{}' in CUDA {} redist".format(component_name, platform_key, cuda_version)) 
+                continue
 
-    component_versions = {}
-    component_arches = {}
-    for spec in sorted_component_specs:
-        available_arches = _create_component_arch_specific_repositories(
-            repo_name = spec["package_name"],
-            build_file = spec["build_file"],
-            component_version = spec["component_version"],
-            per_arch_url_dict = spec["per_arch_url_dict"],
-            redist_path_prefix = cuda_redist_path_prefix,
-        )
-        component_versions[spec["package_name"]] = spec["component_version"]
-        component_arches[spec["package_name"]] = available_arches
-
-    return {
-        "component_versions": component_versions,
-        "component_arches": component_arches,
-    }
-
-def _create_component_arch_specific_repositories(
-        repo_name,
-        build_file,
-        component_version,
-        per_arch_url_dict,
-        redist_path_prefix):
-    available_arches = []
-    for arch in sorted(OS_ARCH_DICT.keys()):
-        concrete_repo_name = _concrete_repo_name(repo_name, arch)
-        arch_redist = _get_arch_redistribution(per_arch_url_dict, arch)
-        if arch_redist:
-            (url, sha256, custom_strip_prefix) = arch_redist
-            redist_repository(
+            concrete_repo_name = _concrete_repo_name(
+                repo_name = repo_data["repo_name"],
+                platform = platform,
+                cuda_repo_name = cuda_repo_name,
+            )
+            cuda_component_repository(
                 name = concrete_repo_name,
                 build_file = Label(build_file),
                 component_version = component_version,
-                custom_strip_prefix = custom_strip_prefix,
-                redist_path_prefix = redist_path_prefix,
-                sha256 = sha256,
-                url = url,
+                cuda_version = cuda_version,
+                cuda_repo_name = cuda_repo_name,
+                sha256 = component_redist_entry[platform_key].get("sha256", ""),
+                url = CUDA_REDIST_PATH_PREFIX + component_redist_entry[platform_key]["relative_path"],
             )
-            if arch in PROXY_ARCH_CONDITIONS:
-                available_arches.append(arch)
+            generated_repos.append({
+                "component_repo_name": repo_data["repo_name"],
+                "concrete_repo_name": concrete_repo_name,
+                "platform": platform,
+                "config_setting": platform_spec["config_setting"],
+                "version": component_version,
+                "targets": _REPO_PUBLIC_TARGETS.get(repo_data["repo_name"], []),
+            })
 
-    if repo_name not in _REPO_PUBLIC_TARGETS:
-        fail("Missing public target catalog for repository '{}'".format(repo_name))
-    return available_arches
+    return generated_repos
 
-def _concrete_repo_name(repo_name, arch):
-    return "{}__{}".format(repo_name, _ARCH_REPO_SUFFIX[arch])
-
-def _get_arch_redistribution(per_arch_url_dict, arch):
-    arch_key = OS_ARCH_DICT[arch]
-    return per_arch_url_dict.get(arch_key)
-
-def _get_redistribution_urls(dist_info, dist_name, cuda_version_major):
-    # buildifier: disable=function-docstring-return
-    # buildifier: disable=function-docstring-args
-    """Returns a dict of redistribution URLs and their SHA256 values."""
-
-    # CUDA redist json looks like this
-    # "nvidia_fs": {
-    #     "linux-x86_64": {
-    #         "relative_path": "fs/linux-x86_64/libnvidia-fs.so",
-    #     },
-    #     ...
-    # },
-    per_arch_url_dict = {}
-    for arch in sorted(_REDIST_ARCH_DICT.keys()):
-        arch_key = arch
-        if arch_key not in dist_info:
-            continue
-        arch_info = dist_info[arch_key]
-        if "relative_path" in arch_info:
-            per_arch_url_dict[_REDIST_ARCH_DICT[arch]] = [
-                arch_info["relative_path"],
-                arch_info.get("sha256", ""),
-                arch_info.get("strip_prefix", ""),
-            ]
-            continue
-
-        if "full_path" in arch_info:
-            per_arch_url_dict[_REDIST_ARCH_DICT[arch]] = [
-                arch_info["full_path"],
-                arch_info.get("sha256", ""),
-                arch_info.get("strip_prefix", ""),
-            ]
-            continue
-
-        # CUDNN and NVSHMEM JSON look like this:
-        # "cudnn": {
-        #     "linux-x86_64": {
-        #         "cuda12": {
-        #               "relative_path": "cudnn/linux-x86_64/...tar.xz",
-
-        cuda_variant_key = "cuda%s" % cuda_version_major
-        data = dist_info[arch_key].get(cuda_variant_key)
-        if not data:
-            fail("Missing redistribution metadata for {dist_name} (arch={arch}, cuda={cuda_version_major})".format(
-                dist_name = dist_name,
-                arch = arch_key,
-                cuda_version_major = cuda_version_major,
-            ))
-        if "relative_path" in data:
-            path_key = "relative_path"
-        elif "full_path" in data:
-            path_key = "full_path"
-        else:
-            fail(
-                ("Invalid redistribution metadata for {dist_name} " +
-                    "(arch={arch}, cuda={cuda_version_major}): expected either " +
-                    "'relative_path' or 'full_path', got keys {keys}.").format(
-                    dist_name = dist_name,
-                    arch = arch_key,
-                    cuda_version_major = cuda_version_major,
-                    keys = sorted(data.keys()),
-                ),
-            )
-        per_arch_url_dict[_REDIST_ARCH_DICT[arch]] = [
-            data[path_key],
-            data.get("sha256", ""),
-            data.get("strip_prefix", ""),
-        ]
-    return per_arch_url_dict
+def _concrete_repo_name(repo_name, platform, cuda_repo_name):
+    return "{}__{}__{}".format(
+        cuda_repo_name,
+        repo_name,
+        _PLATFORM_SPECS[platform]["repo_suffix"],
+    )
 
 def get_build_template(version_to_template, component_version):
-    # buildifier: disable=function-docstring-return
-    # buildifier: disable=function-docstring-args
-    """Returns the matching build template path for a component version."""
     if not component_version:
         fail("Missing component version while selecting build template")
 
@@ -270,43 +123,13 @@ def get_build_template(version_to_template, component_version):
 
     fail("No build template found for component version {}".format(component_version))
 
-def _get_file_name(url):
-    last_slash_index = url.rfind("/")
-    return url[last_slash_index + 1:]
-
 def get_archive_name(url):
-    # buildifier: disable=function-docstring-return
-    # buildifier: disable=function-docstring-args
-    """Returns the archive name without extension."""
-    filename = _get_file_name(url)
+    last_slash_index = url.rfind("/")
+    filename = url[last_slash_index + 1:]
     for extension in _SUPPORTED_ARCHIVE_EXTENSIONS:
         if filename.endswith(extension):
             return filename[:-len(extension)]
     return filename
-
-def _create_libcuda_symlinks(
-        repository_ctx,
-        component_version):
-    lib_names = ["cuda", "nvidia-ml", "nvidia-ptxjitcompiler"]
-    if repository_ctx.original_name == "cuda_driver" and component_version:
-        for lib in lib_names:
-            versioned_lib_path = "lib/lib{}.so.{}".format(
-                lib,
-                component_version,
-            )
-            if not repository_ctx.path(versioned_lib_path).exists:
-                fail("%s doesn't exist!" % versioned_lib_path)
-            symlink_so_1 = "lib/lib%s.so.1" % lib
-            if repository_ctx.path(symlink_so_1).exists:
-                print("File %s already exists!" % repository_ctx.path(symlink_so_1))  # buildifier: disable=print
-            else:
-                repository_ctx.symlink(versioned_lib_path, symlink_so_1)
-            if lib == "cuda":
-                unversioned_symlink = "lib/lib%s.so" % lib
-                if repository_ctx.path(unversioned_symlink).exists:
-                    print("File %s already exists!" % repository_ctx.path(unversioned_symlink))  # buildifier: disable=print
-                else:
-                    repository_ctx.symlink(symlink_so_1, unversioned_symlink)
 
 def _get_lib_versions_from_lib_dir(repository_ctx):
     lib_versions = {}
@@ -371,57 +194,44 @@ VERSION_PATCH = "{version_patch}"
         lib_versions = _format_lib_versions_bzl(lib_versions),
     )
 
-def _create_version_file(repository_ctx, component_version, lib_versions = {}):
-    if repository_ctx.name == "cuda_driver" and component_version:
-        print("Downloaded User Mode Driver version is %s" % component_version)  # buildifier: disable=print
+def _download_redistribution(rctx):
+    # If url is not relative, then appending prefix is not needed.
+    url = rctx.attr.url
+    archive_name = get_archive_name(url)
+    rctx.download_and_extract(
+        url = url,
+        sha256 = rctx.attr.sha256,
+        strip_prefix = archive_name,
+    )
 
+## Redist component repository
+
+def _cuda_component_repository_impl(repository_ctx):
+    component_version = repository_ctx.attr.component_version
+
+    _download_redistribution(repository_ctx)
+
+    repository_ctx.template(
+        "BUILD",
+        repository_ctx.attr.build_file,
+        {"{cuda_redist_repo}": repository_ctx.attr.cuda_repo_name},
+    )
+
+    lib_versions = _get_lib_versions_from_lib_dir(repository_ctx)
     repository_ctx.file(
         "version.bzl",
         _version_bzl_content(component_version, lib_versions),
     )
 
-def _download_redistribution(rctx):
-    """Downloads and extracts NVIDIA redistribution."""
-
-    # If url is not relative, then appending prefix is not needed.
-    url = rctx.attr.url
-    if not (url.startswith("http") or url.startswith("file:///")):
-        url = rctx.attr.redist_path_prefix + url
-
-    archive_name = get_archive_name(url)
-    rctx.download_and_extract(
-        url = url,
-        sha256 = rctx.attr.sha256,
-        strip_prefix = rctx.attr.custom_strip_prefix or archive_name,
-    )
-
-## Redist component repository
-
-def _redist_repository_impl(repository_ctx):
-    # buildifier: disable=function-docstring-args
-    """ Downloads redistribution and initializes hermetic repository."""
-    component_version = repository_ctx.attr.component_version
-
-    _download_redistribution(repository_ctx)
-    lib_versions = _get_lib_versions_from_lib_dir(repository_ctx)
-
-    repository_ctx.template("BUILD", repository_ctx.attr.build_file, {})
-
-    _create_libcuda_symlinks(
-        repository_ctx,
-        component_version,
-    )
-    _create_version_file(repository_ctx, component_version, lib_versions)
-
     return repository_ctx.repo_metadata(reproducible = True)
 
-redist_repository = repository_rule(
-    implementation = _redist_repository_impl,
+cuda_component_repository = repository_rule(
+    implementation = _cuda_component_repository_impl,
     attrs = {
         "build_file": attr.label(mandatory = True),
         "component_version": attr.string(mandatory = True),
-        "custom_strip_prefix": attr.string(),
-        "redist_path_prefix": attr.string(),
+        "cuda_version": attr.string(mandatory = True),
+        "cuda_repo_name": attr.string(mandatory = True),
         "sha256": attr.string(),
         "url": attr.string(mandatory = True),
     },
