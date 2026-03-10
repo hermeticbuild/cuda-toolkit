@@ -60,7 +60,7 @@ cc_library(
         "@cuda//profiler_api:headers",
     ] + if_cuda_version(
         ">=13",
-        ["@cuda//crt:crt_header"],
+        ["@cuda//crt:headers"],
     ),
 )
 
