@@ -11,6 +11,7 @@ bzl_library(
     name = "cuda_global",
     srcs = ["cuda_global.bzl"],
     visibility = ["//visibility:public"],
+    deps = [":selects_internal"],
 )
 
 bzl_library(
@@ -36,7 +37,15 @@ bzl_library(
 )
 
 bzl_library(
+    name = "selects_internal",
+    srcs = ["selects_internal.bzl"],
+    visibility = ["//visibility:public"],
+    deps = ["@bazel_skylib//lib:selects"],
+)
+
+bzl_library(
     name = "versions_helper",
     srcs = ["versions_helper.bzl"],
     visibility = ["//visibility:public"],
+    deps = [":selects_internal"],
 )

@@ -125,7 +125,8 @@ def _cuda_impl(mctx):
 
     cuda_global(
         name = "cuda",
-        cuda_versions = sorted(versions),
+        available_cuda_versions = sorted(cuda_version_map.keys()),
+        registered_cuda_versions = sorted(versions),
         version_to_redist_repo_name = {
             tag.version: tag.name
             for tag in tags

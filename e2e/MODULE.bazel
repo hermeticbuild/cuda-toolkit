@@ -24,4 +24,9 @@ cuda_ext.redist(
     version = "13.0.2",
 )
 
-use_repo(cuda_ext, "cuda", "cuda_13_1_1", "cuda_13_0_2")
+use_repo(
+    cuda_ext,
+    "cuda",
+    "cuda_13_1_1",
+    "cuda_13_0_2",
+)

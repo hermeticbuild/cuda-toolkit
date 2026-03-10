@@ -8,6 +8,30 @@ def _sanitize_version(version):
 def _proxy_package_name(repo_name):
     return repo_name.removeprefix("cuda_")
 
+def _render_selects_bzl(cuda_versions):
+    lines = [
+        "load(",
+        "    \"@cuda_toolkit//cuda:selects_internal.bzl\",",
+        "    _if_cuda_version = \"if_cuda_version\",",
+        ")",
+        "",
+        "CUDA_VERSIONS = [",
+    ]
+
+    # We only generate this based on the registered versions to minimize the number 
+    # of targets that will be created by _if_cuda_version.
+    for version in sorted(cuda_versions):
+        lines.append("    \"{}\",".format(version))
+
+    lines.extend([
+        "]",
+        "",
+        "def if_cuda_version(version_expr, if_true, if_false = []):",
+        "    return _if_cuda_version(CUDA_VERSIONS, version_expr, if_true, if_false)",
+    ])
+
+    return "\n".join(lines)
+
 def _render_component_alias_build_file(package_name, target_names, version_to_redist_repo_name):
     lines = [
         "package(default_visibility = [\"//visibility:public\"])",
@@ -31,69 +55,39 @@ def _render_component_alias_build_file(package_name, target_names, version_to_re
                 ),
             )
 
+        # add //conditions:default to max version
+        # So that if users don't constraint, they get max version by default.
+        max_version = sorted(version_to_redist_repo_name.keys())[-1]
+        lines.append("        \"//conditions:default\": \"@{repo}//{package}:{target}\",".format(
+            repo = version_to_redist_repo_name[max_version],
+            package = package_name,
+            target = target_name,
+        ))
         lines.extend([
-            "    }}, no_match_error = \"@cuda//{package}:{target} requires selecting a supported CUDA version\"),".format(
-                package = package_name,
-                target = target_name,
-            ),
+            "    }),",
             ")",
             "",
         ])
 
     return "\n".join(lines)
 
-def _render_root_constraints_build(cuda_versions):
-    lines = [
-        "load(\"@bazel_skylib//lib:selects.bzl\", \"selects\")",
+def _render_root_constraints_build(available_cuda_versions, registered_cuda_versions):
+    return "\n".join([
+        "load(\"@cuda_toolkit//cuda:declare_constraints.bzl\", \"declare_constraints\")",
         "",
         "package(default_visibility = [\"//visibility:public\"])",
         "",
-        "constraint_setting(",
-        "    name = \"cuda_version\",",
-        ")",
-        "",
-    ]
-
-    major_to_versions = {}
-    for version in sorted(cuda_versions):
-        version_key = _sanitize_version(version)
-        major = version.split(".")[0]
-        versions_for_major = major_to_versions.get(major, [])
-        versions_for_major.append(version)
-        major_to_versions[major] = versions_for_major
-        lines.extend([
-            "constraint_value(",
-            "    name = \"cuda_{}\",".format(version_key),
-            "    constraint_setting = \":cuda_version\",",
-            ")",
-            "",
-            "config_setting(",
-            "    name = \"is_cuda_{}\",".format(version_key),
-            "    constraint_values = [\":cuda_{}\"],".format(version_key),
-            ")",
-            "",
-        ])
-
-    for major in sorted(major_to_versions.keys()):
-        lines.extend([
-            "selects.config_setting_group(",
-            "    name = \"is_cuda_{}\",".format(major),
-            "    match_any = [",
-        ])
-        for version in sorted(major_to_versions[major]):
-            lines.append("        \":is_cuda_{}\",".format(_sanitize_version(version)))
-        lines.extend([
-            "    ],",
-            ")",
-            "",
-        ])
-
-    return "\n".join(lines)
+        "declare_constraints(" + repr(available_cuda_versions) + ", " + repr(registered_cuda_versions) + ")",
+    ])
 
 def _cuda_global_impl(repository_ctx):
     repository_ctx.template(
         "cuda/BUILD.bazel",
         repository_ctx.attr._cuda_build_file,
+    )
+    repository_ctx.file(
+        "cuda/selects.bzl",
+        _render_selects_bzl(repository_ctx.attr.registered_cuda_versions),
     )
 
     for repo_name in sorted(REPO_PUBLIC_TARGETS.keys()):
@@ -109,14 +103,18 @@ def _cuda_global_impl(repository_ctx):
 
     repository_ctx.file(
         "BUILD.bazel",
-        _render_root_constraints_build(repository_ctx.attr.cuda_versions),
+        _render_root_constraints_build(
+            repository_ctx.attr.available_cuda_versions,
+            repository_ctx.attr.registered_cuda_versions,
+        ),
     )
     return repository_ctx.repo_metadata(reproducible = True)
 
 cuda_global = repository_rule(
     implementation = _cuda_global_impl,
     attrs = {
-        "cuda_versions": attr.string_list(mandatory = True),
+        "available_cuda_versions": attr.string_list(mandatory = True),
+        "registered_cuda_versions": attr.string_list(mandatory = True),
         "version_to_redist_repo_name": attr.string_dict(mandatory = True),
         "_cuda_build_file": attr.label(default = Label("//cuda:cuda.BUILD.bazel")),
     },
