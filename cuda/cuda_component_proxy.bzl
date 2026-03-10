@@ -2,10 +2,7 @@
 """Repository rule for a single CUDA component proxy repository."""
 
 def _normalize_repo_name(repo_name):
-    if repo_name.startswith("@"):
-        return repo_name[1:]
-    return repo_name
-
+    return repo_name.removeprefix("@")
 
 def _version_bzl_content(component_version):
     parts = component_version.split(".") if component_version else []
