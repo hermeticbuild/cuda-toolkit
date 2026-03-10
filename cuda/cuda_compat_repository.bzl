@@ -80,7 +80,7 @@ def _render_root_constraints_build(available_cuda_versions, registered_cuda_vers
         "declare_constraints(" + repr(available_cuda_versions) + ", " + repr(registered_cuda_versions) + ")",
     ])
 
-def _cuda_global_impl(repository_ctx):
+def _cuda_compat_repository_impl(repository_ctx):
     repository_ctx.template(
         "cuda/BUILD.bazel",
         repository_ctx.attr._cuda_build_file,
@@ -110,8 +110,8 @@ def _cuda_global_impl(repository_ctx):
     )
     return repository_ctx.repo_metadata(reproducible = True)
 
-cuda_global = repository_rule(
-    implementation = _cuda_global_impl,
+cuda_compat_repository = repository_rule(
+    implementation = _cuda_compat_repository_impl,
     attrs = {
         "available_cuda_versions": attr.string_list(mandatory = True),
         "registered_cuda_versions": attr.string_list(mandatory = True),

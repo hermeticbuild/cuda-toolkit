@@ -2,7 +2,7 @@
 
 load("//cuda:cuda_component_proxy.bzl", "cuda_component_proxy")
 load("//cuda:cuda_redist_repository.bzl", "cuda_redist_repository")
-load("//cuda:cuda_global.bzl", "cuda_global")
+load("//cuda:cuda_compat_repository.bzl", "cuda_compat_repository")
 load("//cuda:cuda_redist_repositories.bzl", "cuda_redist_repositories")
 
 _CUDA_REDIST_VERSIONS_JSON = Label("//cuda:cuda_redist_versions.json")
@@ -132,7 +132,7 @@ def _cuda_impl(mctx):
             available_component_versions = available_component_versions,
         )
 
-    cuda_global(
+    cuda_compat_repository(
         name = "cuda",
         available_cuda_versions = sorted(cuda_version_map.keys()),
         registered_cuda_versions = sorted(versions),
