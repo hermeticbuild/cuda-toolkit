@@ -57,6 +57,8 @@ def _cuda_impl(mctx):
     seen_repo_names = {}
     versions = []
 
+    pending_redistributions_by_version = {}
+    versions_to_fetch = []
     redistributions_by_version = {}
     for tag in tags:
         if tag.name == "cuda":
@@ -67,20 +69,27 @@ def _cuda_impl(mctx):
         seen_repo_names[tag.name] = True
         versions.append(tag.version)
 
-        if tag.version not in redistributions_by_version:
+        if tag.version not in pending_redistributions_by_version:
             (cuda_redist_url, cuda_redist_sha256) = _get_url_sha_from_version_map(
                 version = tag.version,
                 version_to_url_sha = cuda_version_map,
                 toolkit_name = "CUDA",
             )
-            cuda_redistributions_download = _json_from_url_future(
+            pending_redistributions_by_version[tag.version] = _json_from_url_future(
                 mctx = mctx,
                 url = cuda_redist_url,
                 sha256 = cuda_redist_sha256,
                 output_path = "redistrib_cuda_%s.json" % tag.version,
             )
-            redistributions_by_version[tag.version] = _read_downloaded_json(mctx, cuda_redistributions_download)
+            versions_to_fetch.append(tag.version)
 
+    for version in versions_to_fetch:
+        redistributions_by_version[version] = _read_downloaded_json(
+            mctx,
+            pending_redistributions_by_version[version],
+        )
+
+    for tag in tags:
         generated_repos = cuda_redist_repositories(
             redist = redistributions_by_version[tag.version],
             cuda_repo_name = tag.name,
