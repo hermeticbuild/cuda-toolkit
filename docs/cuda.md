@@ -8,22 +8,21 @@ Unified CUDA module extension.
 
 <pre>
 cuda = use_extension("@cuda_toolkit//extensions:cuda.bzl", "cuda")
-cuda.configure(<a href="#cuda.configure-cuda_umd_version">cuda_umd_version</a>, <a href="#cuda.configure-cuda_version">cuda_version</a>, <a href="#cuda.configure-cudnn_version">cudnn_version</a>)
+cuda.redist(<a href="#cuda.redist-name">name</a>, <a href="#cuda.redist-version">version</a>)
 </pre>
 
 
 **TAG CLASSES**
 
-<a id="cuda.configure"></a>
+<a id="cuda.redist"></a>
 
-### configure
+### redist
 
 **Attributes**
 
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
-| <a id="cuda.configure-cuda_umd_version"></a>cuda_umd_version |  -   | String | optional |  `""`  |
-| <a id="cuda.configure-cuda_version"></a>cuda_version |  -   | String | required |  |
-| <a id="cuda.configure-cudnn_version"></a>cudnn_version |  -   | String | required |  |
+| <a id="cuda.redist-name"></a>name |  -   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="cuda.redist-version"></a>version |  -   | String | required |  |
 
 
