@@ -6,8 +6,10 @@ bzl_library(
     srcs = ["cuda.bzl"],
     visibility = ["//visibility:public"],
     deps = [
-        "//cuda:cuda_redist_repository",
         "//cuda:cuda_redist_repositories",
+        "//cuda:cuda_redist_repository",
+        "//cuda:cuda_component_proxy",
+        "//cuda:cuda_compat_repository",
     ],
 )
 
