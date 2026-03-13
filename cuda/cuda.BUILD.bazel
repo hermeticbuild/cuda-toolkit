@@ -7,6 +7,7 @@ load(
      "if_version_equal_or_greater_than",
 )
 load("@cuda//cuda:selects.bzl", "if_cuda_version")
+load("@cuda_toolkit//:exec_binary.bzl", "exec_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,21 +16,15 @@ copy_to_directory(
     name = "cuda_path",
     srcs = [
         "@cuda//cudart:cuda_header",
-        "@cuda//nvcc:ptxas",
-        "@cuda//nvcc:fatbinary",
+        ":bin/ptxas",
         ":libdevice",
     ],
     include_external_repositories = ["**"],
 )
 
-alias(
-    name = "ptxas",
+exec_binary(
+    name = "bin/ptxas",
     actual = "@cuda//nvcc:ptxas",
-)
-
-alias(
-    name = "fatbinary",
-    actual = "@cuda//nvcc:fatbinary",
 )
 
 alias(
