@@ -8,6 +8,7 @@ load(
 )
 load("@cuda//cuda:selects.bzl", "if_cuda_version")
 load("@cuda_toolkit//:exec_binary.bzl", "exec_binary")
+load("@cuda_toolkit//:cuda_toolchain.bzl", "cuda_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -35,6 +36,47 @@ alias(
         "@cuda//nvcc:libdevice",
     ),
 )
+
+cuda_toolchain(
+    name = "cuda_toolchain",
+    cuda_path = ":cuda_path",
+    ptxas = "@cuda//nvcc:ptxas",
+    fatbinary = "@cuda//nvcc:fatbinary",
+)
+
+SUPPORTED_EXECS = [
+    ("linux", "x86_64"),
+    ("linux", "aarch64"),
+]
+
+SUPPORTED_TARGETS = [
+    ("linux", "x86_64"),
+    ("linux", "aarch64"),
+]
+
+[
+    toolchain(
+        name = "cuda_toolchain_{exec_os}_{exec_arch}_to_{target_os}_{target_arch}".format(
+            exec_os = exec_os,
+            exec_arch = exec_arch,
+            target_os = target_os,
+            target_arch = target_arch,
+        ),
+        toolchain_type = "@cuda_toolchain_types//:cuda_toolchain_type",
+        toolchain = ":cuda_toolchain",
+        exec_compatible_with = [
+            "@platforms//os:{exec_os}".format(exec_os = exec_os),
+            "@platforms//cpu:{exec_arch}".format(exec_arch = exec_arch),
+        ],
+        target_compatible_with = [
+            "@platforms//os:{target_os}".format(target_os = target_os),
+            "@platforms//cpu:{target_arch}".format(target_arch = target_arch),
+        ],
+    )
+    for (exec_os, exec_arch) in SUPPORTED_EXECS
+    for (target_os, target_arch) in SUPPORTED_TARGETS
+]
+
 
 cc_library(
     name = "cuda_headers",
