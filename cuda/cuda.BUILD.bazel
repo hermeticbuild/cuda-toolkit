@@ -7,8 +7,8 @@ load(
      "if_version_equal_or_greater_than",
 )
 load("@cuda//cuda:selects.bzl", "if_cuda_version")
-load("@cuda_toolkit//:exec_binary.bzl", "exec_binary")
-load("@cuda_toolkit//:cuda_toolchain.bzl", "cuda_toolchain")
+load("@cuda_toolkit//cuda/private:cuda_toolchain.bzl", "cuda_toolchain")
+load("@cuda_toolkit//cuda/private:exec_binary.bzl", "exec_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -62,7 +62,7 @@ SUPPORTED_TARGETS = [
             target_os = target_os,
             target_arch = target_arch,
         ),
-        toolchain_type = "@cuda_toolchain_types//:cuda_toolchain_type",
+        toolchain_type = "@cuda_toolchain_types//cuda:toolchain_type",
         toolchain = ":cuda_toolchain",
         exec_compatible_with = [
             "@platforms//os:{exec_os}".format(exec_os = exec_os),
