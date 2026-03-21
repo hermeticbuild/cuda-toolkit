@@ -55,6 +55,38 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "nvcc",
+    srcs = [
+        "bin/nvcc",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "cudafe",
+    srcs = [
+        "bin/cudafe++",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nvcc_profile",
+    srcs = [
+        "bin/nvcc.profile",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nvcc_device_query",
+    srcs = [
+        "bin/__nvcc_device_query",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 alias(
     name = "nvcc_directory",
     actual = ":bin",
@@ -77,6 +109,14 @@ filegroup(
     name = "link_stub",
     srcs = [
         "bin/crt/link.stub",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "prelink_stub",
+    srcs = [
+        "bin/crt/prelink.stub",
     ],
     visibility = ["//visibility:public"],
 )

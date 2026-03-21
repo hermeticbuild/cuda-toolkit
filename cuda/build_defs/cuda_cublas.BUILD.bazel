@@ -13,30 +13,64 @@ cc_import(
     name = "cublas_shared_library",
     shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
     deps = [":cublasLt", ":headers"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cublasLt_shared_library",
     deps = [":headers"],
     shared_library = "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
-)
-cc_library(
-    name = "cublas",
     visibility = ["//visibility:public"],
-    deps = [":cublas_shared_library"],
+)
+cc_import(
+    name = "cublas",
+    shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
+    static_library = "lib/libcublas_static.a",
+    deps = [":cublasLt", ":headers"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cublasLt",
+    shared_library = "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
+    static_library = "lib/libcublasLt_static.a",
+    deps = [":headers"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cublas_static",
+    deps = [":headers"],
+    static_library = "lib/libcublas_static.a",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cublasLt_static",
+    deps = [":headers"],
+    static_library = "lib/libcublasLt_static.a",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvblas_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libnvblas.so." + LIB_VERSIONS["libnvblas"],
+    visibility = ["//visibility:public"],
 )
 
 cc_library(
-    name = "cublasLt",
+    name = "nvblas",
     visibility = ["//visibility:public"],
-    deps = [":cublasLt_shared_library"],
+    deps = [":nvblas_shared_library"],
 )
 
 filegroup(
-    name = "libcublas",
+    name = "shared_library_files",
     srcs = [
         "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
         "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
+        "lib/libnvblas.so." + LIB_VERSIONS["libnvblas"],
     ],
     visibility = ["//visibility:public"],
 )
@@ -46,8 +80,10 @@ filegroup(
     srcs = [
         "include/cublas.h",
         "include/cublasLt.h",
+        "include/cublasXt.h",
         "include/cublas_api.h",
         "include/cublas_v2.h",
+        "include/nvblas.h",
     ],
     visibility = ["//visibility:public"],
 )

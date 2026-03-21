@@ -89,26 +89,6 @@ def _write_proxy_packages(repository_ctx):
             _version_bzl_content(component_version),
         )
 
-    driver_proxy_repo = repository_ctx.attr.available_component_mappings.get("cuda_driver")
-    compat_build_file_content = _render_placeholder_build_file(
-        cuda_version = repository_ctx.attr.cuda_version,
-        target_names = ["cuda_compat"],
-    )
-    if driver_proxy_repo:
-        compat_build_file_content = _render_proxy_build_file(
-            actual_repo_name = driver_proxy_repo,
-            target_names = ["cuda_compat"],
-        )
-
-    repository_ctx.file(
-        "compat/BUILD.bazel",
-        compat_build_file_content,
-    )
-    repository_ctx.file(
-        "compat/version.bzl",
-        _version_bzl_content(repository_ctx.attr.available_component_versions.get("cuda_driver")),
-    )
-
 def _cuda_redist_repository_impl(repository_ctx):
 
     _write_proxy_packages(repository_ctx)
