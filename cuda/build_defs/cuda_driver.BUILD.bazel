@@ -69,3 +69,11 @@ config_setting(
     flag_values = {":include_cuda_umd_libs": "True"},
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "cuda_compat",
+    srcs = glob([
+        "compat/**",
+    ], allow_empty = True),
+    visibility = ["//visibility:public"],
+)

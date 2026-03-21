@@ -30,6 +30,15 @@ cc_library(
 )
 
 filegroup(
+    name = "cuda_nvrtc",
+    srcs = [
+        "lib/libnvrtc.so." + LIB_VERSIONS["libnvrtc"],
+        "lib/libnvrtc-builtins.so." + LIB_VERSIONS["libnvrtc-builtins"],
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "header_list",
     srcs = [
         "include/nvrtc.h",

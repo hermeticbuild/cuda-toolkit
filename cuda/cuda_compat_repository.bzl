@@ -102,6 +102,15 @@ def _cuda_compat_repository_impl(repository_ctx):
         )
 
     repository_ctx.file(
+        "compat/BUILD.bazel",
+        _render_component_alias_build_file(
+            package_name = "compat",
+            target_names = ["cuda_compat"],
+            version_to_redist_repo_name = repository_ctx.attr.version_to_redist_repo_name,
+        ),
+    )
+
+    repository_ctx.file(
         "BUILD.bazel",
         _render_root_constraints_build(
             repository_ctx.attr.available_cuda_versions,

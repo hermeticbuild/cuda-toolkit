@@ -5,6 +5,7 @@
 # Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
 # @cuda_nvcc proxy repository can re-export it.
 
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
@@ -54,6 +55,11 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "nvcc_directory",
+    actual = ":bin",
+)
+
 filegroup(
     name = "bin",
     srcs = glob([
@@ -94,6 +100,21 @@ filegroup(
             allow_empty = True,
         ),
     ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "cuda_nvcc",
+    srcs = [
+        ":ptxas",
+        ":nvlink",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvptxcompiler",
+    static_library = "lib/libnvptxcompiler_static.a",
     visibility = ["//visibility:public"],
 )
 

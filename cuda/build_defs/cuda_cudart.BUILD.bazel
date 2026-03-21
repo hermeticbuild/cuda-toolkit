@@ -121,6 +121,14 @@ cc_library(
 )
 
 cc_library(
+    name = "cuda",
+    hdrs = [":cuda_header"],
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "cudart",
     deps = select({
         "@{cuda_redist_repo}//driver:cuda_umd_libs": [
@@ -131,6 +139,12 @@ cc_library(
     }) + [
         ":cudart_shared_library",
     ],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "cuda_cudart",
+    actual = ":cudart",
     visibility = ["//visibility:public"],
 )
 

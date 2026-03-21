@@ -33,6 +33,15 @@ cc_library(
 )
 
 filegroup(
+    name = "libcublas",
+    srcs = [
+        "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
+        "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "header_list",
     srcs = [
         "include/cublas.h",

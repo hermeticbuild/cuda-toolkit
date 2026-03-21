@@ -28,6 +28,12 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "libcufft",
+    actual = ":cufft",
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "header_list",
     srcs = _HEADER_FILES + glob(_HEADER_GLOBS),
