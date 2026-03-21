@@ -11,7 +11,7 @@ load("//:version.bzl", "LIB_VERSIONS")
 cc_import(
     name = "cusparse_shared_library",
     shared_library = "lib/libcusparse.so." + LIB_VERSIONS["libcusparse"],
-    deps = ["@{cuda_redist_repo}//nvjitlink:nvjitlink", ":headers"],
+    deps = ["@{cuda_redist_repo}//nvjitlink:nvjitlink_shared_library", ":headers"],
     visibility = ["//visibility:public"],
 )
 cc_import(

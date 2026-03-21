@@ -12,7 +12,7 @@ load("//:version.bzl", "LIB_VERSIONS")
 cc_import(
     name = "cublas_shared_library",
     shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
-    deps = [":cublasLt", ":headers"],
+    deps = [":cublasLt_shared_library", ":headers"],
     visibility = ["//visibility:public"],
 )
 
