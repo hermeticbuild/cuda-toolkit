@@ -16,17 +16,57 @@ register_toolchains("@llvm//toolchain:all")
 
 cuda_ext = use_extension("@cuda_toolkit//extensions:cuda.bzl", "cuda")
 cuda_ext.redist(
-    name = "cuda_13_1_1",
-    version = "13.1.1",
+    name = "cuda_12_8_0",
+    version = "12.8.0",
+)
+cuda_ext.redist(
+    name = "cuda_12_8_1",
+    version = "12.8.1",
+)
+cuda_ext.redist(
+    name = "cuda_12_9_0",
+    version = "12.9.0",
+)
+cuda_ext.redist(
+    name = "cuda_12_9_1",
+    version = "12.9.1",
+)
+cuda_ext.redist(
+    name = "cuda_13_0_0",
+    version = "13.0.0",
+)
+cuda_ext.redist(
+    name = "cuda_13_0_1",
+    version = "13.0.1",
 )
 cuda_ext.redist(
     name = "cuda_13_0_2",
     version = "13.0.2",
 )
+cuda_ext.redist(
+    name = "cuda_13_1_0",
+    version = "13.1.0",
+)
+cuda_ext.redist(
+    name = "cuda_13_1_1",
+    version = "13.1.1",
+)
+cuda_ext.redist(
+    name = "cuda_13_2_0",
+    version = "13.2.0",
+)
 
 use_repo(
     cuda_ext,
     "cuda",
-    "cuda_13_1_1",
+    "cuda_12_8_0",
+    "cuda_12_8_1",
+    "cuda_12_9_0",
+    "cuda_12_9_1",
+    "cuda_13_0_0",
+    "cuda_13_0_1",
     "cuda_13_0_2",
+    "cuda_13_1_0",
+    "cuda_13_1_1",
+    "cuda_13_2_0",
 )
