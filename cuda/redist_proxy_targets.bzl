@@ -1,7 +1,18 @@
 """Shared catalog for CUDA proxy package generation."""
 
 REPO_PUBLIC_TARGETS = {
-    "cuda_cccl": ["header_list", "headers"],
+    "cuda_cccl": [
+        "header_list",
+        "headers",
+        "thrust_header_list",
+        "thrust_headers",
+        "cuda_header_list",
+        "cuda_headers",
+        "nv_header_list",
+        "nv_headers",
+        "cub_header_list",
+        "cub_headers",
+    ],
     "cuda_compat": [
         "driver_shared_library",
         "cuda_shared_library",

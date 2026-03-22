@@ -14,19 +14,85 @@ _INCLUDE_PREFIX = "include" + if_version_equal_or_greater_than(VERSION, "13.0.0"
 
 filegroup(
     name = "header_list",
+    srcs = [
+        ":thrust_header_list",
+        ":nv_header_list",
+        ":cuda_header_list",
+        ":cub_header_list",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "headers",
+    deps = [
+        ":thrust_headers",
+        ":nv_headers",
+        ":cuda_headers",
+        ":cub_headers",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "thrust_header_list",
     srcs = glob([
-        _INCLUDE_PREFIX + "/cub/**",
-        _INCLUDE_PREFIX + "/cuda/**",
-        _INCLUDE_PREFIX + "/nv/**",
         _INCLUDE_PREFIX + "/thrust/**",
     ]),
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "thrust_headers",
+    hdrs = [":thrust_header_list"],
+    includes = [_INCLUDE_PREFIX],
+    strip_include_prefix = _INCLUDE_PREFIX,
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "cuda_header_list",
+    srcs = glob([
+        _INCLUDE_PREFIX + "/cuda/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
 
 cc_library(
-    name = "headers",
-    hdrs = [":header_list"],
+    name = "cuda_headers",
+    hdrs = [":cuda_header_list"],
+    includes = [_INCLUDE_PREFIX],
+    strip_include_prefix = _INCLUDE_PREFIX,
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nv_header_list",
+    srcs = glob([
+        _INCLUDE_PREFIX + "/nv/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nv_headers",
+    hdrs = [":nv_header_list"],
+    includes = [_INCLUDE_PREFIX],
+    strip_include_prefix = _INCLUDE_PREFIX,
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "cub_header_list",
+    srcs = glob([
+        _INCLUDE_PREFIX + "/cub/**",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cub_headers",
+    hdrs = [":cub_header_list"],
     includes = [_INCLUDE_PREFIX],
     strip_include_prefix = _INCLUDE_PREFIX,
     visibility = ["//visibility:public"],

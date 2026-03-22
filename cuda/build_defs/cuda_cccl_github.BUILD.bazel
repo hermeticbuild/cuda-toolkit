@@ -9,13 +9,13 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 
 filegroup(
     name = "header_list",
-    srcs = [":thrust_header_list",":nv_header_list", ":cuda_header_list", ":cub_header_list"],
+    srcs = [":thrust_header_list", ":nv_header_list", ":cuda_header_list", ":cub_header_list"],
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "headers",
-    deps = [":thrust_headers",":nv_headers", ":cuda_headers", ":cub_headers"],
+    deps = [":thrust_headers", ":nv_headers", ":cuda_headers", ":cub_headers"],
     visibility = ["//visibility:public"],
 )
 
