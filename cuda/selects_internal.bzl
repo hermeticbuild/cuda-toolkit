@@ -22,7 +22,7 @@ def _version_matches_clause(version, clause):
 
     return _match_version_prefix(version, clause)
 
-def _expand_cuda_conditions(cuda_versions, version_expr):
+def expand_cuda_conditions(cuda_versions, version_expr):
     clauses = []
     for clause in version_expr.split(","):
         clause = clause.strip()
@@ -41,7 +41,7 @@ def _expand_cuda_conditions(cuda_versions, version_expr):
     return tuple(labels)
 
 def if_cuda_version(cuda_versions, version_expr, if_true, if_false = []):
-    labels = _expand_cuda_conditions(cuda_versions, version_expr)
+    labels = expand_cuda_conditions(cuda_versions, version_expr)
     if not labels:
         return if_false
     return selects.with_or({

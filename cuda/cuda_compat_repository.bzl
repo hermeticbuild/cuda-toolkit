@@ -12,8 +12,9 @@ def _render_selects_bzl(cuda_versions):
     lines = [
         "load(",
         "    \"@cuda_toolkit//cuda:selects_internal.bzl\",",
-        "    _if_cuda_version = \"if_cuda_version\",",
+        "    _expand_cuda_conditions = \"expand_cuda_conditions\",",
         ")",
+        "load(\"@bazel_skylib//lib:selects.bzl\", \"selects\")",
         "",
         "CUDA_VERSIONS = [",
     ]
@@ -27,7 +28,13 @@ def _render_selects_bzl(cuda_versions):
         "]",
         "",
         "def if_cuda_version(version_expr, if_true, if_false = []):",
-        "    return _if_cuda_version(CUDA_VERSIONS, version_expr, if_true, if_false)",
+        "    labels = tuple([Label(label) for label in _expand_cuda_conditions(CUDA_VERSIONS, version_expr)])",
+        "    if not labels:",
+        "        return if_false",
+        "    return selects.with_or({",
+        "        labels: if_true,",
+        "        \"//conditions:default\": if_false,",
+        "    })",
     ])
 
     return "\n".join(lines)
