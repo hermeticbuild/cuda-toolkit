@@ -14,6 +14,7 @@ load("//:version.bzl", "LIB_VERSIONS")
 cc_import(
     name = "driver_shared_library",
     shared_library = "lib/libcuda.so." + LIB_VERSIONS["libcuda"],
+    visibility = ["//visibility:public"],
 )
 
 alias(
@@ -25,6 +26,7 @@ alias(
 cc_import(
     name = "nvidia-ptxjitcompiler_shared_library",
     shared_library = "lib/libnvidia-ptxjitcompiler.so." + LIB_VERSIONS["libnvidia-ptxjitcompiler"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
