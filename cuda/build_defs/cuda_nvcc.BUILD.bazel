@@ -154,6 +154,7 @@ filegroup(
 
 cc_import(
     name = "nvptxcompiler_static_library",
+    deps = [":headers"],
     static_library = "lib/libnvptxcompiler_static.a",
 )
 

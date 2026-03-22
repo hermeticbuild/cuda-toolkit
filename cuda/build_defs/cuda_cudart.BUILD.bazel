@@ -114,8 +114,10 @@ cc_import(
 
 cc_import(
     name = "cuda_stub",
+    deps = [":cuda"],
     interface_library = "lib/stubs/libcuda.so",
     system_provided = 1,
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
