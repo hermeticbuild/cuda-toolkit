@@ -28,177 +28,121 @@ SMOKE_CUDA_VERSIONS = [
     for version in SMOKE_CUDA_VERSIONS
 ]
 
+SMOKE_BASE_DEFINES = [
+    "CUDA_SMOKE_HAVE_NVJITLINK=1",
+    "CUDA_SMOKE_HAVE_NVML=1",
+    "CUDA_SMOKE_HAVE_NVRTC=1",
+    "CUDA_SMOKE_HAVE_NVTX=1",
+]
+
+SMOKE_13_DEFINES = [
+    "CUDA_SMOKE_HAVE_DRIVER_API=1",
+    "CUDA_SMOKE_HAVE_CUBLAS=1",
+    "CUDA_SMOKE_HAVE_CUFFT=1",
+    "CUDA_SMOKE_HAVE_CUPTI=1",
+    "CUDA_SMOKE_HAVE_CURAND=1",
+    "CUDA_SMOKE_HAVE_CUSOLVER=1",
+    "CUDA_SMOKE_HAVE_CUSPARSE=1",
+    "CUDA_SMOKE_HAVE_PROFILER_API=1",
+    "CUDA_SMOKE_HAVE_CUDA_CRT=1",
+]
+
+SMOKE_13_DEFINE_SELECT = select({
+    "@cuda//:is_cuda_13_0_0": SMOKE_13_DEFINES,
+    "@cuda//:is_cuda_13_0_1": SMOKE_13_DEFINES,
+    "@cuda//:is_cuda_13_0_2": SMOKE_13_DEFINES,
+    "@cuda//:is_cuda_13_1_0": SMOKE_13_DEFINES,
+    "@cuda//:is_cuda_13_1_1": SMOKE_13_DEFINES,
+    "@cuda//:is_cuda_13_2_0": SMOKE_13_DEFINES,
+    "//conditions:default": [],
+})
+
+SMOKE_BASE_SHARED_DEPS = [
+    "@cuda//cccl:headers",
+    "@cuda//nvjitlink:nvjitlink_shared_library",
+    "@cuda//nvml:nvidia-ml_stub",
+    "@cuda//nvrtc:nvrtc_main",
+    "@cuda//nvtx:headers",
+]
+
+SMOKE_BASE_STATIC_DEPS = [
+    "@cuda//cccl:headers",
+    "@cuda//nvjitlink:nvjitlink_static",
+    "@cuda//nvml:nvidia_ml_static_stub",
+    "@cuda//nvrtc:nvrtc_static",
+    "@cuda//nvtx:headers",
+]
+
+SMOKE_13_SHARED_DEPS = [
+    "@cuda//cublas:cublas_shared_library",
+    "@cuda//cublas:cublasLt_shared_library",
+    "@cuda//cudart:cudart_shared_library",
+    "@cuda//cudart:cuda_driver",
+    "@cuda//cufft:cufft_shared_library",
+    "@cuda//cupti:cupti_shared_library",
+    "@cuda//curand:curand_shared_library",
+    "@cuda//cusolver:cusolver_shared_library",
+    "@cuda//cusparse:cusparse_shared_library",
+    "@cuda//crt:headers",
+    "@cuda//profiler_api:headers",
+]
+
+SMOKE_13_STATIC_DEPS = [
+    "@cuda//cublas:cublas_static",
+    "@cuda//cudart:static",
+    "@cuda//cufft:cufft_static",
+    "@cuda//cupti:cupti_static",
+    "@cuda//curand:curand_static",
+    "@cuda//cusolver:cusolver_static",
+    "@cuda//cusparse:cusparse_static",
+    "@cuda//crt:headers",
+    "@cuda//profiler_api:headers",
+]
+
+SMOKE_13_SHARED_SELECT = select({
+    "@cuda//:is_cuda_13_0_0": SMOKE_13_SHARED_DEPS,
+    "@cuda//:is_cuda_13_0_1": SMOKE_13_SHARED_DEPS,
+    "@cuda//:is_cuda_13_0_2": SMOKE_13_SHARED_DEPS,
+    "@cuda//:is_cuda_13_1_0": SMOKE_13_SHARED_DEPS,
+    "@cuda//:is_cuda_13_1_1": SMOKE_13_SHARED_DEPS,
+    "@cuda//:is_cuda_13_2_0": SMOKE_13_SHARED_DEPS,
+    "//conditions:default": [],
+})
+
+SMOKE_13_STATIC_SELECT = select({
+    "@cuda//:is_cuda_13_0_0": SMOKE_13_STATIC_DEPS,
+    "@cuda//:is_cuda_13_0_1": SMOKE_13_STATIC_DEPS,
+    "@cuda//:is_cuda_13_0_2": SMOKE_13_STATIC_DEPS,
+    "@cuda//:is_cuda_13_1_0": SMOKE_13_STATIC_DEPS,
+    "@cuda//:is_cuda_13_1_1": SMOKE_13_STATIC_DEPS,
+    "@cuda//:is_cuda_13_2_0": SMOKE_13_STATIC_DEPS,
+    "//conditions:default": [],
+})
+
 cc_library(
     name = "smoke_deps",
-    defines = [
-        "CUDA_SMOKE_HAVE_NVJITLINK=1",
-        "CUDA_SMOKE_HAVE_NVML=1",
-        "CUDA_SMOKE_HAVE_NVRTC=1",
-        "CUDA_SMOKE_HAVE_NVTX=1",
-    ] + select({
-        "@cuda//:is_cuda_13_0_0": [
-            "CUDA_SMOKE_HAVE_DRIVER_API=1",
-            "CUDA_SMOKE_HAVE_CUBLAS=1",
-            "CUDA_SMOKE_HAVE_CUFFT=1",
-            "CUDA_SMOKE_HAVE_CUPTI=1",
-            "CUDA_SMOKE_HAVE_CURAND=1",
-            "CUDA_SMOKE_HAVE_CUSOLVER=1",
-            "CUDA_SMOKE_HAVE_CUSPARSE=1",
-            "CUDA_SMOKE_HAVE_PROFILER_API=1",
-            "CUDA_SMOKE_HAVE_CUDA_CRT=1",
-        ],
-        "@cuda//:is_cuda_13_0_1": [
-            "CUDA_SMOKE_HAVE_DRIVER_API=1",
-            "CUDA_SMOKE_HAVE_CUBLAS=1",
-            "CUDA_SMOKE_HAVE_CUFFT=1",
-            "CUDA_SMOKE_HAVE_CUPTI=1",
-            "CUDA_SMOKE_HAVE_CURAND=1",
-            "CUDA_SMOKE_HAVE_CUSOLVER=1",
-            "CUDA_SMOKE_HAVE_CUSPARSE=1",
-            "CUDA_SMOKE_HAVE_PROFILER_API=1",
-            "CUDA_SMOKE_HAVE_CUDA_CRT=1",
-        ],
-        "@cuda//:is_cuda_13_0_2": [
-            "CUDA_SMOKE_HAVE_DRIVER_API=1",
-            "CUDA_SMOKE_HAVE_CUBLAS=1",
-            "CUDA_SMOKE_HAVE_CUFFT=1",
-            "CUDA_SMOKE_HAVE_CUPTI=1",
-            "CUDA_SMOKE_HAVE_CURAND=1",
-            "CUDA_SMOKE_HAVE_CUSOLVER=1",
-            "CUDA_SMOKE_HAVE_CUSPARSE=1",
-            "CUDA_SMOKE_HAVE_PROFILER_API=1",
-            "CUDA_SMOKE_HAVE_CUDA_CRT=1",
-        ],
-        "@cuda//:is_cuda_13_1_0": [
-            "CUDA_SMOKE_HAVE_DRIVER_API=1",
-            "CUDA_SMOKE_HAVE_CUBLAS=1",
-            "CUDA_SMOKE_HAVE_CUFFT=1",
-            "CUDA_SMOKE_HAVE_CUPTI=1",
-            "CUDA_SMOKE_HAVE_CURAND=1",
-            "CUDA_SMOKE_HAVE_CUSOLVER=1",
-            "CUDA_SMOKE_HAVE_CUSPARSE=1",
-            "CUDA_SMOKE_HAVE_PROFILER_API=1",
-            "CUDA_SMOKE_HAVE_CUDA_CRT=1",
-        ],
-        "@cuda//:is_cuda_13_1_1": [
-            "CUDA_SMOKE_HAVE_DRIVER_API=1",
-            "CUDA_SMOKE_HAVE_CUBLAS=1",
-            "CUDA_SMOKE_HAVE_CUFFT=1",
-            "CUDA_SMOKE_HAVE_CUPTI=1",
-            "CUDA_SMOKE_HAVE_CURAND=1",
-            "CUDA_SMOKE_HAVE_CUSOLVER=1",
-            "CUDA_SMOKE_HAVE_CUSPARSE=1",
-            "CUDA_SMOKE_HAVE_PROFILER_API=1",
-            "CUDA_SMOKE_HAVE_CUDA_CRT=1",
-        ],
-        "@cuda//:is_cuda_13_2_0": [
-            "CUDA_SMOKE_HAVE_DRIVER_API=1",
-            "CUDA_SMOKE_HAVE_CUBLAS=1",
-            "CUDA_SMOKE_HAVE_CUFFT=1",
-            "CUDA_SMOKE_HAVE_CUPTI=1",
-            "CUDA_SMOKE_HAVE_CURAND=1",
-            "CUDA_SMOKE_HAVE_CUSOLVER=1",
-            "CUDA_SMOKE_HAVE_CUSPARSE=1",
-            "CUDA_SMOKE_HAVE_PROFILER_API=1",
-            "CUDA_SMOKE_HAVE_CUDA_CRT=1",
-        ],
-        "//conditions:default": [],
-    }),
+    defines = SMOKE_BASE_DEFINES + SMOKE_13_DEFINE_SELECT,
     data = [
         "@cuda//nvcc:fatbinary",
         "@cuda//nvcc:ptxas",
     ],
-    deps = [
-        "@cuda//cccl:headers",
-        "@cuda//nvjitlink:nvjitlink_shared_library",
-        "@cuda//nvml:nvidia-ml_stub",
-        "@cuda//nvrtc:nvrtc_main",
-        "@cuda//nvtx:headers",
-    ] + select({
-        "@cuda//:is_cuda_13_0_0": [
-            "@cuda//cublas:cublas_shared_library",
-            "@cuda//cublas:cublasLt_shared_library",
-            "@cuda//cudart:cudart_shared_library",
-            "@cuda//cudart:cuda_driver",
-            "@cuda//cufft:cufft_shared_library",
-            "@cuda//cupti:cupti_shared_library",
-            "@cuda//curand:curand_shared_library",
-            "@cuda//cusolver:cusolver_shared_library",
-            "@cuda//cusparse:cusparse_shared_library",
-            "@cuda//crt:headers",
-            "@cuda//profiler_api:headers",
-        ],
-        "@cuda//:is_cuda_13_0_1": [
-            "@cuda//cublas:cublas_shared_library",
-            "@cuda//cublas:cublasLt_shared_library",
-            "@cuda//cudart:cudart_shared_library",
-            "@cuda//cudart:cuda_driver",
-            "@cuda//cufft:cufft_shared_library",
-            "@cuda//cupti:cupti_shared_library",
-            "@cuda//curand:curand_shared_library",
-            "@cuda//cusolver:cusolver_shared_library",
-            "@cuda//cusparse:cusparse_shared_library",
-            "@cuda//crt:headers",
-            "@cuda//profiler_api:headers",
-        ],
-        "@cuda//:is_cuda_13_0_2": [
-            "@cuda//cublas:cublas_shared_library",
-            "@cuda//cublas:cublasLt_shared_library",
-            "@cuda//cudart:cudart_shared_library",
-            "@cuda//cudart:cuda_driver",
-            "@cuda//cufft:cufft_shared_library",
-            "@cuda//cupti:cupti_shared_library",
-            "@cuda//curand:curand_shared_library",
-            "@cuda//cusolver:cusolver_shared_library",
-            "@cuda//cusparse:cusparse_shared_library",
-            "@cuda//crt:headers",
-            "@cuda//profiler_api:headers",
-        ],
-        "@cuda//:is_cuda_13_1_0": [
-            "@cuda//cublas:cublas_shared_library",
-            "@cuda//cublas:cublasLt_shared_library",
-            "@cuda//cudart:cudart_shared_library",
-            "@cuda//cudart:cuda_driver",
-            "@cuda//cufft:cufft_shared_library",
-            "@cuda//cupti:cupti_shared_library",
-            "@cuda//curand:curand_shared_library",
-            "@cuda//cusolver:cusolver_shared_library",
-            "@cuda//cusparse:cusparse_shared_library",
-            "@cuda//crt:headers",
-            "@cuda//profiler_api:headers",
-        ],
-        "@cuda//:is_cuda_13_1_1": [
-            "@cuda//cublas:cublas_shared_library",
-            "@cuda//cublas:cublasLt_shared_library",
-            "@cuda//cudart:cudart_shared_library",
-            "@cuda//cudart:cuda_driver",
-            "@cuda//cufft:cufft_shared_library",
-            "@cuda//cupti:cupti_shared_library",
-            "@cuda//curand:curand_shared_library",
-            "@cuda//cusolver:cusolver_shared_library",
-            "@cuda//cusparse:cusparse_shared_library",
-            "@cuda//crt:headers",
-            "@cuda//profiler_api:headers",
-        ],
-        "@cuda//:is_cuda_13_2_0": [
-            "@cuda//cublas:cublas_shared_library",
-            "@cuda//cublas:cublasLt_shared_library",
-            "@cuda//cudart:cudart_shared_library",
-            "@cuda//cudart:cuda_driver",
-            "@cuda//cufft:cufft_shared_library",
-            "@cuda//cupti:cupti_shared_library",
-            "@cuda//curand:curand_shared_library",
-            "@cuda//cusolver:cusolver_shared_library",
-            "@cuda//cusparse:cusparse_shared_library",
-            "@cuda//crt:headers",
-            "@cuda//profiler_api:headers",
-        ],
-        "//conditions:default": [],
-    }),
+    deps = SMOKE_BASE_SHARED_DEPS + SMOKE_13_SHARED_SELECT,
 )
 
 cc_binary(
     name = "smoke",
     srcs = ["main.cc"],
     deps = [":smoke_deps"],
+)
+
+cc_library(
+    name = "smoke_static_deps",
+    defines = SMOKE_BASE_DEFINES + SMOKE_13_DEFINE_SELECT,
+    deps = SMOKE_BASE_STATIC_DEPS + SMOKE_13_STATIC_SELECT,
+)
+
+cc_binary(
+    name = "smoke_static",
+    srcs = ["main.cc"],
+    deps = [":smoke_static_deps"],
 )

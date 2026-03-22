@@ -24,26 +24,21 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 cc_import(
+    name = "cufft_static_library",
+    deps = [":headers"],
+    static_library = "lib/libcufft_static.a",
+)
+
+cc_library(
     name = "cufft",
-    static_library = "lib/libcufft_static.a",
-    shared_library = "lib/libcufft.so." + LIB_VERSIONS["libcufft"],
-    deps = [":headers"],
+    deps = [":cufft_shared_library"],
     visibility = ["//visibility:public"],
 )
 
 cc_import(
-    name = "cufftw",
+    name = "cufftw_static_library",
+    deps = [":headers"],
     static_library = "lib/libcufftw_static.a",
-    shared_library = "lib/libcufftw.so." + LIB_VERSIONS["libcufftw"],
-    deps = [":headers"],
-    visibility = ["//visibility:public"],
-)
-
-cc_import(
-    name = "cufft_static",
-    deps = [":headers"],
-    static_library = "lib/libcufft_static.a",
-    visibility = ["//visibility:public"],
 )
 
 cc_import(
@@ -53,10 +48,21 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 
-cc_import(
+cc_library(
+    name = "cufftw",
+    deps = [":cufftw_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cufft_static",
+    deps = [":cufft_static_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "cufftw_static",
-    deps = [":headers"],
-    static_library = "lib/libcufftw_static.a",
+    deps = [":cufftw_static_library"],
     visibility = ["//visibility:public"],
 )
 

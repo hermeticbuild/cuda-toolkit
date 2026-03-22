@@ -7,12 +7,14 @@
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
+load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
 load("//:version.bzl", "LIB_VERSIONS")
 
 cc_import(
     name = "cublas_shared_library",
     shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
-    deps = [":cublasLt_shared_library", ":headers"],
+    deps = [":headers"],
     visibility = ["//visibility:public"],
 )
 
@@ -23,32 +25,42 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 cc_import(
+    name = "cublas_static_library",
+    deps = [":headers"],
+    static_library = "lib/libcublas_static.a",
+)
+
+cc_library(
     name = "cublas",
-    shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
-    static_library = "lib/libcublas_static.a",
-    deps = [":cublasLt", ":headers"],
+    deps = [":cublas_shared_library", ":cublasLt"],
     visibility = ["//visibility:public"],
 )
 
 cc_import(
+    name = "cublasLt_static_library",
+    deps = [":headers"],
+    static_library = "lib/libcublasLt_static.a",
+)
+
+cc_library(
     name = "cublasLt",
-    shared_library = "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
-    static_library = "lib/libcublasLt_static.a",
-    deps = [":headers"],
+    deps = [":cublasLt_shared_library"],
     visibility = ["//visibility:public"],
 )
 
-cc_import(
+cc_library(
     name = "cublas_static",
-    deps = [":headers"],
-    static_library = "lib/libcublas_static.a",
+    deps = [":cublas_static_library", ":cublasLt_static"],
     visibility = ["//visibility:public"],
 )
 
-cc_import(
+cc_library(
     name = "cublasLt_static",
-    deps = [":headers"],
-    static_library = "lib/libcublasLt_static.a",
+    deps = [":cublasLt_static_library"] + if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
+        ["@{cuda_redist_repo}//culibos:culibos_static"],
+    ),
     visibility = ["//visibility:public"],
 )
 

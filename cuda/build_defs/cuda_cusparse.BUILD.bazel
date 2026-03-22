@@ -15,17 +15,20 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 cc_import(
-    name = "cusparse",
+    name = "cusparse_static_library",
+    deps = [":headers"],
     static_library = "lib/libcusparse_static.a",
-    shared_library = "lib/libcusparse.so." + LIB_VERSIONS["libcusparse"],
-    deps = ["@{cuda_redist_repo}//nvjitlink:nvjitlink", ":headers"],
+)
+
+cc_library(
+    name = "cusparse",
+    deps = [":cusparse_shared_library"],
     visibility = ["//visibility:public"],
 )
 
-cc_import(
+cc_library(
     name = "cusparse_static",
-    deps = [":headers"],
-    static_library = "lib/libcusparse_static.a",
+    deps = [":cusparse_static_library", "@{cuda_redist_repo}//nvjitlink:nvjitlink_static"],
     visibility = ["//visibility:public"],
 )
 

@@ -46,7 +46,17 @@ filegroup(
 )
 
 cc_import(
-    name = "nvptxcompiler",
+    name = "nvptxcompiler_static_library",
     static_library = "lib/libnvptxcompiler_static.a",
+)
+
+alias(
+    name = "nvptxcompiler",
+    actual = if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
+        if_true = "@{cuda_redist_repo}//nvptxcompiler:nvptxcompiler",
+        if_false = ":nvptxcompiler_static_library",
+    ),
     visibility = ["//visibility:public"],
 )

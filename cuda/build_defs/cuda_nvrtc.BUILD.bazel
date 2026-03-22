@@ -17,31 +17,49 @@ cc_import(
 )
 
 cc_import(
-    name = "nvrtc_builtins",
-    static_library = "lib/libnvrtc-builtins_static.a",
+    name = "nvrtc_builtins_shared_library",
     deps = [":headers"],
     shared_library = "lib/libnvrtc-builtins.so." + LIB_VERSIONS["libnvrtc-builtins"],
     visibility = ["//visibility:public"],
 )
-cc_import(
-    name = "nvrtc",
-    static_library = "lib/libnvrtc_static.a",
-    shared_library = "lib/libnvrtc.so." + LIB_VERSIONS["libnvrtc"],
-    deps = [":nvrtc_builtins", ":headers"],
-    visibility = ["//visibility:public"],
-)
 
 cc_import(
-    name = "nvrtc_static",
+    name = "nvrtc_static_library",
     deps = [":headers"],
     static_library = "lib/libnvrtc_static.a",
-    visibility = ["//visibility:public"],
 )
 
 cc_import(
-    name = "nvrtc_builtins_static",
+    name = "nvrtc_builtins_static_library",
     deps = [":headers"],
     static_library = "lib/libnvrtc-builtins_static.a",
+)
+
+cc_library(
+    name = "nvrtc_builtins",
+    deps = [":nvrtc_builtins_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvrtc",
+    deps = [":nvrtc_main", ":nvrtc_builtins"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvrtc_static",
+    deps = [
+        ":nvrtc_static_library",
+        ":nvrtc_builtins_static",
+        "@{cuda_redist_repo}//nvcc:nvptxcompiler",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvrtc_builtins_static",
+    deps = [":nvrtc_builtins_static_library"],
     visibility = ["//visibility:public"],
 )
 

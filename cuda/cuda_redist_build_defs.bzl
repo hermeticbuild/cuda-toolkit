@@ -36,6 +36,12 @@ COMPONENTS_REGISTRY = {
             "11": "//cuda/build_defs:cuda_cudart.BUILD.bazel",
         },
     },
+    "cuda_culibos": {
+        "repo_name": "cuda_culibos",
+        "version_to_template": {
+            "13": "//cuda/build_defs:cuda_culibos.BUILD.bazel",
+        },
+    },
     "libcufft": {
         "repo_name": "cuda_cufft",
         "version_to_template": {
@@ -79,6 +85,12 @@ COMPONENTS_REGISTRY = {
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_nvjitlink.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_nvjitlink.BUILD.bazel",
+        },
+    },
+    "libnvptxcompiler": {
+        "repo_name": "cuda_nvptxcompiler",
+        "version_to_template": {
+            "13": "//cuda/build_defs:cuda_nvptxcompiler.BUILD.bazel",
         },
     },
     "cuda_nvrtc": {

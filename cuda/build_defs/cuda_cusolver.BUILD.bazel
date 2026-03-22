@@ -21,16 +21,14 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 cc_import(
-    name = "cusolver",
+    name = "cusolver_static_library",
+    deps = [":headers"],
     static_library = "lib/libcusolver_static.a",
-    shared_library = "lib/libcusolver.so." + LIB_VERSIONS["libcusolver"],
-    deps = [
-        "@{cuda_redist_repo}//nvjitlink:nvjitlink",
-        "@{cuda_redist_repo}//cusparse:cusparse",
-        "@{cuda_redist_repo}//cublas:cublas",
-        "@{cuda_redist_repo}//cublas:cublasLt",
-        ":headers",
-    ],
+)
+
+cc_library(
+    name = "cusolver",
+    deps = [":cusolver_shared_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -44,13 +42,6 @@ cc_import(
 cc_library(
     name = "cusolverMg",
     deps = [":cusolverMg_shared_library"],
-    visibility = ["//visibility:public"],
-)
-
-cc_import(
-    name = "cusolver_static",
-    deps = [":headers"],
-    static_library = "lib/libcusolver_static.a",
     visibility = ["//visibility:public"],
 )
 
@@ -71,6 +62,21 @@ cc_import(
 cc_import(
     name = "metis_static",
     static_library = "lib/libmetis_static.a",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cusolver_static",
+    deps = [
+        ":cusolver_static_library",
+        ":cusolver_lapack_static",
+        ":cusolver_metis_static",
+        ":metis_static",
+        "@{cuda_redist_repo}//nvjitlink:nvjitlink_static",
+        "@{cuda_redist_repo}//cusparse:cusparse_static",
+        "@{cuda_redist_repo}//cublas:cublas_static",
+        "@{cuda_redist_repo}//cublas:cublasLt_static",
+    ],
     visibility = ["//visibility:public"],
 )
 

@@ -12,6 +12,7 @@ load(
     "if_version_equal_or_greater_than",
     "if_version_lower_than",
 )
+load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("//:version.bzl", "LIB_VERSIONS", "VERSION")
 
 filegroup(
@@ -99,10 +100,9 @@ exports_files([
 ])
 
 cc_import(
-    name = "static",
+    name = "cudart_static_library",
     deps = [":headers"],
     static_library = "lib/libcudart_static.a",
-    visibility = ["//visibility:public"],
 )
 
 cc_import(
@@ -138,17 +138,34 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
-cc_import(
-    name = "cudart",
-    static_library = "lib/libcudart_static.a",
-    shared_library = "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
+cc_library(
+    name = "static",
     deps = select({
         "@{cuda_redist_repo}//driver:cuda_umd_libs": [
             "@{cuda_redist_repo}//driver:nvidia_driver",
             "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
         ],
         "//conditions:default": [":cuda_driver"],
-    }) + [":headers"],
+    }) + [
+        ":cudart_static_library",
+        ":cudadevrt_static",
+    ] + if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
+        ["@{cuda_redist_repo}//culibos:culibos_static"],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cudart",
+    deps = select({
+        "@{cuda_redist_repo}//driver:cuda_umd_libs": [
+            "@{cuda_redist_repo}//driver:nvidia_driver",
+            "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
+        ],
+        "//conditions:default": [":cuda_driver"],
+    }) + [":cudart_shared_library"],
     visibility = ["//visibility:public"],
 )
 

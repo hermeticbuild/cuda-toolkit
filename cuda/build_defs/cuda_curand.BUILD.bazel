@@ -17,17 +17,20 @@ cc_import(
 )
 
 cc_import(
-    name = "curand",
-    static_library = "lib/libcurand_static.a",
-    shared_library = "lib/libcurand.so." + LIB_VERSIONS["libcurand"],
+    name = "curand_static_library",
     deps = [":headers"],
+    static_library = "lib/libcurand_static.a",
+)
+
+cc_library(
+    name = "curand",
+    deps = [":curand_shared_library"],
     visibility = ["//visibility:public"],
 )
 
-cc_import(
+cc_library(
     name = "curand_static",
-    deps = [":headers"],
-    static_library = "lib/libcurand_static.a",
+    deps = [":curand_static_library"],
     visibility = ["//visibility:public"],
 )
 
