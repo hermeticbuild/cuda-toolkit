@@ -1,5 +1,6 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@cuda//cuda:selects.bzl", "if_cuda_version")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -47,15 +48,7 @@ SMOKE_13_DEFINES = [
     "CUDA_SMOKE_HAVE_CUDA_CRT=1",
 ]
 
-SMOKE_13_DEFINE_SELECT = select({
-    "@cuda//:is_cuda_13_0_0": SMOKE_13_DEFINES,
-    "@cuda//:is_cuda_13_0_1": SMOKE_13_DEFINES,
-    "@cuda//:is_cuda_13_0_2": SMOKE_13_DEFINES,
-    "@cuda//:is_cuda_13_1_0": SMOKE_13_DEFINES,
-    "@cuda//:is_cuda_13_1_1": SMOKE_13_DEFINES,
-    "@cuda//:is_cuda_13_2_0": SMOKE_13_DEFINES,
-    "//conditions:default": [],
-})
+SMOKE_13_DEFINE_SELECT = if_cuda_version(">=13", SMOKE_13_DEFINES)
 
 SMOKE_BASE_SHARED_DEPS = [
     "@cuda//cccl:headers",
@@ -99,25 +92,9 @@ SMOKE_13_STATIC_DEPS = [
     "@cuda//profiler_api:headers",
 ]
 
-SMOKE_13_SHARED_SELECT = select({
-    "@cuda//:is_cuda_13_0_0": SMOKE_13_SHARED_DEPS,
-    "@cuda//:is_cuda_13_0_1": SMOKE_13_SHARED_DEPS,
-    "@cuda//:is_cuda_13_0_2": SMOKE_13_SHARED_DEPS,
-    "@cuda//:is_cuda_13_1_0": SMOKE_13_SHARED_DEPS,
-    "@cuda//:is_cuda_13_1_1": SMOKE_13_SHARED_DEPS,
-    "@cuda//:is_cuda_13_2_0": SMOKE_13_SHARED_DEPS,
-    "//conditions:default": [],
-})
+SMOKE_13_SHARED_SELECT = if_cuda_version(">=13", SMOKE_13_SHARED_DEPS)
 
-SMOKE_13_STATIC_SELECT = select({
-    "@cuda//:is_cuda_13_0_0": SMOKE_13_STATIC_DEPS,
-    "@cuda//:is_cuda_13_0_1": SMOKE_13_STATIC_DEPS,
-    "@cuda//:is_cuda_13_0_2": SMOKE_13_STATIC_DEPS,
-    "@cuda//:is_cuda_13_1_0": SMOKE_13_STATIC_DEPS,
-    "@cuda//:is_cuda_13_1_1": SMOKE_13_STATIC_DEPS,
-    "@cuda//:is_cuda_13_2_0": SMOKE_13_STATIC_DEPS,
-    "//conditions:default": [],
-})
+SMOKE_13_STATIC_SELECT = if_cuda_version(">=13", SMOKE_13_STATIC_DEPS)
 
 cc_library(
     name = "smoke_deps",
