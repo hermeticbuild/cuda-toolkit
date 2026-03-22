@@ -30,8 +30,18 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 
-cc_library(
+cc_import(
+    name = "nvidia_ml_static_stub",
+    deps = [":headers"],
+    static_library = "lib/stubs/libnvidia-ml.a",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
     name = "nvml",
-    deps = [":nvidia-ml_stub"],
+    deps = [":headers"],
+    interface_library = "lib/stubs/libnvidia-ml.so",
+    static_library = "lib/stubs/libnvidia-ml.a",
+    system_provided = 1,
     visibility = ["//visibility:public"],
 )

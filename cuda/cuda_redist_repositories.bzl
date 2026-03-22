@@ -45,6 +45,21 @@ _SUPPORTED_ARCHIVE_EXTENSIONS = [
     ".whl",
 ]
 
+def _platform_archive_entry(component_redist_entry, platform_key):
+    platform_entry = component_redist_entry.get(platform_key)
+    if not platform_entry:
+        return None
+
+    if platform_entry.get("relative_path"):
+        return platform_entry
+
+    variants = component_redist_entry.get("cuda_variant", [])
+    if not variants:
+        return platform_entry
+
+    variant_key = "cuda{}".format(variants[0])
+    return platform_entry.get(variant_key, platform_entry.get(variants[0]))
+
 def cuda_redist_repositories(
         redist,
         cuda_version,
@@ -72,7 +87,8 @@ def cuda_redist_repositories(
         for platform, platform_spec in _PLATFORM_SPECS.items():
 
             platform_key = platform_spec["redist_platform_key"]
-            if platform_key not in component_redist_entry:
+            archive_entry = _platform_archive_entry(component_redist_entry, platform_key)
+            if not archive_entry:
                 # Component may not be available for that platform
                 # buildifier: disable=print
                 print("Component '{}' is missing for platform '{}' in CUDA {} redist".format(component_name, platform_key, cuda_version)) 
@@ -89,8 +105,8 @@ def cuda_redist_repositories(
                 component_version = component_version,
                 cuda_version = cuda_version,
                 cuda_repo_name = cuda_repo_name,
-                sha256 = component_redist_entry[platform_key].get("sha256", ""),
-                url = CUDA_REDIST_PATH_PREFIX + component_redist_entry[platform_key]["relative_path"],
+                sha256 = archive_entry.get("sha256", ""),
+                url = CUDA_REDIST_PATH_PREFIX + archive_entry["relative_path"],
             )
             generated_repos.append({
                 "component_repo_name": repo_data["repo_name"],
@@ -132,13 +148,11 @@ def get_archive_name(url):
             return filename[:-len(extension)]
     return filename
 
-def _get_lib_versions_from_lib_dir(repository_ctx):
-    lib_versions = {}
-    lib_dir = repository_ctx.path("lib")
-    if not lib_dir.exists:
-        return lib_versions
+def _update_lib_versions_from_dir(dir_path, lib_versions):
+    if not dir_path.exists:
+        return
 
-    for lib_path in lib_dir.readdir():
+    for lib_path in dir_path.readdir():
         file_name = lib_path.basename
         lib_suffix = ".so."
         so_idx = file_name.find(lib_suffix)
@@ -163,6 +177,11 @@ def _get_lib_versions_from_lib_dir(repository_ctx):
             lib_versions[lib_name] = version
         elif len(version_parts) == len(existing_parts) and len(version) > len(existing):
             lib_versions[lib_name] = version
+
+def _get_lib_versions(repository_ctx):
+    lib_versions = {}
+    _update_lib_versions_from_dir(repository_ctx.path("lib"), lib_versions)
+    _update_lib_versions_from_dir(repository_ctx.path("compat"), lib_versions)
 
     return lib_versions
 
@@ -218,7 +237,7 @@ def _cuda_component_repository_impl(repository_ctx):
         {"{cuda_redist_repo}": repository_ctx.attr.cuda_repo_name},
     )
 
-    lib_versions = _get_lib_versions_from_lib_dir(repository_ctx)
+    lib_versions = _get_lib_versions(repository_ctx)
     repository_ctx.file(
         "version.bzl",
         _version_bzl_content(component_version, lib_versions),

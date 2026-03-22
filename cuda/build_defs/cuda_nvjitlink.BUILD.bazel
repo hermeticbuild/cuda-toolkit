@@ -12,10 +12,28 @@ cc_import(
     name = "nvjitlink_shared_library",
     deps = [":headers"],
     shared_library = "lib/libnvJitLink.so." + LIB_VERSIONS["libnvjitlink"],
+    visibility = ["//visibility:public"],
 )
-cc_library(
+cc_import(
     name = "nvjitlink",
-    deps = [":nvjitlink_shared_library"],
+    static_library = "lib/libnvJitLink_static.a",
+    shared_library = "lib/libnvJitLink.so." + LIB_VERSIONS["libnvjitlink"],
+    deps = [":headers"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvjitlink_static",
+    deps = [":headers"],
+    static_library = "lib/libnvJitLink_static.a",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libnvJitLink.so." + LIB_VERSIONS["libnvjitlink"],
+    ],
     visibility = ["//visibility:public"],
 )
 

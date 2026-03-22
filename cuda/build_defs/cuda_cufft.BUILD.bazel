@@ -21,10 +21,51 @@ cc_import(
     name = "cufft_shared_library",
     deps = [":headers"],
     shared_library = "lib/libcufft.so." + LIB_VERSIONS["libcufft"],
+    visibility = ["//visibility:public"],
 )
-cc_library(
+cc_import(
     name = "cufft",
-    deps = [":cufft_shared_library"],
+    static_library = "lib/libcufft_static.a",
+    shared_library = "lib/libcufft.so." + LIB_VERSIONS["libcufft"],
+    deps = [":headers"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cufftw",
+    static_library = "lib/libcufftw_static.a",
+    shared_library = "lib/libcufftw.so." + LIB_VERSIONS["libcufftw"],
+    deps = [":headers"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cufft_static",
+    deps = [":headers"],
+    static_library = "lib/libcufft_static.a",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cufftw_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libcufftw.so." + LIB_VERSIONS["libcufftw"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cufftw_static",
+    deps = [":headers"],
+    static_library = "lib/libcufftw_static.a",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libcufft.so." + LIB_VERSIONS["libcufft"],
+        "lib/libcufftw.so." + LIB_VERSIONS["libcufftw"],
+    ],
     visibility = ["//visibility:public"],
 )
 

@@ -98,11 +98,20 @@ exports_files([
     "include/cuda.h",
 ])
 
-filegroup(
+cc_import(
     name = "static",
-    srcs = ["lib/libcudart_static.a"],
+    deps = [":headers"],
+    static_library = "lib/libcudart_static.a",
     visibility = ["//visibility:public"],
 )
+
+cc_import(
+    name = "cudadevrt_static",
+    deps = [":headers"],
+    static_library = "lib/libcudadevrt.a",
+    visibility = ["//visibility:public"],
+)
+
 cc_import(
     name = "cuda_stub",
     interface_library = "lib/stubs/libcuda.so",
@@ -113,6 +122,7 @@ cc_import(
     name = "cudart_shared_library",
     deps = [":headers"],
     shared_library = "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
+    visibility = ["//visibility:public"],
 )
 cc_library(
     name = "cuda_driver",
@@ -121,15 +131,31 @@ cc_library(
 )
 
 cc_library(
+    name = "cuda",
+    hdrs = [":cuda_header"],
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
     name = "cudart",
+    static_library = "lib/libcudart_static.a",
+    shared_library = "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
     deps = select({
         "@{cuda_redist_repo}//driver:cuda_umd_libs": [
             "@{cuda_redist_repo}//driver:nvidia_driver",
             "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
         ],
         "//conditions:default": [":cuda_driver"],
-    }) + [
-        ":cudart_shared_library",
+    }) + [":headers"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
     ],
     visibility = ["//visibility:public"],
 )

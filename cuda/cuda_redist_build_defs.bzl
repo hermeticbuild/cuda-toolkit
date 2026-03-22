@@ -95,6 +95,12 @@ COMPONENTS_REGISTRY = {
             "any": "//cuda/build_defs:cuda_cccl.BUILD.bazel",
         },
     },
+    "cuda_compat": {
+        "repo_name": "cuda_compat",
+        "version_to_template": {
+            "any": "//cuda/build_defs:cuda_compat.BUILD.bazel",
+        },
+    },
     "cuda_crt": {
         "repo_name": "cuda_crt",
         "version_to_template": {

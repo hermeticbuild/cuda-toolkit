@@ -22,6 +22,13 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "shared_library_files",
+    srcs = glob([
+        "lib/libnvtx3interop.so*",
+    ], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
 
 cc_library(
     name = "headers",
