@@ -201,8 +201,13 @@ filegroup(
 
 cc_library(
     name = "headers",
-    hdrs = [ ":header_list" ],
+    hdrs = [":header_list"],
     includes = ["include"],
+    deps = if_version_lower_than(
+        CUDA_VERSION,
+        "13.0.0",
+        ["@{cuda_redist_repo}//nvcc:headers"],
+    ),
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],
 )
