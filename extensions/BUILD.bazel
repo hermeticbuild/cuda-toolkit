@@ -10,6 +10,8 @@ bzl_library(
         "//cuda:cuda_redist_repository",
         "//cuda:cuda_component_proxy",
         "//cuda:cuda_compat_repository",
+        "//cudnn:cudnn_redist_build_defs",
+        "//nvshmem:nvshmem_redist_build_defs",
     ],
 )
 

@@ -124,3 +124,15 @@ cc_binary(
     srcs = ["main.cc"],
     deps = [":smoke_static_deps"],
 )
+
+cc_binary(
+    name = "cudnn_smoke",
+    srcs = ["cudnn_smoke.cc"],
+    deps = ["@cuda//cudnn:cudnn"],
+)
+
+cc_binary(
+    name = "nvshmem_smoke",
+    srcs = ["nvshmem_smoke.cc"],
+    deps = ["@cuda//nvshmem:nvshmem"],
+)

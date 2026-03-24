@@ -16,45 +16,66 @@ local_path_override(
 register_toolchains("@llvm//toolchain:all")
 
 cuda_ext = use_extension("@cuda_toolkit//extensions:cuda.bzl", "cuda")
+
 cuda_ext.redist(
     name = "cuda_12_8_0",
     version = "12.8.0",
+    cudnn_version = "8.9.7",
+    nvshmem_version = "3.3.24",
 )
 cuda_ext.redist(
     name = "cuda_12_8_1",
     version = "12.8.1",
+    cudnn_version = "8.9.7",
+    nvshmem_version = "3.3.24",
 )
 cuda_ext.redist(
     name = "cuda_12_9_0",
     version = "12.9.0",
+    cudnn_version = "8.9.7",
+    nvshmem_version = "3.3.24",
 )
 cuda_ext.redist(
     name = "cuda_12_9_1",
     version = "12.9.1",
+    cudnn_version = "8.9.7",
+    nvshmem_version = "3.3.24",
 )
 cuda_ext.redist(
     name = "cuda_13_0_0",
     version = "13.0.0",
+    cudnn_version = "9.20.0",
+    nvshmem_version = "3.5.19",
 )
 cuda_ext.redist(
     name = "cuda_13_0_1",
     version = "13.0.1",
+    cudnn_version = "9.20.0",
+    nvshmem_version = "3.5.19",
 )
 cuda_ext.redist(
     name = "cuda_13_0_2",
     version = "13.0.2",
+    cudnn_version = "9.20.0",
+    nvshmem_version = "3.5.19",
 )
 cuda_ext.redist(
     name = "cuda_13_1_0",
     version = "13.1.0",
+    cudnn_version = "9.20.0",
+    nvshmem_version = "3.5.19",
 )
 cuda_ext.redist(
     name = "cuda_13_1_1",
     version = "13.1.1",
+    cudnn_version = "9.20.0",
+    nvshmem_version = "3.5.19",
 )
 cuda_ext.redist(
     name = "cuda_13_2_0",
     version = "13.2.0",
+    cudnn_version = "9.20.0",
+    nvshmem_version = "3.5.19",
 )
 
 use_repo(
