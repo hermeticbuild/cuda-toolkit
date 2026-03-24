@@ -106,7 +106,7 @@ def cuda_redist_repositories(
                 cuda_version = cuda_version,
                 cuda_repo_name = cuda_repo_name,
                 sha256 = archive_entry.get("sha256", ""),
-                url = CUDA_REDIST_PATH_PREFIX + archive_entry["relative_path"],
+                url = cuda_redist_path_prefix + archive_entry["relative_path"],
             )
             generated_repos.append({
                 "component_repo_name": repo_data["repo_name"],

@@ -5,13 +5,3 @@ bzl_library(
     srcs = ["cudnn_redist_build_defs.bzl"],
     visibility = ["//visibility:public"],
 )
-
-bzl_library(
-    name = "cudnn_redist_repositories",
-    srcs = ["cudnn_redist_repositories.bzl"],
-    visibility = ["//visibility:public"],
-    deps = [
-        ":cudnn_redist_build_defs",
-        "//cuda:redist_proxy_targets",
-    ],
-)

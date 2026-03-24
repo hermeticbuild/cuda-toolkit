@@ -6,3 +6,10 @@ CUDNN_VERSION_TO_TEMPLATE = {
     "8": "//cuda/build_defs:cuda_cudnn8.BUILD.bazel",
     "9": "//cuda/build_defs:cuda_cudnn.BUILD.bazel",
 }
+
+CUDNN_COMPONENTS_REGISTRY = {
+    "cudnn": {
+        "repo_name": "cuda_cudnn",
+        "version_to_template": CUDNN_VERSION_TO_TEMPLATE,
+    },
+}
