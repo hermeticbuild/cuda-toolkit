@@ -45,7 +45,7 @@ _SUPPORTED_ARCHIVE_EXTENSIONS = [
     ".whl",
 ]
 
-def _platform_archive_entry(component_redist_entry, platform_key):
+def _platform_archive_entry(component_redist_entry, platform_key, cuda_version_major):
     platform_entry = component_redist_entry.get(platform_key)
     if not platform_entry:
         return None
@@ -57,8 +57,14 @@ def _platform_archive_entry(component_redist_entry, platform_key):
     if not variants:
         return platform_entry
 
-    variant_key = "cuda{}".format(variants[0])
-    return platform_entry.get(variant_key, platform_entry.get(variants[0]))
+    variant_key = "cuda{}".format(cuda_version_major)
+    archive_entry = platform_entry.get(variant_key, platform_entry.get(cuda_version_major))
+    if archive_entry:
+        return archive_entry
+
+    fallback_variant = variants[0]
+    fallback_variant_key = "cuda{}".format(fallback_variant)
+    return platform_entry.get(fallback_variant_key, platform_entry.get(fallback_variant))
 
 def cuda_redist_repositories(
         redist,
@@ -87,7 +93,7 @@ def cuda_redist_repositories(
         for platform, platform_spec in _PLATFORM_SPECS.items():
 
             platform_key = platform_spec["redist_platform_key"]
-            archive_entry = _platform_archive_entry(component_redist_entry, platform_key)
+            archive_entry = _platform_archive_entry(component_redist_entry, platform_key, cuda_version_major)
             if not archive_entry:
                 # Component may not be available for that platform
                 # buildifier: disable=print

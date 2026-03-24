@@ -55,36 +55,6 @@ def _read_downloaded_json(mctx, pending_download):
     pending_download.token.wait()
     return json.decode(mctx.read(pending_download.output_path))
 
-def _platform_variant_archive_entry(component_redist_entry, platform_key, cuda_version_major):
-    platform_entry = component_redist_entry.get(platform_key)
-    if not platform_entry:
-        return None
-
-    if platform_entry.get("relative_path"):
-        return platform_entry
-
-    variant_key = "cuda{}".format(cuda_version_major)
-    return platform_entry.get(variant_key, platform_entry.get(cuda_version_major))
-
-def _selected_cudnn_redist_for_cuda(component_redist_entry, cuda_version):
-    cuda_version_major = cuda_version.split(".")[0]
-    selected_redist = {
-        "cudnn": {
-            "version": component_redist_entry["version"],
-        },
-    }
-
-    for platform_key in ["linux-x86_64", "linux-sbsa"]:
-        archive_entry = _platform_variant_archive_entry(
-            component_redist_entry = component_redist_entry,
-            platform_key = platform_key,
-            cuda_version_major = cuda_version_major,
-        )
-        if archive_entry:
-            selected_redist["cudnn"][platform_key] = archive_entry
-
-    return selected_redist
-
 def _cuda_impl(mctx):
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
     cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
@@ -175,7 +145,7 @@ def _cuda_impl(mctx):
                 fail("cuDNN manifest '{}' does not contain a 'cudnn' package".format(tag.cudnn_version))
 
             generated_cudnn_repos = cuda_redist_repositories(
-                redist = _selected_cudnn_redist_for_cuda(cudnn_redist["cudnn"], tag.version),
+                redist = {"cudnn": cudnn_redist["cudnn"]},
                 cuda_repo_name = tag.name,
                 cuda_version = tag.version,
                 cuda_redist_path_prefix = CUDNN_REDIST_PATH_PREFIX,
