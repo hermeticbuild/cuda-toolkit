@@ -62,9 +62,7 @@ def _platform_archive_entry(component_redist_entry, platform_key, cuda_version_m
     if archive_entry:
         return archive_entry
 
-    fallback_variant = variants[0]
-    fallback_variant_key = "cuda{}".format(fallback_variant)
-    return platform_entry.get(fallback_variant_key, platform_entry.get(fallback_variant))
+    return None
 
 def cuda_redist_repositories(
         redist,
