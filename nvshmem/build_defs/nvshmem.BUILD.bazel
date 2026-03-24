@@ -2,7 +2,7 @@
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
-load("@{cuda_redist_repo}//cuda:selects.bzl", "if_cuda_version")
+load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("//:version.bzl", "LIB_VERSIONS")
 
 cc_import(
@@ -54,9 +54,10 @@ cc_library(
     deps = [
         "@{cuda_redist_repo}//cccl:headers",
         "@{cuda_redist_repo}//cudart:headers",
-    ] + if_cuda_version(
-        ">=13",
-        ["@{cuda_redist_repo}//crt:headers"],
+    ] + (
+        ["@{cuda_redist_repo}//crt:headers"]
+        if CUDA_VERSION.split(".")[0] == "13"
+        else []
     ),
     includes = ["include"],
     strip_include_prefix = "include",

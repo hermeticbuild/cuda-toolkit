@@ -134,5 +134,5 @@ cc_binary(
 cc_binary(
     name = "nvshmem_smoke",
     srcs = ["nvshmem_smoke.cc"],
-    deps = ["@nvshmem//nvshmem:nvshmem"],
+    deps = ["@cuda//nvshmem:nvshmem"],
 )

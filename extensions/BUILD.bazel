@@ -11,17 +11,7 @@ bzl_library(
         "//cuda:cuda_component_proxy",
         "//cuda:cuda_compat_repository",
         "//cudnn:cudnn_redist_build_defs",
-    ],
-)
-
-bzl_library(
-    name = "nvshmem",
-    srcs = ["nvshmem.bzl"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "//nvshmem:nvshmem_redist_repositories",
-        "//nvshmem:nvshmem_redist_repository",
-        "//nvshmem:nvshmem_compat_repository",
+        "//nvshmem:nvshmem_redist_build_defs",
     ],
 )
 
@@ -30,11 +20,4 @@ stardoc(
     out = "cuda.md",
     input = "cuda.bzl",
     deps = [":cuda"],
-)
-
-stardoc(
-    name = "nvshmem-docs",
-    out = "nvshmem.md",
-    input = "nvshmem.bzl",
-    deps = [":nvshmem"],
 )

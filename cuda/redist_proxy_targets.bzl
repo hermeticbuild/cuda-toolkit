@@ -77,5 +77,13 @@ REPO_PUBLIC_TARGETS = {
     "cuda_nvrtc": ["nvrtc_main", "nvrtc_builtins", "nvrtc", "nvrtc_static", "nvrtc_builtins_static", "nvrtc_stub", "header_list", "headers", "shared_library_files"],
     "cuda_nvtx": ["header_list", "headers", "shared_library_files"],
     "cuda_nvvm": ["cicc", "libdevice", "libnvvm", "nvptxcompiler"],
+    "cuda_nvshmem": [
+        "nvshmem_host_shared_library",
+        "nvshmem_device_static_library",
+        "nvshmem",
+        "header_list",
+        "headers",
+        "shared_library_files",
+    ],
     "cuda_profiler_api": ["header_list", "headers"],
 }

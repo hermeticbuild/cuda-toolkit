@@ -9,9 +9,15 @@ load(
     "CUDNN_COMPONENTS_REGISTRY",
     "CUDNN_REDIST_PATH_PREFIX",
 )
+load(
+    "//nvshmem:nvshmem_redist_build_defs.bzl",
+    "NVSHMEM_COMPONENTS_REGISTRY",
+    "NVSHMEM_REDIST_PATH_PREFIX",
+)
 
 _CUDA_REDIST_VERSIONS_JSON = Label("//cuda:cuda_redist_versions.json")
 _CUDNN_REDIST_VERSIONS_JSON = Label("//cudnn:cudnn_redist_versions.json")
+_NVSHMEM_REDIST_VERSIONS_JSON = Label("//nvshmem:nvshmem_redist_versions.json")
 
 def _collect_redist_tags(mctx):
     all_tags = []
@@ -58,6 +64,7 @@ def _read_downloaded_json(mctx, pending_download):
 def _cuda_impl(mctx):
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
     cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
+    nvshmem_version_map = json.decode(mctx.read(_NVSHMEM_REDIST_VERSIONS_JSON))
 
     tags = _collect_redist_tags(mctx)
 
@@ -70,6 +77,9 @@ def _cuda_impl(mctx):
     pending_cudnn_redistributions_by_version = {}
     cudnn_versions_to_fetch = []
     cudnn_redistributions_by_version = {}
+    pending_nvshmem_redistributions_by_version = {}
+    nvshmem_versions_to_fetch = []
+    nvshmem_redistributions_by_version = {}
     for tag in tags:
         if tag.name == "cuda":
             fail("redist name 'cuda' is reserved for the global aggregated CUDA repository")
@@ -107,6 +117,20 @@ def _cuda_impl(mctx):
             )
             cudnn_versions_to_fetch.append(tag.cudnn_version)
 
+        if tag.nvshmem_version and tag.nvshmem_version not in pending_nvshmem_redistributions_by_version:
+            (nvshmem_redist_url, nvshmem_redist_sha256) = _get_url_sha_from_version_map(
+                version = tag.nvshmem_version,
+                version_to_url_sha = nvshmem_version_map,
+                toolkit_name = "NVSHMEM",
+            )
+            pending_nvshmem_redistributions_by_version[tag.nvshmem_version] = _json_from_url_future(
+                mctx = mctx,
+                url = nvshmem_redist_url,
+                sha256 = nvshmem_redist_sha256,
+                output_path = "redistrib_nvshmem_%s.json" % tag.nvshmem_version,
+            )
+            nvshmem_versions_to_fetch.append(tag.nvshmem_version)
+
     for version in versions_to_fetch:
         redistributions_by_version[version] = _read_downloaded_json(
             mctx,
@@ -117,6 +141,12 @@ def _cuda_impl(mctx):
         cudnn_redistributions_by_version[version] = _read_downloaded_json(
             mctx,
             pending_cudnn_redistributions_by_version[version],
+        )
+
+    for version in nvshmem_versions_to_fetch:
+        nvshmem_redistributions_by_version[version] = _read_downloaded_json(
+            mctx,
+            pending_nvshmem_redistributions_by_version[version],
         )
 
     for tag in tags:
@@ -155,6 +185,33 @@ def _cuda_impl(mctx):
                 fail("cuDNN version '{}' did not generate any repositories for CUDA {}".format(tag.cudnn_version, tag.version))
 
             for generated in generated_cudnn_repos:
+                repo_name = generated["component_repo_name"]
+                spec = component_proxy_specs.get(repo_name)
+                if not spec:
+                    spec = {
+                        "version": generated["version"],
+                        "targets": generated["targets"],
+                        "platform_repo_mappings": {},
+                    }
+                    component_proxy_specs[repo_name] = spec
+                spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
+
+        if tag.nvshmem_version:
+            nvshmem_redist = nvshmem_redistributions_by_version[tag.nvshmem_version]
+            if "libnvshmem" not in nvshmem_redist:
+                fail("NVSHMEM manifest '{}' does not contain a 'libnvshmem' package".format(tag.nvshmem_version))
+
+            generated_nvshmem_repos = cuda_redist_repositories(
+                redist = {"libnvshmem": nvshmem_redist["libnvshmem"]},
+                cuda_repo_name = tag.name,
+                cuda_version = tag.version,
+                cuda_redist_path_prefix = NVSHMEM_REDIST_PATH_PREFIX,
+                components_registry = NVSHMEM_COMPONENTS_REGISTRY,
+            )
+            if not generated_nvshmem_repos:
+                fail("NVSHMEM version '{}' did not generate any repositories for CUDA {}".format(tag.nvshmem_version, tag.version))
+
+            for generated in generated_nvshmem_repos:
                 repo_name = generated["component_repo_name"]
                 spec = component_proxy_specs.get(repo_name)
                 if not spec:
@@ -206,6 +263,7 @@ _redist = tag_class(
         "name": attr.string(mandatory = True),
         "version": attr.string(mandatory = True),
         "cudnn_version": attr.string(),
+        "nvshmem_version": attr.string(),
     },
 )
 
