@@ -8,6 +8,7 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
+load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
 load("//:version.bzl", "LIB_VERSIONS")
 
 cc_import(
@@ -77,10 +78,10 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
-    deps = ["@{cuda_redist_repo}//cudart:headers"] + (
-        ["@{cuda_redist_repo}//crt:headers"]
-        if CUDA_VERSION.split(".")[0] == "13"
-        else []
+    deps = ["@{cuda_redist_repo}//cudart:headers"] + if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
+        ["@{cuda_redist_repo}//crt:headers"],
     ),
     includes = ["include"],
     strip_include_prefix = "include",
