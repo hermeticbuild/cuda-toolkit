@@ -5,6 +5,7 @@ load(
     "CUDNN_REDIST_PATH_PREFIX",
     "CUDNN_VERSION_TO_TEMPLATE",
 )
+load("//cuda:redist_proxy_targets.bzl", "REPO_PUBLIC_TARGETS")
 
 _PLATFORM_SPECS = {
     "linux_amd64": {
@@ -42,6 +43,8 @@ _SUPPORTED_ARCHIVE_EXTENSIONS = [
     ".deb",
     ".whl",
 ]
+
+_REPO_PUBLIC_TARGETS = REPO_PUBLIC_TARGETS
 
 def _platform_archive_entry(component_redist_entry, platform_key, cuda_version):
     platform_entry = component_redist_entry.get(platform_key)
@@ -98,10 +101,12 @@ def cudnn_redist_repositories(
             url = cudnn_redist_path_prefix + archive_entry["relative_path"],
         )
         generated_repos.append({
+            "component_repo_name": "cuda_cudnn",
             "concrete_repo_name": concrete_repo_name,
             "platform": platform,
             "config_setting": platform_spec["config_setting"],
             "version": redist["version"],
+            "targets": _REPO_PUBLIC_TARGETS["cuda_cudnn"],
         })
 
     return generated_repos

@@ -4,9 +4,7 @@ load("//cuda:cuda_component_proxy.bzl", "cuda_component_proxy")
 load("//cuda:cuda_redist_repository.bzl", "cuda_redist_repository")
 load("//cuda:cuda_compat_repository.bzl", "cuda_compat_repository")
 load("//cuda:cuda_redist_repositories.bzl", "cuda_redist_repositories")
-load("//cudnn:cudnn_compat_repository.bzl", "cudnn_compat_repository")
 load("//cudnn:cudnn_redist_repositories.bzl", "cudnn_redist_repositories")
-load("//cudnn:cudnn_redist_repository.bzl", "cudnn_redist_repository")
 
 _CUDA_REDIST_VERSIONS_JSON = Label("//cuda:cuda_redist_versions.json")
 _CUDNN_REDIST_VERSIONS_JSON = Label("//cudnn:cudnn_redist_versions.json")
@@ -53,26 +51,6 @@ def _read_downloaded_json(mctx, pending_download):
     pending_download.token.wait()
     return json.decode(mctx.read(pending_download.output_path))
 
-def _normalize_version_parts(version):
-    parts = []
-    for raw_part in version.split("."):
-        if raw_part:
-            parts.append(int(raw_part))
-    return parts
-
-def _version_greater_than(left, right):
-    left_parts = _normalize_version_parts(left)
-    right_parts = _normalize_version_parts(right)
-    max_len = max(len(left_parts), len(right_parts))
-    for idx in range(max_len):
-        left_value = left_parts[idx] if idx < len(left_parts) else 0
-        right_value = right_parts[idx] if idx < len(right_parts) else 0
-        if left_value > right_value:
-            return True
-        if left_value < right_value:
-            return False
-    return False
-
 def _cuda_impl(mctx):
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
     cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
@@ -91,8 +69,6 @@ def _cuda_impl(mctx):
     for tag in tags:
         if tag.name == "cuda":
             fail("redist name 'cuda' is reserved for the global aggregated CUDA repository")
-        if tag.name == "cudnn":
-            fail("redist name 'cudnn' is reserved for the global aggregated cuDNN repository")
 
         if tag.name in seen_repo_names:
             fail("Duplicate redist name '{}'".format(tag.name))
@@ -139,7 +115,6 @@ def _cuda_impl(mctx):
             pending_cudnn_redistributions_by_version[version],
         )
 
-    cudnn_version_to_redist_repo_name = {}
     for tag in tags:
         generated_repos = cuda_redist_repositories(
             redist = redistributions_by_version[tag.version],
@@ -159,6 +134,33 @@ def _cuda_impl(mctx):
                 }
                 component_proxy_specs[repo_name] = spec
             spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
+
+        if tag.cudnn_version:
+            cudnn_redist = cudnn_redistributions_by_version[tag.cudnn_version]
+            if "cudnn" not in cudnn_redist:
+                fail("cuDNN manifest '{}' does not contain a 'cudnn' package".format(tag.cudnn_version))
+
+            generated_cudnn_repos = cudnn_redist_repositories(
+                redist = cudnn_redist["cudnn"],
+                cudnn_version = tag.cudnn_version,
+                cuda_version = tag.version,
+                cuda_repo_name = tag.name,
+                cudnn_repo_name = tag.name,
+            )
+            if not generated_cudnn_repos:
+                fail("cuDNN version '{}' did not generate any repositories for CUDA {}".format(tag.cudnn_version, tag.version))
+
+            for generated in generated_cudnn_repos:
+                repo_name = generated["component_repo_name"]
+                spec = component_proxy_specs.get(repo_name)
+                if not spec:
+                    spec = {
+                        "version": generated["version"],
+                        "targets": generated["targets"],
+                        "platform_repo_mappings": {},
+                    }
+                    component_proxy_specs[repo_name] = spec
+                spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
 
         available_component_versions = {}
         available_component_mappings = {}
@@ -183,37 +185,6 @@ def _cuda_impl(mctx):
             available_component_versions = available_component_versions,
         )
 
-        if not tag.cudnn_version:
-            continue
-
-        cudnn_redist = cudnn_redistributions_by_version[tag.cudnn_version]
-        if "cudnn" not in cudnn_redist:
-            fail("cuDNN manifest '{}' does not contain a 'cudnn' package".format(tag.cudnn_version))
-
-        generated_cudnn_repos = cudnn_redist_repositories(
-            redist = cudnn_redist["cudnn"],
-            cudnn_version = tag.cudnn_version,
-            cuda_version = tag.version,
-            cuda_repo_name = tag.name,
-            cudnn_repo_name = tag.name,
-        )
-        if not generated_cudnn_repos:
-            fail("cuDNN version '{}' did not generate any repositories for CUDA {}".format(tag.cudnn_version, tag.version))
-
-        cudnn_platform_repo_mappings = {}
-        cudnn_actual_version = ""
-        for generated in generated_cudnn_repos:
-            cudnn_platform_repo_mappings[generated["config_setting"]] = generated["concrete_repo_name"]
-            if not cudnn_actual_version:
-                cudnn_actual_version = generated["version"]
-
-        cudnn_redist_repository(
-            name = "{}__cudnn".format(tag.name),
-            version = cudnn_actual_version,
-            platform_repo_mappings = cudnn_platform_repo_mappings,
-        )
-        cudnn_version_to_redist_repo_name[tag.version] = "{}__cudnn".format(tag.name)
-
     cuda_compat_repository(
         name = "cuda",
         available_cuda_versions = sorted(cuda_version_map.keys()),
@@ -223,18 +194,6 @@ def _cuda_impl(mctx):
             for tag in tags
         },
     )
-
-    max_registered_cuda_version = ""
-    for version in versions:
-        if not max_registered_cuda_version or _version_greater_than(version, max_registered_cuda_version):
-            max_registered_cuda_version = version
-
-    if cudnn_version_to_redist_repo_name:
-        cudnn_compat_repository(
-            name = "cudnn",
-            cuda_version_to_redist_repo_name = cudnn_version_to_redist_repo_name,
-            default_redist_repo_name = cudnn_version_to_redist_repo_name.get(max_registered_cuda_version, ""),
-        )
 
     return mctx.extension_metadata(reproducible = True)
 

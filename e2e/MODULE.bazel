@@ -82,7 +82,6 @@ nvshmem_ext.redist(
 use_repo(
     cuda_ext,
     "cuda",
-    "cudnn",
     "cuda_12_8_0",
     "cuda_12_8_1",
     "cuda_12_9_0",

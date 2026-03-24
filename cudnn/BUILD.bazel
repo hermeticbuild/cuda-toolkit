@@ -1,12 +1,6 @@
 load("@bazel_lib//:bzl_library.bzl", "bzl_library")
 
 bzl_library(
-    name = "cudnn_compat_repository",
-    srcs = ["cudnn_compat_repository.bzl"],
-    visibility = ["//visibility:public"],
-)
-
-bzl_library(
     name = "cudnn_redist_build_defs",
     srcs = ["cudnn_redist_build_defs.bzl"],
     visibility = ["//visibility:public"],
@@ -18,18 +12,6 @@ bzl_library(
     visibility = ["//visibility:public"],
     deps = [
         ":cudnn_redist_build_defs",
+        "//cuda:redist_proxy_targets",
     ],
-)
-
-bzl_library(
-    name = "cudnn_redist_repository",
-    srcs = ["cudnn_redist_repository.bzl"],
-    visibility = ["//visibility:public"],
-    deps = [":redist_proxy_targets"],
-)
-
-bzl_library(
-    name = "redist_proxy_targets",
-    srcs = ["redist_proxy_targets.bzl"],
-    visibility = ["//visibility:public"],
 )

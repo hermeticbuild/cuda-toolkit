@@ -11,8 +11,6 @@ bzl_library(
         "//cuda:cuda_component_proxy",
         "//cuda:cuda_compat_repository",
         "//cudnn:cudnn_redist_repositories",
-        "//cudnn:cudnn_redist_repository",
-        "//cudnn:cudnn_compat_repository",
     ],
 )
 

@@ -128,7 +128,7 @@ cc_binary(
 cc_binary(
     name = "cudnn_smoke",
     srcs = ["cudnn_smoke.cc"],
-    deps = ["@cudnn//cudnn:cudnn"],
+    deps = ["@cuda//cudnn:cudnn"],
 )
 
 cc_binary(
