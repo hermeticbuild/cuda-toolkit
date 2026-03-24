@@ -35,6 +35,22 @@ def compare_versions(lib_version, dist_version, operator):
         return lib_tuple < dist_tuple
     return False
 
+def sort_versions(versions):
+    ordered_versions = []
+    for version in versions:
+        insert_at = len(ordered_versions)
+        for i, existing_version in enumerate(ordered_versions):
+            if compare_versions(version, existing_version, "<"):
+                insert_at = i
+                break
+        ordered_versions.insert(insert_at, version)
+    return ordered_versions
+
+def max_version(versions):
+    ordered_versions = sort_versions(versions)
+    if not ordered_versions:
+        fail("Expected at least one version")
+    return ordered_versions[-1]
 
 def if_version_equal_or_lower_than(lib_version, dist_version, if_true, if_false = []):
     if compare_versions(lib_version, dist_version, "<="):

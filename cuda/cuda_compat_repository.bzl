@@ -1,6 +1,7 @@
 """Repository rule for the global curated CUDA repository."""
 
 load("//cuda:redist_proxy_targets.bzl", "REPO_PUBLIC_TARGETS")
+load("//cuda:versions_helper.bzl", "max_version", "sort_versions")
 
 def _sanitize_version(version):
     return version.replace(".", "_").replace("-", "_")
@@ -9,6 +10,7 @@ def _proxy_package_name(repo_name):
     return repo_name.removeprefix("cuda_")
 
 def _render_selects_bzl(cuda_versions):
+    ordered_cuda_versions = sort_versions(cuda_versions)
     lines = [
         "load(",
         "    \"@cuda_toolkit//cuda:selects_internal.bzl\",",
@@ -21,7 +23,7 @@ def _render_selects_bzl(cuda_versions):
 
     # We only generate this based on the registered versions to minimize the number 
     # of targets that will be created by _if_cuda_version.
-    for version in sorted(cuda_versions):
+    for version in ordered_cuda_versions:
         lines.append("    \"{}\",".format(version))
 
     lines.extend([
@@ -40,6 +42,7 @@ def _render_selects_bzl(cuda_versions):
     return "\n".join(lines)
 
 def _render_component_alias_build_file(package_name, target_names, version_to_redist_repo_name):
+    ordered_versions = sort_versions(version_to_redist_repo_name.keys())
     lines = [
         "package(default_visibility = [\"//visibility:public\"])",
         "",
@@ -52,7 +55,7 @@ def _render_component_alias_build_file(package_name, target_names, version_to_re
             "    actual = select({",
         ])
 
-        for version in sorted(version_to_redist_repo_name.keys()):
+        for version in ordered_versions:
             lines.append(
                 "        \"//:is_cuda_{version}\": \"@{repo}//{package}:{target}\",".format(
                     version = _sanitize_version(version),
@@ -64,9 +67,9 @@ def _render_component_alias_build_file(package_name, target_names, version_to_re
 
         # add //conditions:default to max version
         # So that if users don't set a constraint, they get max version by default.
-        max_version = sorted(version_to_redist_repo_name.keys())[-1]
+        selected_max_version = max_version(ordered_versions)
         lines.append("        \"//conditions:default\": \"@{repo}//{package}:{target}\",".format(
-            repo = version_to_redist_repo_name[max_version],
+            repo = version_to_redist_repo_name[selected_max_version],
             package = package_name,
             target = target_name,
         ))

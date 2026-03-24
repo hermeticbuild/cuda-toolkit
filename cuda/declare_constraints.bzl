@@ -1,18 +1,20 @@
-
 load("@bazel_skylib//lib:selects.bzl", "selects")
+load("@cuda_toolkit//cuda:versions_helper.bzl", "max_version", "sort_versions")
 
 def _sanitize_version(version):
     return version.replace(".", "_").replace("-", "_")
 
 def declare_constraints(cuda_versions, registered_versions):
+    ordered_cuda_versions = sort_versions(cuda_versions)
+    ordered_registered_versions = sort_versions(registered_versions)
 
     native.constraint_setting(
         name = "cuda_version",
-        default_constraint_value = "cuda_{}".format(_sanitize_version(sorted(registered_versions)[-1])),
+        default_constraint_value = "cuda_{}".format(_sanitize_version(max_version(ordered_registered_versions))),
     )
 
     major_to_versions = {}
-    for version in sorted(cuda_versions):
+    for version in ordered_cuda_versions:
         version_key = _sanitize_version(version)
         major = version.split(".")[0]
         versions_for_major = major_to_versions.get(major, [])
@@ -36,6 +38,6 @@ def declare_constraints(cuda_versions, registered_versions):
             name = "is_cuda_{}".format(major),
             match_any = [
                 ":is_cuda_{}".format(_sanitize_version(version))
-                for version in sorted(major_to_versions[major])
+                for version in sort_versions(major_to_versions[major])
             ],
         )
