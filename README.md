@@ -61,5 +61,3 @@ use_repo(cuda_ext, "cuda")
 ## License
 
 This project is licensed under the MIT License.
-
-Some files are derived from [rules_ml_toolchain](https://github.com/google-ml-infra/rules_ml_toolchain) licensed under the Apache License 2.0 and remain under that license.
