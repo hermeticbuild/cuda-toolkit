@@ -16,13 +16,14 @@ This project had been started to address limitations of the `rules_cuda` module 
 
 Supported versions are defined in:
 - `cuda/cuda_redist_versions.json`
+- `cudnn/cudnn_redist_versions.json`
+- `nvshmem/nvshmem_redist_versions.json`
 
 ## Supported platforms
 
 CUDA components are typically published for these platforms:
 - `linux-x86_64`
 - `linux-sbsa`
-- `windows-x86_64`
 
 This module exposes each component through proxy subpackages:
 - `@cuda//<component>`
@@ -36,16 +37,22 @@ For example, `@cuda//nvcc:ptxas` used from an attribute with `cfg = "exec"` reso
 Example `MODULE.bazel` setup:
 
 ```starlark
-cuda_ext = use_extension("//extensions:cuda.bzl", "cuda")
-cuda_ext.configure(
-    cuda_version = "12.9.1",
+cuda_ext = use_extension("@cuda_toolkit//extensions:cuda.bzl", "cuda")
+
+cuda_ext.redist(
+    name = "cuda_12_9_1",
+    version = "12.9.1",
+    cudnn_version = "8.9.7",
+    nvshmem_version = "3.3.24",
 )
+
 use_repo(cuda_ext, "cuda")
 ```
 
 ## Notes
 
-- `cuda_umd_version` defaults to `cuda_version` when omitted.
+- CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
+- cuDNN and NVSHMEM versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
 - CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - For local validation on non-Linux hosts, you can force Linux selection with
