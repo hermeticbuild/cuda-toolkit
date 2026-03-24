@@ -7,10 +7,9 @@
 This repository provides the CUDA toolkit (CUDA, cuDNN, and related redistributions)
 hermetically using Bazel.
 
-It is meant to be consumed by other Bazel projects, notably rulesets and toolchains.
+This project has similarities with `rules_cuda` or `rules_ml_toolchain` except that it provides only the CUDA toolkit without any toolchain definitions or usage assumptions.
 
-This project had been started to address limitations of the `rules_cuda` module at the time it was started.
-`rules_cuda` now provides the same cuda toolkit configuration, including its own toolchain while this module only provides the toolkit.
+It is meant to be consumed by other Bazel projects, notably rulesets and toolchains.
 
 ## Supported versions
 
