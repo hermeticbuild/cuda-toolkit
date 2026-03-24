@@ -1,0 +1,4 @@
+{
+  "8.9.7": ["https://developer.download.nvidia.com/compute/cudnn/redist/redistrib_8.9.7.json", "5283f8646775f98186e27d804b19e009f058966960c430a84b344215f6828986"],
+  "9.20.0": ["https://developer.download.nvidia.com/compute/cudnn/redist/redistrib_9.20.0.json", "488be2657edfaaa9eada30247de95e81e3ce767f504dccb847d422cd358226a0"]
+}

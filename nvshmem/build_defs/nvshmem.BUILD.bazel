@@ -1,0 +1,64 @@
+"""BUILD definitions for nvshmem package"""
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@{cuda_redist_repo}//cuda:selects.bzl", "if_cuda_version")
+load("//:version.bzl", "LIB_VERSIONS")
+
+cc_import(
+    name = "nvshmem_host_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libnvshmem_host.so." + LIB_VERSIONS["libnvshmem_host"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvshmem_device_static_library",
+    deps = [":headers"],
+    static_library = "lib/libnvshmem_device.a",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvshmem",
+    deps = [
+        ":headers",
+        ":nvshmem_host_shared_library",
+        "@{cuda_redist_repo}//cudart:cudart",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libnvshmem_host.so." + LIB_VERSIONS["libnvshmem_host"],
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob([
+        "include/*.h",
+        "include/**/*.h",
+        "include/*.cuh",
+        "include/**/*.cuh",
+    ], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    deps = [
+        "@{cuda_redist_repo}//cccl:headers",
+        "@{cuda_redist_repo}//cudart:headers",
+    ] + if_cuda_version(
+        ">=13",
+        ["@{cuda_redist_repo}//crt:headers"],
+    ),
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)

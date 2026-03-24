@@ -76,6 +76,10 @@ filegroup(
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
+    deps = [
+        "@{cuda_redist_repo}//cudart:headers",
+{cudnn_header_extra_deps}
+    ],
     includes = ["include"],
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],

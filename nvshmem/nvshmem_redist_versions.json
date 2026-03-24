@@ -1,0 +1,4 @@
+{
+  "3.3.24": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.3.24.json", "60ef5424c1632bb1fa1fb41aea9d75b1777f62faeebb1eeaa818ed92068403b8"],
+  "3.5.19": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.5.19.json", "6dced4193eb728542504b346cfb768da6e3de2abca0cded95fda3a69729994d2"]
+}

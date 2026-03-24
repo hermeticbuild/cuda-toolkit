@@ -1,0 +1,1 @@
+exports_files(["nvshmem.BUILD.bazel"])
