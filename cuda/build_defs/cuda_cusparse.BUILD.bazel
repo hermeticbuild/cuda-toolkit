@@ -11,17 +11,41 @@ load("//:version.bzl", "LIB_VERSIONS")
 cc_import(
     name = "cusparse_shared_library",
     shared_library = "lib/libcusparse.so." + LIB_VERSIONS["libcusparse"],
-    deps = ["@{cuda_redist_repo}//nvjitlink:nvjitlink", ":headers"],
+    deps = ["@{cuda_redist_repo}//nvjitlink:nvjitlink_shared_library", ":headers"],
+    visibility = ["//visibility:public"],
 )
+cc_import(
+    name = "cusparse_static_library",
+    deps = [":headers"],
+    static_library = "lib/libcusparse_static.a",
+)
+
 cc_library(
     name = "cusparse",
     deps = [":cusparse_shared_library"],
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "cusparse_static",
+    deps = [":cusparse_static_library", "@{cuda_redist_repo}//nvjitlink:nvjitlink_static"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libcusparse.so." + LIB_VERSIONS["libcusparse"],
+    ],
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "header_list",
-    srcs = ["include/cusparse.h"],
+    srcs = [
+        "include/cusparse.h",
+        "include/cusparse_v2.h",
+    ],
     visibility = ["//visibility:public"],
 )
 

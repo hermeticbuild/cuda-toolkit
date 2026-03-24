@@ -5,6 +5,7 @@
 # Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
 # @cuda_nvcc proxy repository can re-export it.
 
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
@@ -55,6 +56,43 @@ filegroup(
 )
 
 filegroup(
+    name = "nvcc",
+    srcs = [
+        "bin/nvcc",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "cudafe",
+    srcs = [
+        "bin/cudafe++",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nvcc_profile",
+    srcs = [
+        "bin/nvcc.profile",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "nvcc_device_query",
+    srcs = [
+        "bin/__nvcc_device_query",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "nvcc_directory",
+    actual = ":bin",
+)
+
+filegroup(
     name = "bin",
     srcs = glob([
         "bin/**",
@@ -71,6 +109,14 @@ filegroup(
     name = "link_stub",
     srcs = [
         "bin/crt/link.stub",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "prelink_stub",
+    srcs = [
+        "bin/crt/prelink.stub",
     ],
     visibility = ["//visibility:public"],
 )
@@ -93,6 +139,32 @@ filegroup(
             # glob is resolved right away
             allow_empty = True,
         ),
+    ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "cuda_nvcc",
+    srcs = [
+        ":ptxas",
+        ":nvlink",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvptxcompiler_static_library",
+    deps = [":headers"],
+    static_library = "lib/libnvptxcompiler_static.a",
+)
+
+alias(
+    name = "nvptxcompiler",
+    actual = if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
+        if_true = "@{cuda_redist_repo}//nvptxcompiler:nvptxcompiler",
+        if_false = ":nvptxcompiler_static_library",
     ),
     visibility = ["//visibility:public"],
 )

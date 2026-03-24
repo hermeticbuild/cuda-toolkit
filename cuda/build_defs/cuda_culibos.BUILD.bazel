@@ -1,0 +1,15 @@
+"""BUILD definitions for cuda_culibos package"""
+
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+cc_import(
+    name = "culibos_static_library",
+    static_library = "lib/libculibos.a",
+)
+
+cc_library(
+    name = "culibos_static",
+    deps = [":culibos_static_library"],
+    visibility = ["//visibility:public"],
+)

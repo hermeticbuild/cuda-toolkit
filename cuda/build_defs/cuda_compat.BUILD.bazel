@@ -1,0 +1,140 @@
+"""BUILD definitions for cuda_compat package"""
+
+# This BUILD file is used within the arch specific cuda redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_compat proxy repository can re-export it.
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("//:version.bzl", "LIB_VERSIONS")
+
+cc_import(
+    name = "driver_shared_library",
+    shared_library = "compat/libcuda.so." + LIB_VERSIONS["libcuda"],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "cuda_shared_library",
+    actual = ":driver_shared_library",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "libcuda_so_1",
+    shared_library = "compat/libcuda.so.1",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "libcuda_so",
+    shared_library = "compat/libcuda.so",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvidia_driver",
+    deps = [
+        ":libcuda_so",
+        ":libcuda_so_1",
+        ":driver_shared_library",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvidia-ptxjitcompiler_shared_library",
+    shared_library = "compat/libnvidia-ptxjitcompiler.so." + LIB_VERSIONS["libnvidia-ptxjitcompiler"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "libnvidia-ptxjitcompiler_so_1",
+    shared_library = "compat/libnvidia-ptxjitcompiler.so.1",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvidia_ptxjitcompiler",
+    deps = [
+        ":libnvidia-ptxjitcompiler_so_1",
+        ":nvidia-ptxjitcompiler_shared_library",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cudadebugger_shared_library",
+    shared_library = "compat/libcudadebugger.so." + LIB_VERSIONS["libcudadebugger"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "libcudadebugger_so_1",
+    shared_library = "compat/libcudadebugger.so.1",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cudadebugger",
+    deps = [
+        ":libcudadebugger_so_1",
+        ":cudadebugger_shared_library",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvidia_nvvm_shared_library",
+    shared_library = "compat/libnvidia-nvvm.so." + LIB_VERSIONS["libnvidia-nvvm"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "libnvidia-nvvm_so_4",
+    shared_library = "compat/libnvidia-nvvm.so.4",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "libnvidia-nvvm_so",
+    shared_library = "compat/libnvidia-nvvm.so",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvidia_nvvm",
+    deps = [
+        ":libnvidia-nvvm_so",
+        ":libnvidia-nvvm_so_4",
+        ":nvidia_nvvm_shared_library",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvidia_nvvm70_shared_library",
+    shared_library = "compat/libnvidia-nvvm70.so." + LIB_VERSIONS["libnvidia-nvvm70"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvidia_gpucomp_shared_library",
+    shared_library = "compat/libnvidia-gpucomp.so." + LIB_VERSIONS["libnvidia-gpucomp"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvidia_tileiras_shared_library",
+    shared_library = "compat/libnvidia-tileiras.so." + LIB_VERSIONS["libnvidia-tileiras"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = glob([
+        "compat/*.so*",
+    ]),
+    visibility = ["//visibility:public"],
+)

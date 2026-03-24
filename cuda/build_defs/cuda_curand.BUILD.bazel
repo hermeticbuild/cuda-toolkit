@@ -13,11 +13,32 @@ cc_import(
     name = "curand_shared_library",
     deps = [":headers"],
     shared_library = "lib/libcurand.so." + LIB_VERSIONS["libcurand"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "curand_static_library",
+    deps = [":headers"],
+    static_library = "lib/libcurand_static.a",
 )
 
 cc_library(
     name = "curand",
     deps = [":curand_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "curand_static",
+    deps = [":curand_static_library"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libcurand.so." + LIB_VERSIONS["libcurand"],
+    ],
     visibility = ["//visibility:public"],
 )
 

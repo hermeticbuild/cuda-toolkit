@@ -12,10 +12,31 @@ cc_import(
     name = "nvjitlink_shared_library",
     deps = [":headers"],
     shared_library = "lib/libnvJitLink.so." + LIB_VERSIONS["libnvjitlink"],
+    visibility = ["//visibility:public"],
 )
+cc_import(
+    name = "nvjitlink_static_library",
+    deps = [":headers"],
+    static_library = "lib/libnvJitLink_static.a",
+)
+
 cc_library(
     name = "nvjitlink",
     deps = [":nvjitlink_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvjitlink_static",
+    deps = [":nvjitlink_static_library", "@{cuda_redist_repo}//nvcc:nvptxcompiler"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libnvJitLink.so." + LIB_VERSIONS["libnvjitlink"],
+    ],
     visibility = ["//visibility:public"],
 )
 

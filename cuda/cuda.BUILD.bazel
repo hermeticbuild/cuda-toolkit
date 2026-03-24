@@ -81,43 +81,19 @@ SUPPORTED_TARGETS = [
 cc_library(
     name = "cuda_headers",
     deps = [
-        "@cuda//cccl:headers",
-        "@cuda//cublas:headers",
         "@cuda//cudart:headers",
-        "@cuda//cufft:headers",
-        "@cuda//cupti:headers",
-        "@cuda//curand:headers",
-        "@cuda//cusolver:headers",
-        "@cuda//cusparse:headers",
         "@cuda//nvcc:headers",
-        "@cuda//nvjitlink:headers",
-        "@cuda//nvml:headers",
-        "@cuda//nvrtc:headers",
-        "@cuda//nvtx:headers",
-        "@cuda//profiler_api:headers",
     ] + if_cuda_version(
         ">=13",
         ["@cuda//crt:headers"],
     ),
 )
 
-# This target is needed if users want to have implicit cuda_headers dependencies
-# Users can depend on this alias to get the cuda_headers without causing duplicate
-# dependencies.
-alias(
-    name = "implicit_cuda_headers_dependency",
-    actual = ":cuda_headers",
-)
-
 cc_library(
     name = "cuda",
     deps = [
         "@cuda//cuda:cuda_headers",
-        "@cuda//cublas",
-        "@cuda//cublas:cublasLt",
         "@cuda//cudart",
-        "@cuda//cufft",
-        "@cuda//curand",
     ],
 )
 

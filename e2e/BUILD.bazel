@@ -4,28 +4,123 @@ load("@cuda//cuda:selects.bzl", "if_cuda_version")
 
 package(default_visibility = ["//visibility:public"])
 
+SMOKE_CUDA_VERSIONS = [
+    "12.8.0",
+    "12.8.1",
+    "12.9.0",
+    "12.9.1",
+    "13.0.0",
+    "13.0.1",
+    "13.0.2",
+    "13.1.0",
+    "13.1.1",
+    "13.2.0",
+]
+
+[
+    platform(
+        name = "platform_linux_arm64_cuda_{}".format(version.replace(".", "_")),
+        constraint_values = [
+            "@platforms//os:linux",
+            "@platforms//cpu:arm64",
+            "@cuda//:cuda_{}".format(version.replace(".", "_")),
+        ],
+    )
+    for version in SMOKE_CUDA_VERSIONS
+]
+
+SMOKE_BASE_DEFINES = [
+    "CUDA_SMOKE_HAVE_CUBLAS=1",
+    "CUDA_SMOKE_HAVE_CUDART=1",
+    "CUDA_SMOKE_HAVE_CUFFT=1",
+    "CUDA_SMOKE_HAVE_CUPTI=1",
+    "CUDA_SMOKE_HAVE_CURAND=1",
+    "CUDA_SMOKE_HAVE_CUSOLVER=1",
+    "CUDA_SMOKE_HAVE_CUSPARSE=1",
+    "CUDA_SMOKE_HAVE_DRIVER_API=1",
+    "CUDA_SMOKE_HAVE_NVJITLINK=1",
+    "CUDA_SMOKE_HAVE_NVML=1",
+    "CUDA_SMOKE_HAVE_NVRTC=1",
+    "CUDA_SMOKE_HAVE_NVTX=1",
+    "CUDA_SMOKE_HAVE_PROFILER_API=1",
+]
+
+SMOKE_CRT_DEFINES = [
+    "CUDA_SMOKE_HAVE_CUDA_CRT=1",
+]
+
+SMOKE_CRT_DEFINE_SELECT = if_cuda_version(">=13", SMOKE_CRT_DEFINES)
+
+SMOKE_BASE_SHARED_DEPS = [
+    "@cuda//cccl:headers",
+    "@cuda//cublas:cublas_shared_library",
+    "@cuda//cublas:cublasLt_shared_library",
+    "@cuda//cudart:cudart_shared_library",
+    "@cuda//cudart:cuda_driver",
+    "@cuda//cufft:cufft_shared_library",
+    "@cuda//cupti:cupti_shared_library",
+    "@cuda//curand:curand_shared_library",
+    "@cuda//cusolver:cusolver_shared_library",
+    "@cuda//cusparse:cusparse_shared_library",
+    "@cuda//nvjitlink:nvjitlink_shared_library",
+    "@cuda//nvml:nvidia-ml_stub",
+    "@cuda//nvrtc:nvrtc_main",
+    "@cuda//nvtx:headers",
+    "@cuda//profiler_api:headers",
+]
+
+SMOKE_BASE_STATIC_DEPS = [
+    "@cuda//cccl:headers",
+    "@cuda//cublas:cublas_static",
+    "@cuda//cudart:static",
+    "@cuda//cufft:cufft_static",
+    "@cuda//cupti:cupti_static",
+    "@cuda//curand:curand_static",
+    "@cuda//cusolver:cusolver_static",
+    "@cuda//cusparse:cusparse_static",
+    "@cuda//nvjitlink:nvjitlink_static",
+    "@cuda//nvml:nvidia_ml_static_stub",
+    "@cuda//nvrtc:nvrtc_static",
+    "@cuda//nvtx:headers",
+    "@cuda//profiler_api:headers",
+]
+
+SMOKE_CRT_SHARED_DEPS = [
+    "@cuda//crt:headers",
+]
+
+SMOKE_CRT_STATIC_DEPS = [
+    "@cuda//crt:headers",
+]
+
+SMOKE_CRT_SHARED_SELECT = if_cuda_version(">=13", SMOKE_CRT_SHARED_DEPS)
+
+SMOKE_CRT_STATIC_SELECT = if_cuda_version(">=13", SMOKE_CRT_STATIC_DEPS)
+
 cc_library(
-    name = "cuda_toolkit_all",
+    name = "smoke_deps",
+    defines = SMOKE_BASE_DEFINES + SMOKE_CRT_DEFINE_SELECT,
     data = [
         "@cuda//nvcc:fatbinary",
         "@cuda//nvcc:ptxas",
     ],
-    deps = [
-        "@cuda//cuda",
-    ],
+    deps = SMOKE_BASE_SHARED_DEPS + SMOKE_CRT_SHARED_SELECT,
 )
 
 cc_binary(
-    name = "cuda_toolkit_all_dummy_main",
+    name = "smoke",
     srcs = ["main.cc"],
-    deps = [":cuda_toolkit_all"],
+    deps = [":smoke_deps"],
 )
 
 cc_library(
-    name = "cuda_version_helper_smoke",
-    deps = if_cuda_version(
-        ">=13",
-        if_true = ["@cuda//nvvm:libdevice"],
-        if_false = ["@cuda//nvcc:libdevice"],
-    ),
+    name = "smoke_static_deps",
+    defines = SMOKE_BASE_DEFINES + SMOKE_CRT_DEFINE_SELECT,
+    deps = SMOKE_BASE_STATIC_DEPS + SMOKE_CRT_STATIC_SELECT,
+)
+
+cc_binary(
+    name = "smoke_static",
+    srcs = ["main.cc"],
+    deps = [":smoke_static_deps"],
 )

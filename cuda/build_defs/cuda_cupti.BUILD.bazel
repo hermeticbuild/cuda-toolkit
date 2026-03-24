@@ -49,10 +49,93 @@ cc_import(
     name = "cupti_shared_library",
     deps = [":headers"],
     shared_library = "lib/libcupti.so." + LIB_VERSIONS["libcupti"],
+    visibility = ["//visibility:public"],
 )
+cc_import(
+    name = "cupti_static_library",
+    deps = [":headers"],
+    static_library = "lib/libcupti_static.a",
+)
+
 cc_library(
     name = "cupti",
     deps = [":cupti_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cupti_static",
+    deps = [":cupti_static_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "checkpoint_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libcheckpoint.so",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "checkpoint",
+    deps = [":checkpoint_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvperf_host_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libnvperf_host.so",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvperf_host",
+    deps = [":nvperf_host_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvperf_target_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libnvperf_target.so",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvperf_target",
+    deps = [":nvperf_target_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "pcsamplingutil_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libpcsamplingutil.so",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "pcsamplingutil",
+    deps = [":pcsamplingutil_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "cuda_cupti",
+    actual = ":cupti",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libcupti.so." + LIB_VERSIONS["libcupti"],
+        "lib/libcheckpoint.so",
+        "lib/libnvperf_host.so",
+        "lib/libnvperf_target.so",
+        "lib/libpcsamplingutil.so",
+    ],
     visibility = ["//visibility:public"],
 )
 
@@ -69,6 +152,7 @@ filegroup(
     ]) + if_version_equal_or_greater_than(LIB_VERSIONS["libcupti"], "2024.3", [
         "include/cupti_pmsampling.h",
         "include/cupti_profiler_host.h",
+        "include/cupti_range_profiler.h",
     ]),
     visibility = ["//visibility:public"],
 )

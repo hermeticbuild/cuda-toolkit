@@ -14,11 +14,19 @@ load("//:version.bzl", "LIB_VERSIONS")
 cc_import(
     name = "driver_shared_library",
     shared_library = "lib/libcuda.so." + LIB_VERSIONS["libcuda"],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "cuda_shared_library",
+    actual = ":driver_shared_library",
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "nvidia-ptxjitcompiler_shared_library",
     shared_library = "lib/libnvidia-ptxjitcompiler.so." + LIB_VERSIONS["libnvidia-ptxjitcompiler"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
@@ -56,6 +64,18 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_import(
+    name = "cudadebugger_shared_library",
+    shared_library = "lib/libcudadebugger.so." + LIB_VERSIONS["libcudadebugger"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvidia_nvvm_shared_library",
+    shared_library = "lib/libnvidia-nvvm.so." + LIB_VERSIONS["libnvidia-nvvm"],
+    visibility = ["//visibility:public"],
+)
+
 # Flag indicating whether we should use hermetic user mode driver.
 # It must be enabled for complete CUDA hermeticity.
 bool_flag(
@@ -67,5 +87,16 @@ bool_flag(
 config_setting(
     name = "cuda_umd_libs",
     flag_values = {":include_cuda_umd_libs": "True"},
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libcuda.so." + LIB_VERSIONS["libcuda"],
+        "lib/libnvidia-ptxjitcompiler.so." + LIB_VERSIONS["libnvidia-ptxjitcompiler"],
+        "lib/libcudadebugger.so." + LIB_VERSIONS["libcudadebugger"],
+        "lib/libnvidia-nvvm.so." + LIB_VERSIONS["libnvidia-nvvm"],
+    ],
     visibility = ["//visibility:public"],
 )

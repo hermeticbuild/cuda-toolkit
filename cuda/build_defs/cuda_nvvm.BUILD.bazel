@@ -7,6 +7,7 @@
 
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
 
 exports_files([
     "nvvm/bin/cicc",
@@ -31,6 +32,31 @@ filegroup(
         "13.0.0",
         if_true = ["nvvm/libdevice/libdevice.10.bc"],
         if_false = [],
+    ),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "libnvvm",
+    srcs = [
+        ":cicc",
+        ":libdevice",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvptxcompiler_static_library",
+    static_library = "lib/libnvptxcompiler_static.a",
+)
+
+alias(
+    name = "nvptxcompiler",
+    actual = if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
+        if_true = "@{cuda_redist_repo}//nvptxcompiler:nvptxcompiler",
+        if_false = ":nvptxcompiler_static_library",
     ),
     visibility = ["//visibility:public"],
 )
