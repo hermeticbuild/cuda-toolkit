@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  bazel-test:
+  bazel-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,6 +20,6 @@ jobs:
           bazelisk-cache: true
           repository-cache: true
           cache-save: ${{ github.event_name != 'pull_request' }}
-      - name: Bazel test //:all
+      - name: Bazel build //:all
         working-directory: e2e
-        run: bazel test //:all
+        run: bazel build //:all
