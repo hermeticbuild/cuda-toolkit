@@ -5,24 +5,19 @@ load("@cuda//cuda:selects.bzl", "if_cuda_version")
 package(default_visibility = ["//visibility:public"])
 
 SMOKE_CUDA_VERSIONS = [
-    "12.8.0",
     "12.8.1",
-    "12.9.0",
     "12.9.1",
-    "13.0.0",
-    "13.0.1",
     "13.0.2",
-    "13.1.0",
     "13.1.1",
-    "13.2.0",
+    # "13.2.0",
 ]
 
 [
     platform(
-        name = "platform_linux_arm64_cuda_{}".format(version.replace(".", "_")),
+        name = "platform_linux_amd64_cuda_{}".format(version.replace(".", "_")),
         constraint_values = [
             "@platforms//os:linux",
-            "@platforms//cpu:arm64",
+            "@platforms//cpu:x86_64",
             "@cuda//:cuda_{}".format(version.replace(".", "_")),
         ],
     )
@@ -122,17 +117,147 @@ cc_library(
 cc_binary(
     name = "smoke_static",
     srcs = ["main.cc"],
+    # static archives use libstdc++ abi.
+    tags = ["manual"],
     deps = [":smoke_static_deps"],
 )
 
 cc_binary(
     name = "cudnn_smoke",
     srcs = ["cudnn_smoke.cc"],
-    deps = ["@cuda//cudnn:cudnn"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cudnn:cudnn",
+    ],
 )
 
+# host only since we do not have a rdc toolchain registered
 cc_binary(
     name = "nvshmem_smoke",
     srcs = ["nvshmem_smoke.cc"],
-    deps = ["@cuda//nvshmem:nvshmem"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//nvshmem:nvshmem",
+    ],
+)
+
+cc_library(
+    name = "smoke_test_common",
+    hdrs = ["smoke_test_common.h"],
+)
+
+cc_library(
+    name = "cuda_headers",
+    deps = [
+        "@cuda//cccl:nv_headers",
+        "@cuda//cuda:cuda_headers",
+        "@cuda//curand:headers",
+    ],
+)
+
+cc_binary(
+    name = "cublas_saxpy_smoke",
+    srcs = ["cublas_saxpy_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cublas:cublas",
+        ":cuda_headers",
+    ],
+)
+
+cc_binary(
+    name = "cufft_1d_smoke",
+    srcs = ["cufft_1d_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cufft:cufft",
+        ":cuda_headers",
+    ],
+)
+
+cc_binary(
+    name = "curand_generate_smoke",
+    srcs = ["curand_generate_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//curand:curand",
+        ":cuda_headers",
+    ],
+)
+
+cc_binary(
+    name = "cusparse_spmv_smoke",
+    srcs = ["cusparse_spmv_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cusparse:cusparse",
+        ":cuda_headers",
+    ],
+)
+
+cc_binary(
+    name = "cusolver_cholesky_smoke",
+    srcs = ["cusolver_cholesky_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cusolver:cusolver",
+        ":cuda_headers",
+    ],
+)
+
+cc_binary(
+    name = "cudnn_conv_descriptor_smoke",
+    srcs = ["cudnn_conv_descriptor_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cudnn:cudnn",
+        ":cuda_headers",
+    ],
+)
+
+cc_binary(
+    name = "nvrtc_compile_smoke",
+    srcs = ["nvrtc_compile_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//nvrtc:nvrtc",
+    ],
+)
+
+cc_binary(
+    name = "nvjitlink_link_smoke",
+    srcs = ["nvjitlink_link_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//nvjitlink:nvjitlink",
+    ],
+)
+
+cc_binary(
+    name = "nvml_query_smoke",
+    srcs = ["nvml_query_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//nvml:nvml",
+    ],
+)
+
+cc_binary(
+    name = "nvtx_range_smoke",
+    srcs = ["nvtx_range_smoke.cc"],
+    linkopts = ["-ldl"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//nvtx:headers",
+    ],
+)
+
+cc_binary(
+    name = "cupti_activity_smoke",
+    srcs = ["cupti_activity_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cupti:cupti",
+        ":cuda_headers",
+    ],
 )

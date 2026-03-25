@@ -1,18 +1,15 @@
 #include <nvshmem_host.h>
 
-namespace {
+#include "smoke_test_common.h"
 
-template <typename T>
-void Use(T value) {
-  (void)value;
+int ExerciseNvshmemHostAlloc() {
+  int current_pe = nvshmem_my_pe();
+  int pe_count = nvshmem_n_pes();
+  void* allocation = nvshmem_malloc(256);
+  nvshmem_free(allocation);
+  return current_pe >= 0 && pe_count >= 0 ? 0 : 1;
 }
 
-}  // namespace
-
-int main() {
-  Use(&nvshmem_my_pe);
-  Use(&nvshmem_n_pes);
-  Use(&nvshmem_malloc);
-  Use(&nvshmem_free);
-  return 0;
+int main(int argc, char**) {
+  return ShouldRunSmokeExample(argc) ? ExerciseNvshmemHostAlloc() : 0;
 }
