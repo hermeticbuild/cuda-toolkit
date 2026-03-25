@@ -1,5 +1,7 @@
 # CUDA Toolkit
 
+[![CI](https://github.com/hermeticbuild/cuda-toolkit/actions/workflows/ci.yml/badge.svg)](https://github.com/hermeticbuild/cuda-toolkit/actions/workflows/ci.yml)
+
 <img width="320" height="320" alt="image" src="https://github.com/user-attachments/assets/1d816875-0282-4ac7-9405-0f53528f5495" />
 
 ## Project Overview
