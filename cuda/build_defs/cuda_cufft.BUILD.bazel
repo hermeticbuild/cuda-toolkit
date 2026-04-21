@@ -76,6 +76,15 @@ filegroup(
 )
 
 filegroup(
+    name = "runtime_shared_library_files",
+    srcs = glob([
+        "lib/*.so",
+        "lib/*.so.*",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "header_list",
     srcs = _HEADER_FILES + glob(_HEADER_GLOBS),
     visibility = ["//visibility:public"],

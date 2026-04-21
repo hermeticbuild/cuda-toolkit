@@ -30,6 +30,15 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
+filegroup(
+    name = "runtime_shared_library_files",
+    srcs = glob([
+        "lib/*.so",
+        "lib/*.so.*",
+    ], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "headers",
     hdrs = [":header_list"],

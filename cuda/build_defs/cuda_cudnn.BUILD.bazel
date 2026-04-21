@@ -75,6 +75,30 @@ cc_library(
 )
 
 filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libcudnn_ops.so." + LIB_VERSIONS["libcudnn_ops"],
+        "lib/libcudnn_cnn.so." + LIB_VERSIONS["libcudnn_cnn"],
+        "lib/libcudnn_adv.so." + LIB_VERSIONS["libcudnn_adv"],
+        "lib/libcudnn_graph.so." + LIB_VERSIONS["libcudnn_graph"],
+        "lib/libcudnn_engines_precompiled.so." + LIB_VERSIONS["libcudnn_engines_precompiled"],
+        "lib/libcudnn_engines_runtime_compiled.so." + LIB_VERSIONS["libcudnn_engines_runtime_compiled"],
+        "lib/libcudnn_heuristic.so." + LIB_VERSIONS["libcudnn_heuristic"],
+        "lib/libcudnn.so." + LIB_VERSIONS["libcudnn"],
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "runtime_shared_library_files",
+    srcs = glob([
+        "lib/*.so",
+        "lib/*.so.*",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "header_list",
     srcs = glob([
         "include/cudnn*.h",

@@ -88,6 +88,15 @@ filegroup(
 )
 
 filegroup(
+    name = "runtime_shared_library_files",
+    srcs = glob([
+        "lib/*.so",
+        "lib/*.so.*",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "header_list",
     srcs = [
         "include/cublas.h",
