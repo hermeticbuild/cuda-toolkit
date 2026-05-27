@@ -6,6 +6,7 @@ COMPONENTS_REGISTRY = {
     "nvidia_driver": {
         "repo_name": "cuda_driver",
         "version_to_template": {
+            "610": "//cuda/build_defs:cuda_driver.BUILD.bazel",
             "595": "//cuda/build_defs:cuda_driver.BUILD.bazel",
             "590": "//cuda/build_defs:cuda_driver.BUILD.bazel",
             "580": "//cuda/build_defs:cuda_driver.BUILD.bazel",
@@ -103,6 +104,7 @@ COMPONENTS_REGISTRY = {
     },
     "cuda_cccl": {
         "repo_name": "cuda_cccl",
+        "redist_component_aliases": ["cccl"],
         "version_to_template": {
             "any": "//cuda/build_defs:cuda_cccl.BUILD.bazel",
         },

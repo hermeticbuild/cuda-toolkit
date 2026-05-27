@@ -73,16 +73,21 @@ def cuda_redist_repositories(
     cuda_version_major = cuda_version.split(".")[0]
     generated_repos = []
     for component_name in sorted(components_registry.keys()):
+        repo_data = components_registry[component_name]
+        redist_component_names = [component_name] + repo_data.get("redist_component_aliases", [])
+        component_redist_entry = None
+        for redist_component_name in redist_component_names:
+            if redist_component_name in redist:
+                component_redist_entry = redist[redist_component_name]
+                break
 
         # A given redist may exist in a CUDA version but not in another.
-        if component_name not in redist:
+        if component_redist_entry == None:
             # buildifier: disable=print
             print("Component '{}' is missing from CUDA {} redist".format(component_name, cuda_version)) 
             continue
 
-        component_redist_entry = redist[component_name]
         component_version = component_redist_entry["version"]
-        repo_data = components_registry[component_name]
         build_file = get_build_template(
             component_name,
             component_version,

@@ -41,12 +41,18 @@ cuda_ext.redist(
     cudnn_version = "9.20.0",
     nvshmem_version = "3.5.19",
 )
-# cuda_ext.redist(
-#     name = "cuda_13_2_0",
-#     version = "13.2.0",
-#     cudnn_version = "9.20.0",
-#     nvshmem_version = "3.5.19",
-# )
+cuda_ext.redist(
+    name = "cuda_13_2_1",
+    version = "13.2.1",
+    cudnn_version = "9.20.0",
+    nvshmem_version = "3.5.19",
+)
+cuda_ext.redist(
+    name = "cuda_13_3_0",
+    version = "13.3.0",
+    cudnn_version = "9.20.0",
+    nvshmem_version = "3.5.19",
+)
 
 use_repo(
     cuda_ext,
@@ -55,7 +61,8 @@ use_repo(
     "cuda_12_9_1",
     "cuda_13_0_2",
     "cuda_13_1_1",
-    # "cuda_13_2_0",
+    "cuda_13_2_1",
+    "cuda_13_3_0",
 )
 
 register_toolchains("@cuda//cuda:all")

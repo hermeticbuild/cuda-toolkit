@@ -32,7 +32,7 @@ bazel_dep(name = "cuda_toolkit", version = "$VERSION")
 
 cuda_ext = use_extension("//extensions:cuda.bzl", "cuda")
 cuda_ext.redist(
-    version = "13.1.1",
+    version = "13.3.0",
 )
 use_repo(cuda_ext, "cuda")
 \`\`\`
