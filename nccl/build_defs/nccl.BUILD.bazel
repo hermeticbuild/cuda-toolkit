@@ -1,0 +1,70 @@
+"""BUILD definitions for cuda_nccl package"""
+
+# This BUILD file is used within the arch specific NCCL redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_nccl proxy repository can re-export it.
+
+load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
+load("//:version.bzl", "LIB_VERSIONS")
+
+exports_files(["version.txt"])
+
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nccl_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libnccl.so." + LIB_VERSIONS["libnccl"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nccl",
+    deps = [":nccl_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = ["lib/libnccl.so." + LIB_VERSIONS["libnccl"]],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "device_bitcode",
+    srcs = ["lib/libnccl_device.bc"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob([
+        "include/**/*.h",
+        "include/**/*.cuh",
+    ], allow_empty = True),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    deps = [
+        "@{cuda_redist_repo}//cccl:nv_headers",
+        "@{cuda_redist_repo}//cudart:headers",
+    ] + if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
+        ["@{cuda_redist_repo}//crt:headers"],
+    ),
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)

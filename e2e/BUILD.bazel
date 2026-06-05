@@ -1,6 +1,6 @@
+load("@cuda//cuda:selects.bzl", "if_cuda_version")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@cuda//cuda:selects.bzl", "if_cuda_version")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -95,11 +95,11 @@ SMOKE_CRT_STATIC_SELECT = if_cuda_version(">=13", SMOKE_CRT_STATIC_DEPS)
 
 cc_library(
     name = "smoke_deps",
-    defines = SMOKE_BASE_DEFINES + SMOKE_CRT_DEFINE_SELECT,
     data = [
         "@cuda//nvcc:fatbinary",
         "@cuda//nvcc:ptxas",
     ],
+    defines = SMOKE_BASE_DEFINES + SMOKE_CRT_DEFINE_SELECT,
     deps = SMOKE_BASE_SHARED_DEPS + SMOKE_CRT_SHARED_SELECT,
 )
 
@@ -142,6 +142,16 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "nccl_smoke",
+    srcs = ["nccl_smoke.cc"],
+    tags = ["manual"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//nccl",
+    ],
+)
+
 cc_library(
     name = "smoke_test_common",
     hdrs = ["smoke_test_common.h"],
@@ -160,9 +170,9 @@ cc_binary(
     name = "cublas_saxpy_smoke",
     srcs = ["cublas_saxpy_smoke.cc"],
     deps = [
+        ":cuda_headers",
         ":smoke_test_common",
         "@cuda//cublas:cublas",
-        ":cuda_headers",
     ],
 )
 
@@ -170,9 +180,9 @@ cc_binary(
     name = "cufft_1d_smoke",
     srcs = ["cufft_1d_smoke.cc"],
     deps = [
+        ":cuda_headers",
         ":smoke_test_common",
         "@cuda//cufft:cufft",
-        ":cuda_headers",
     ],
 )
 
@@ -180,9 +190,9 @@ cc_binary(
     name = "curand_generate_smoke",
     srcs = ["curand_generate_smoke.cc"],
     deps = [
+        ":cuda_headers",
         ":smoke_test_common",
         "@cuda//curand:curand",
-        ":cuda_headers",
     ],
 )
 
@@ -190,9 +200,9 @@ cc_binary(
     name = "cusparse_spmv_smoke",
     srcs = ["cusparse_spmv_smoke.cc"],
     deps = [
+        ":cuda_headers",
         ":smoke_test_common",
         "@cuda//cusparse:cusparse",
-        ":cuda_headers",
     ],
 )
 
@@ -200,9 +210,9 @@ cc_binary(
     name = "cusolver_cholesky_smoke",
     srcs = ["cusolver_cholesky_smoke.cc"],
     deps = [
+        ":cuda_headers",
         ":smoke_test_common",
         "@cuda//cusolver:cusolver",
-        ":cuda_headers",
     ],
 )
 
@@ -210,9 +220,9 @@ cc_binary(
     name = "cudnn_conv_descriptor_smoke",
     srcs = ["cudnn_conv_descriptor_smoke.cc"],
     deps = [
+        ":cuda_headers",
         ":smoke_test_common",
         "@cuda//cudnn:cudnn",
-        ":cuda_headers",
     ],
 )
 
@@ -257,8 +267,8 @@ cc_binary(
     name = "cupti_activity_smoke",
     srcs = ["cupti_activity_smoke.cc"],
     deps = [
+        ":cuda_headers",
         ":smoke_test_common",
         "@cuda//cupti:cupti",
-        ":cuda_headers",
     ],
 )

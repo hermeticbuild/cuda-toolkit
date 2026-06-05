@@ -18,6 +18,7 @@ It is meant to be consumed by other Bazel projects, notably rulesets and toolcha
 Supported versions are defined in:
 - `cuda/cuda_redist_versions.json`
 - `cudnn/cudnn_redist_versions.json`
+- `nccl/nccl_redist_versions.json`
 - `nvshmem/nvshmem_redist_versions.json`
 
 ## Supported platforms
@@ -44,6 +45,7 @@ cuda_ext.redist(
     name = "cuda_12_9_1",
     version = "12.9.1",
     cudnn_version = "8.9.7",
+    nccl_version = "2.30.4",
     nvshmem_version = "3.3.24",
 )
 
@@ -53,7 +55,7 @@ use_repo(cuda_ext, "cuda")
 ## Notes
 
 - CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
-- cuDNN and NVSHMEM versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
+- cuDNN, NCCL, and NVSHMEM versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
 - CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - For local validation on non-Linux hosts, you can force Linux selection with
