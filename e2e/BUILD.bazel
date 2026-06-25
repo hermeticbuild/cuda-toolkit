@@ -216,6 +216,19 @@ cc_binary(
     ],
 )
 
+cc_library(
+    name = "cudnn_tensor_ir_deps",
+    target_compatible_with = if_cuda_version(
+        ">=13.3.0",
+        [],
+        ["@platforms//:incompatible"],
+    ),
+    deps = [
+        "@cuda//cudnn:cudnn_engines_tensor_ir",
+        "@cuda//cudnn:cudnn_engines_tensor_ir_static",
+    ],
+)
+
 cc_binary(
     name = "nvrtc_compile_smoke",
     srcs = ["nvrtc_compile_smoke.cc"],

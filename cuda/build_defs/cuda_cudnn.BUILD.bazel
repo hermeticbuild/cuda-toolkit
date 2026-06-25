@@ -5,11 +5,19 @@
 # Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
 # @cuda_cudnn proxy repository can re-export it.
 
-load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
+load("@cuda_toolkit//cuda:versions_helper.bzl", "compare_versions", "if_version_equal_or_greater_than")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("//:version.bzl", "LIB_VERSIONS")
+
+# Tensor IR ships in cuDNN 9.21+, while supported 9.20 archives do not contain it.
+_HAS_CUDNN_ENGINES_TENSOR_IR_VERSION = compare_versions(LIB_VERSIONS.get("libcudnn", ""), "9.21.0", ">=")
+_HAS_CUDNN_ENGINES_TENSOR_IR = _HAS_CUDNN_ENGINES_TENSOR_IR_VERSION and "libcudnn_engines_tensor_ir" in LIB_VERSIONS
+_CUDNN_ENGINES_TENSOR_IR_TARGET_COMPATIBLE_WITH = [] if _HAS_CUDNN_ENGINES_TENSOR_IR else ["@platforms//:incompatible"]
+_CUDNN_ENGINES_TENSOR_IR_SHARED_VERSION = LIB_VERSIONS.get("libcudnn_engines_tensor_ir", "0")
+_CUDNN_ENGINES_TENSOR_IR_DEPS = [":cudnn_engines_tensor_ir"] if _HAS_CUDNN_ENGINES_TENSOR_IR else []
+_CUDNN_ENGINES_TENSOR_IR_STATIC_DEPS = [":cudnn_engines_tensor_ir_static"] if _HAS_CUDNN_ENGINES_TENSOR_IR else []
 
 cc_import(
     name = "cudnn_ops",
@@ -45,6 +53,14 @@ cc_import(
     name = "cudnn_engines_runtime_compiled",
     deps = [":headers"],
     shared_library = "lib/libcudnn_engines_runtime_compiled.so." + LIB_VERSIONS["libcudnn_engines_runtime_compiled"],
+)
+
+cc_import(
+    name = "cudnn_engines_tensor_ir",
+    deps = [":headers"],
+    shared_library = "lib/libcudnn_engines_tensor_ir.so." + _CUDNN_ENGINES_TENSOR_IR_SHARED_VERSION,
+    target_compatible_with = _CUDNN_ENGINES_TENSOR_IR_TARGET_COMPATIBLE_WITH,
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
@@ -96,6 +112,14 @@ cc_import(
 )
 
 cc_import(
+    name = "cudnn_engines_tensor_ir_static",
+    deps = [":headers"],
+    static_library = "lib/libcudnn_engines_tensor_ir_static.a",
+    target_compatible_with = _CUDNN_ENGINES_TENSOR_IR_TARGET_COMPATIBLE_WITH,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
     name = "cudnn_heuristic_static",
     deps = [":headers"],
     static_library = "lib/libcudnn_heuristic_static.a",
@@ -110,6 +134,7 @@ cc_library(
         ":cudnn_cnn",
         ":cudnn_adv",
         ":cudnn_engines_runtime_compiled",
+    ] + _CUDNN_ENGINES_TENSOR_IR_DEPS + [
         ":cudnn_heuristic",
         "@{cuda_redist_repo}//nvrtc:nvrtc",
         ":cudnn_main",
@@ -127,6 +152,7 @@ cc_library(
         ":cudnn_cnn_static",
         ":cudnn_adv_static",
         ":cudnn_engines_runtime_compiled_static",
+    ] + _CUDNN_ENGINES_TENSOR_IR_STATIC_DEPS + [
         ":cudnn_heuristic_static",
         "@{cuda_redist_repo}//nvrtc:nvrtc_static",
     ],
