@@ -21,7 +21,7 @@ jobs:
           - 13_0_2
           - 13_1_1
           - 13_2_1
-          - 13_3_0
+          - 13_3_1
     steps:
       - uses: actions/checkout@v4
       - uses: bazel-contrib/setup-bazel@0.19.0

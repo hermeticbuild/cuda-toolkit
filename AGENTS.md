@@ -156,7 +156,7 @@ Fast check:
 - `bazel build //...`
 
 Consumer/e2e check:
-- from `e2e/`: `bazel build //:all --platforms //:platform_linux_amd64_cuda_13_3_0`
+- from `e2e/`: `bazel build //:all --platforms //:platform_linux_amd64_cuda_13_3_1`
 
 CI matrix mirrors:
 - `12_8_1`
@@ -164,6 +164,6 @@ CI matrix mirrors:
 - `13_0_2`
 - `13_1_1`
 - `13_2_1`
-- `13_3_0`
+- `13_3_1`
 
 For compatibility-sensitive changes, run the relevant e2e platform for every affected CUDA major/minor.
