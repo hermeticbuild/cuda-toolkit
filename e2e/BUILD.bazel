@@ -132,6 +132,17 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "cudnn_static_smoke",
+    srcs = ["cudnn_smoke.cc"],
+    # static archives use libstdc++ abi.
+    tags = ["manual"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cudnn:cudnn_static",
+    ],
+)
+
 # host only since we do not have a rdc toolchain registered
 cc_binary(
     name = "nvshmem_smoke",

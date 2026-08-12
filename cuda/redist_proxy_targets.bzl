@@ -84,6 +84,7 @@ REPO_PUBLIC_TARGETS = {
     ],
     "cuda_nvcc": ["nvcc_directory", "libdevice", "nvlink", "fatbinary", "bin2c", "ptxas", "nvcc", "cudafe", "nvcc_profile", "prelink_stub", "nvcc_device_query", "bin", "link_stub", "header_list", "headers", "cuda_nvcc", "nvptxcompiler"],
     "cuda_nvdisasm": ["nvdisasm"],
+    "cuda_nvfatbin": ["nvfatbin_shared_library", "nvfatbin_static_library", "nvfatbin", "nvfatbin_static", "header_list", "headers", "shared_library_files"],
     "cuda_nvjitlink": ["nvjitlink_shared_library", "nvjitlink", "nvjitlink_static", "header_list", "headers", "shared_library_files"],
     "cuda_nvml": ["header_list", "headers", "nvidia-ml_stub", "nvidia_ml_static_stub", "nvml"],
     "cuda_nvptxcompiler": ["header_list", "headers", "nvptxcompiler_static", "nvptxcompiler"],

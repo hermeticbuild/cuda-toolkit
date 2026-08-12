@@ -88,6 +88,13 @@ COMPONENTS_REGISTRY = {
             "12": "//cuda/build_defs:cuda_nvjitlink.BUILD.bazel",
         },
     },
+    "libnvfatbin": {
+        "repo_name": "cuda_nvfatbin",
+        "version_to_template": {
+            "13": "//cuda/build_defs:cuda_nvfatbin.BUILD.bazel",
+            "12": "//cuda/build_defs:cuda_nvfatbin.BUILD.bazel",
+        },
+    },
     "libnvptxcompiler": {
         "repo_name": "cuda_nvptxcompiler",
         "version_to_template": {
