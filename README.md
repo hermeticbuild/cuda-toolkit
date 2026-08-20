@@ -19,6 +19,7 @@ Supported versions are defined in:
 - `cuda/cuda_redist_versions.json`
 - `cudnn/cudnn_redist_versions.json`
 - `nvshmem/nvshmem_redist_versions.json`
+- `nccl/redistrib_*.json` (NVIDIA does not publish redistrib manifests for NCCL, so they are hand-authored in this repository)
 
 ## Supported platforms
 
@@ -53,7 +54,7 @@ use_repo(cuda_ext, "cuda")
 ## Notes
 
 - CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
-- cuDNN and NVSHMEM versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
+- cuDNN, NVSHMEM, and NCCL versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
 - CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - For local validation on non-Linux hosts, you can force Linux selection with

@@ -1,0 +1,16 @@
+{
+  "release_label": "2.30.7",
+  "libnccl": {
+    "name": "NVIDIA Collective Communications Library (NCCL)",
+    "license": "BSD-3-Clause",
+    "version": "2.30.7",
+    "linux-x86_64": {
+      "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda13.3_x86_64.txz",
+      "sha256": "c64355876178931a63f7f90a99da62ae4966cd8c9aa66acdd1eba10359c64c75"
+    },
+    "linux-sbsa": {
+      "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda13.3_aarch64.txz",
+      "sha256": "ee4eb7b690bad24ca07f0c224423a56c7c3e570fbcd54ad28f52643129b7b2c2"
+    }
+  }
+}
