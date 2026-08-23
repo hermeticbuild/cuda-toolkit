@@ -14,6 +14,8 @@ load(
     "NCCL_COMPONENTS_REGISTRY",
     "NCCL_REDIST_PATH_PREFIX",
     "NCCL_VERSION_TO_MANIFEST",
+    "get_nccl_manifest_label",
+    "nccl_cuda_version",
 )
 load(
     "//nvshmem:nvshmem_redist_build_defs.bzl",
@@ -67,18 +69,38 @@ def _read_downloaded_json(mctx, pending_download):
     pending_download.token.wait()
     return json.decode(mctx.read(pending_download.output_path))
 
-def _read_local_manifest(mctx, version, version_to_manifest, toolkit_name):
-    manifest_label = version_to_manifest.get(version)
-    if not manifest_label:
+def _read_nccl_manifest(mctx, nccl_version, cuda_version):
+    cuda_version_to_manifest = NCCL_VERSION_TO_MANIFEST.get(nccl_version)
+    if not cuda_version_to_manifest:
         fail(
-            ("Unsupported {toolkit_name} version '{version}'. " +
-             "Supported versions: {supported}.").format(
-                toolkit_name = toolkit_name,
-                version = version,
-                supported = sorted(version_to_manifest.keys()),
+            "Unsupported NCCL version '{}'. Supported versions: {}.".format(
+                nccl_version,
+                sorted(NCCL_VERSION_TO_MANIFEST.keys()),
             ),
         )
-    return json.decode(mctx.read(Label(manifest_label)))
+
+    cuda_minor_version = nccl_cuda_version(cuda_version)
+    manifest_label = get_nccl_manifest_label(nccl_version, cuda_version)
+    if not manifest_label:
+        fail(
+            ("NCCL version '{nccl_version}' is unavailable for CUDA {cuda_version}. " +
+             "Supported CUDA versions: {supported}.").format(
+                nccl_version = nccl_version,
+                cuda_version = cuda_minor_version,
+                supported = sorted(cuda_version_to_manifest.keys()),
+            ),
+        )
+
+    redist = json.decode(mctx.read(Label(manifest_label)))
+    if redist.get("release_label") != nccl_version:
+        fail("NCCL manifest '{}' does not declare release '{}'".format(manifest_label, nccl_version))
+    if redist.get("cuda_version") != cuda_minor_version:
+        fail("NCCL manifest '{}' does not declare CUDA '{}'".format(manifest_label, cuda_minor_version))
+    if "libnccl" not in redist:
+        fail("NCCL manifest '{}' does not contain a 'libnccl' package".format(manifest_label))
+    if redist["libnccl"].get("version") != nccl_version:
+        fail("NCCL manifest '{}' package does not declare release '{}'".format(manifest_label, nccl_version))
+    return redist
 
 def _cuda_impl(mctx):
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
@@ -86,6 +108,16 @@ def _cuda_impl(mctx):
     nvshmem_version_map = json.decode(mctx.read(_NVSHMEM_REDIST_VERSIONS_JSON))
 
     tags = _collect_redist_tags(mctx)
+
+    # Validate NCCL/CUDA compatibility before starting any remote downloads.
+    nccl_redistributions_by_tag_name = {}
+    for tag in tags:
+        if tag.nccl_version:
+            nccl_redistributions_by_tag_name[tag.name] = _read_nccl_manifest(
+                mctx,
+                tag.nccl_version,
+                tag.version,
+            )
 
     seen_repo_names = {}
     versions = []
@@ -243,9 +275,7 @@ def _cuda_impl(mctx):
                 spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
 
         if tag.nccl_version:
-            nccl_redist = _read_local_manifest(mctx, tag.nccl_version, NCCL_VERSION_TO_MANIFEST, "NCCL")
-            if "libnccl" not in nccl_redist:
-                fail("NCCL manifest '{}' does not contain a 'libnccl' package".format(tag.nccl_version))
+            nccl_redist = nccl_redistributions_by_tag_name[tag.name]
 
             generated_nccl_repos = cuda_redist_repositories(
                 redist = {"libnccl": nccl_redist["libnccl"]},

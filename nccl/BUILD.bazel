@@ -1,7 +1,17 @@
 load("@bazel_lib//:bzl_library.bzl", "bzl_library")
+load(":nccl_redist_build_defs_test.bzl", "nccl_redist_build_defs_test_suite")
+
+exports_files([
+    "redistrib_2.30.7_cuda12.9.json",
+    "redistrib_2.30.7_cuda13.3.json",
+])
 
 bzl_library(
     name = "nccl_redist_build_defs",
     srcs = ["nccl_redist_build_defs.bzl"],
     visibility = ["//visibility:public"],
+)
+
+nccl_redist_build_defs_test_suite(
+    name = "nccl_redist_build_defs_tests",
 )

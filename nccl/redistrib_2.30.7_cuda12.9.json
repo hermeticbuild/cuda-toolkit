@@ -1,0 +1,17 @@
+{
+  "release_label": "2.30.7",
+  "cuda_version": "12.9",
+  "libnccl": {
+    "name": "NVIDIA Collective Communications Library (NCCL)",
+    "license": "Apache-2.0 AND BSD-3-Clause",
+    "version": "2.30.7",
+    "linux-x86_64": {
+      "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda12.9_x86_64.txz",
+      "sha256": "03ab8e8af56f18cfc7b3e4d0b36a6111a78d5775987e69e176d70fd1e678e262"
+    },
+    "linux-sbsa": {
+      "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda12.9_aarch64.txz",
+      "sha256": "40627857207a990a3415328dba3e7b1c428a874c674c4a00df802673aac0a22b"
+    }
+  }
+}

@@ -29,6 +29,20 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "nccl_static",
+    deps = [
+        "nccl_static_library",
+        "@{cuda_redist_repo}//cudart:static",
+    ],
+    linkopts = [
+        "-lpthread",
+        "-lrt",
+        "-ldl",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "shared_library_files",
     srcs = [

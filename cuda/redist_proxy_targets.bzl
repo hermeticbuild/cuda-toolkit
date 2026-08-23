@@ -86,6 +86,7 @@ REPO_PUBLIC_TARGETS = {
         "nccl_shared_library",
         "nccl_static_library",
         "nccl",
+        "nccl_static",
         "header_list",
         "headers",
         "shared_library_files",

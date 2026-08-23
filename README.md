@@ -46,6 +46,7 @@ cuda_ext.redist(
     version = "12.9.1",
     cudnn_version = "8.9.7",
     nvshmem_version = "3.3.24",
+    nccl_version = "2.30.7",
 )
 
 use_repo(cuda_ext, "cuda")
@@ -55,6 +56,7 @@ use_repo(cuda_ext, "cuda")
 
 - CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
 - cuDNN, NVSHMEM, and NCCL versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
+- NCCL archives are selected by CUDA major/minor version; unsupported NCCL/CUDA pairs fail during module extension evaluation.
 - CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - For local validation on non-Linux hosts, you can force Linux selection with

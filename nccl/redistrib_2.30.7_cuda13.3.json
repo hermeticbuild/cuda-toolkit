@@ -1,8 +1,9 @@
 {
   "release_label": "2.30.7",
+  "cuda_version": "13.3",
   "libnccl": {
     "name": "NVIDIA Collective Communications Library (NCCL)",
-    "license": "BSD-3-Clause",
+    "license": "Apache-2.0 AND BSD-3-Clause",
     "version": "2.30.7",
     "linux-x86_64": {
       "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda13.3_x86_64.txz",
