@@ -19,11 +19,28 @@ cc_import(
 )
 
 cc_import(
+    name = "cublas_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/stubs/libcublas.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
     name = "cublasLt_shared_library",
     deps = [":headers"],
     shared_library = "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
     visibility = ["//visibility:public"],
 )
+
+cc_import(
+    name = "cublasLt_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/stubs/libcublasLt.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_import(
     name = "cublas_static_library",
     deps = [":headers"],
@@ -36,6 +53,12 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "cublas_system",
+    deps = [":cublas_interface_library", ":cublasLt_system"],
+    visibility = ["//visibility:public"],
+)
+
 cc_import(
     name = "cublasLt_static_library",
     deps = [":headers"],
@@ -45,6 +68,12 @@ cc_import(
 cc_library(
     name = "cublasLt",
     deps = [":cublasLt_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cublasLt_system",
+    deps = [":cublasLt_interface_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -71,10 +100,24 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 
+cc_import(
+    name = "nvblas_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libnvblas.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "nvblas",
     visibility = ["//visibility:public"],
     deps = [":nvblas_shared_library"],
+)
+
+cc_library(
+    name = "nvblas_system",
+    deps = [":nvblas_interface_library"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -100,11 +143,11 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-
 cc_library(
     name = "headers",
     hdrs = [":header_list"],
     includes = ["include"],
+    deps = ["@{cuda_redist_repo}//cudart:headers"],
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],
 )

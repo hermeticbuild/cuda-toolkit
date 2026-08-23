@@ -55,36 +55,42 @@ cc_import(
 
 cc_import(
     name = "cudnn_ops_infer_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_ops_infer_static.a",
 )
 
 cc_import(
     name = "cudnn_cnn_infer_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_cnn_infer_static.a",
 )
 
 cc_import(
     name = "cudnn_ops_train_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_ops_train_static.a",
 )
 
 cc_import(
     name = "cudnn_cnn_train_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_cnn_train_static.a",
 )
 
 cc_import(
     name = "cudnn_adv_infer_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_adv_infer_static.a",
 )
 
 cc_import(
     name = "cudnn_adv_train_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_adv_train_static.a",
 )
@@ -98,6 +104,7 @@ cc_library(
         ":cudnn_cnn_train",
         ":cudnn_adv_infer",
         ":cudnn_adv_train",
+        "@{cuda_redist_repo}//cublas:cublas",
         "@{cuda_redist_repo}//nvrtc:nvrtc",
         ":cudnn_main",
     ],
@@ -114,9 +121,12 @@ cc_library(
         ":cudnn_cnn_train_static",
         ":cudnn_adv_infer_static",
         ":cudnn_adv_train_static",
+        "@{cuda_redist_repo}//cublas:cublas_static",
+        "@{cuda_redist_repo}//cudart:static",
         "@{cuda_redist_repo}//nvrtc:nvrtc_static",
+        "@zlib//:zlib",
     ],
-    linkopts = ["-lrt", "-lz"],
+    linkopts = ["-lrt"],
     visibility = ["//visibility:public"],
 )
 

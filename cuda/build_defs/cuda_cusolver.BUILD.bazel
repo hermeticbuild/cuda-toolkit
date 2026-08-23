@@ -8,6 +8,7 @@
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("//:version.bzl", "LIB_VERSIONS")
+
 cc_import(
     name = "cusolver_shared_library",
     shared_library = "lib/libcusolver.so." + LIB_VERSIONS["libcusolver"],
@@ -20,6 +21,15 @@ cc_import(
     ],
     visibility = ["//visibility:public"],
 )
+
+cc_import(
+    name = "cusolver_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/stubs/libcusolver.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_import(
     name = "cusolver_static_library",
     deps = [":headers"],
@@ -32,6 +42,18 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "cusolver_system",
+    deps = [
+        ":cusolver_interface_library",
+        "@{cuda_redist_repo}//nvjitlink:nvjitlink_system",
+        "@{cuda_redist_repo}//cusparse:cusparse_system",
+        "@{cuda_redist_repo}//cublas:cublas_system",
+        "@{cuda_redist_repo}//cublas:cublasLt_system",
+    ],
+    visibility = ["//visibility:public"],
+)
+
 cc_import(
     name = "cusolverMg_shared_library",
     deps = [":headers"],
@@ -39,9 +61,23 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 
+cc_import(
+    name = "cusolverMg_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/stubs/libcusolverMg.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "cusolverMg",
     deps = [":cusolverMg_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cusolverMg_system",
+    deps = [":cusolverMg_interface_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -89,7 +125,6 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-
 filegroup(
     name = "header_list",
     srcs = glob([
@@ -102,6 +137,11 @@ cc_library(
     name = "headers",
     hdrs = [":header_list"],
     includes = ["include"],
+    deps = [
+        "@{cuda_redist_repo}//nvjitlink:headers",
+        "@{cuda_redist_repo}//cusparse:headers",
+        "@{cuda_redist_repo}//cublas:headers",
+    ],
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],
 )

@@ -17,15 +17,35 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 
+cc_import(
+    name = "driver_interface_library",
+    interface_library = "lib/libcuda.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 alias(
     name = "cuda_shared_library",
     actual = ":driver_shared_library",
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "cuda_interface_library",
+    actual = ":driver_interface_library",
+    visibility = ["//visibility:public"],
+)
+
 cc_import(
     name = "nvidia-ptxjitcompiler_shared_library",
     shared_library = "lib/libnvidia-ptxjitcompiler.so." + LIB_VERSIONS["libnvidia-ptxjitcompiler"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvidia-ptxjitcompiler_interface_library",
+    interface_library = "lib/libnvidia-ptxjitcompiler.so",
+    system_provided = True,
     visibility = ["//visibility:public"],
 )
 
@@ -56,11 +76,23 @@ cc_library(
 )
 
 cc_library(
+    name = "nvidia_driver_system",
+    deps = [":driver_interface_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "nvidia_ptxjitcompiler",
     deps = [
         ":libnvidia-ptxjitcompiler_so_1",
         ":nvidia-ptxjitcompiler_shared_library",
     ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvidia_ptxjitcompiler_system",
+    deps = [":nvidia-ptxjitcompiler_interface_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -71,8 +103,34 @@ cc_import(
 )
 
 cc_import(
+    name = "cudadebugger_interface_library",
+    interface_library = "lib/libcudadebugger.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cudadebugger_system",
+    deps = [":cudadebugger_interface_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
     name = "nvidia_nvvm_shared_library",
     shared_library = "lib/libnvidia-nvvm.so." + LIB_VERSIONS["libnvidia-nvvm"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvidia_nvvm_interface_library",
+    interface_library = "lib/libnvidia-nvvm.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvidia_nvvm_system",
+    deps = [":nvidia_nvvm_interface_library"],
     visibility = ["//visibility:public"],
 )
 

@@ -41,6 +41,33 @@ def _collect_redist_tags(mctx):
         fail("cuda extension requires at least one redist tag")
     return tags
 
+def _collect_configuration(mctx):
+    all_tags = []
+    root_tags = []
+    for mod in mctx.modules:
+        for tag in mod.tags.configure:
+            all_tags.append(tag)
+            if mod.is_root:
+                root_tags.append(tag)
+
+    tags = root_tags if root_tags else all_tags
+    if len(tags) > 1:
+        fail("cuda extension accepts at most one configure tag")
+    if not tags:
+        return struct(
+            default_package_metadata = [],
+            name = "cuda",
+        )
+
+    tag = tags[0]
+    if not tag.name:
+        fail("cuda configure name must not be empty")
+
+    return struct(
+        default_package_metadata = [str(label) for label in tag.default_package_metadata],
+        name = tag.name,
+    )
+
 def _get_url_sha_from_version_map(version, version_to_url_sha, toolkit_name):
     url_sha = version_to_url_sha.get(version)
     if not url_sha:
@@ -108,6 +135,8 @@ def _cuda_impl(mctx):
     nvshmem_version_map = json.decode(mctx.read(_NVSHMEM_REDIST_VERSIONS_JSON))
 
     tags = _collect_redist_tags(mctx)
+    configuration = _collect_configuration(mctx)
+    default_package_metadata = configuration.default_package_metadata
 
     # Validate NCCL/CUDA compatibility before starting any remote downloads.
     nccl_redistributions_by_tag_name = {}
@@ -132,8 +161,8 @@ def _cuda_impl(mctx):
     nvshmem_versions_to_fetch = []
     nvshmem_redistributions_by_version = {}
     for tag in tags:
-        if tag.name == "cuda":
-            fail("redist name 'cuda' is reserved for the global aggregated CUDA repository")
+        if tag.name == configuration.name:
+            fail("redist name '{}' is reserved for the global aggregated CUDA repository".format(configuration.name))
 
         if tag.name in seen_repo_names:
             fail("Duplicate redist name '{}'".format(tag.name))
@@ -205,6 +234,7 @@ def _cuda_impl(mctx):
             redist = redistributions_by_version[tag.version],
             cuda_repo_name = tag.name,
             cuda_version = tag.version,
+            default_package_metadata = default_package_metadata,
         )
 
         component_proxy_specs = {}
@@ -231,6 +261,7 @@ def _cuda_impl(mctx):
                 cuda_version = tag.version,
                 cuda_redist_path_prefix = CUDNN_REDIST_PATH_PREFIX,
                 components_registry = CUDNN_COMPONENTS_REGISTRY,
+                default_package_metadata = default_package_metadata,
             )
             if not generated_cudnn_repos:
                 fail("cuDNN version '{}' did not generate any repositories for CUDA {}".format(tag.cudnn_version, tag.version))
@@ -258,6 +289,7 @@ def _cuda_impl(mctx):
                 cuda_version = tag.version,
                 cuda_redist_path_prefix = NVSHMEM_REDIST_PATH_PREFIX,
                 components_registry = NVSHMEM_COMPONENTS_REGISTRY,
+                default_package_metadata = default_package_metadata,
             )
             if not generated_nvshmem_repos:
                 fail("NVSHMEM version '{}' did not generate any repositories for CUDA {}".format(tag.nvshmem_version, tag.version))
@@ -307,6 +339,7 @@ def _cuda_impl(mctx):
             # Re-exports targets from platform-specific repositories under a unified repository.
             cuda_component_proxy(
                 name = component_proxy_repo_name,
+                default_package_metadata = default_package_metadata,
                 version = spec["version"],
                 platform_repo_mappings = spec["platform_repo_mappings"],
                 targets = spec["targets"],
@@ -320,11 +353,13 @@ def _cuda_impl(mctx):
             cuda_version = tag.version,
             available_component_mappings = available_component_mappings,
             available_component_versions = available_component_versions,
+            default_package_metadata = default_package_metadata,
         )
 
     cuda_compat_repository(
-        name = "cuda",
+        name = configuration.name,
         available_cuda_versions = sorted(cuda_version_map.keys()),
+        default_package_metadata = default_package_metadata,
         registered_cuda_versions = sorted(versions),
         version_to_redist_repo_name = {
             tag.version: tag.name
@@ -333,6 +368,19 @@ def _cuda_impl(mctx):
     )
 
     return mctx.extension_metadata(reproducible = True)
+
+_configure = tag_class(
+    doc = "Configures settings shared by all generated CUDA repositories.",
+    attrs = {
+        "name": attr.string(
+            default = "cuda",
+            doc = "Name of the global compatibility repository.",
+        ),
+        "default_package_metadata": attr.label_list(
+            doc = "Metadata targets applied by default to packages in every generated repository.",
+        ),
+    },
+)
 
 _redist = tag_class(
     attrs = {
@@ -346,5 +394,8 @@ _redist = tag_class(
 
 cuda = module_extension(
     implementation = _cuda_impl,
-    tag_classes = {"redist": _redist},
+    tag_classes = {
+        "configure": _configure,
+        "redist": _redist,
+    },
 )

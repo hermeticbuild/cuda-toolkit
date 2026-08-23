@@ -1,6 +1,7 @@
 """Repository rule for the global curated CUDA repository."""
 
 load("//cuda:redist_proxy_targets.bzl", "REPO_PUBLIC_TARGETS")
+load("//cuda:repository_metadata.bzl", "write_repo_bazel")
 load("//cuda:versions_helper.bzl", "max_version", "sort_versions")
 
 def _sanitize_version(version):
@@ -91,6 +92,7 @@ def _render_root_constraints_build(available_cuda_versions, registered_cuda_vers
     ])
 
 def _cuda_compat_repository_impl(repository_ctx):
+    write_repo_bazel(repository_ctx)
     repository_ctx.template(
         "cuda/BUILD.bazel",
         repository_ctx.attr._cuda_build_file,
@@ -124,6 +126,7 @@ cuda_compat_repository = repository_rule(
     implementation = _cuda_compat_repository_impl,
     attrs = {
         "available_cuda_versions": attr.string_list(mandatory = True),
+        "default_package_metadata": attr.string_list(),
         "registered_cuda_versions": attr.string_list(mandatory = True),
         "version_to_redist_repo_name": attr.string_dict(mandatory = True),
         "_cuda_build_file": attr.label(default = Label("//cuda:cuda.BUILD.bazel")),

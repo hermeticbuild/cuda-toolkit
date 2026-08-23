@@ -61,42 +61,49 @@ cc_import(
 
 cc_import(
     name = "cudnn_ops_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_ops_static.a",
 )
 
 cc_import(
     name = "cudnn_cnn_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_cnn_static.a",
 )
 
 cc_import(
     name = "cudnn_adv_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_adv_static.a",
 )
 
 cc_import(
     name = "cudnn_graph_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_graph_static.a",
 )
 
 cc_import(
     name = "cudnn_engines_precompiled_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_engines_precompiled_static.a",
 )
 
 cc_import(
     name = "cudnn_engines_runtime_compiled_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_engines_runtime_compiled_static.a",
 )
 
 cc_import(
     name = "cudnn_heuristic_static",
+    alwayslink = True,
     deps = [":headers"],
     static_library = "lib/libcudnn_heuristic_static.a",
 )
@@ -111,6 +118,7 @@ cc_library(
         ":cudnn_adv",
         ":cudnn_engines_runtime_compiled",
         ":cudnn_heuristic",
+        "@{cuda_redist_repo}//cublas:cublas",
         "@{cuda_redist_repo}//nvrtc:nvrtc",
         ":cudnn_main",
     ],
@@ -119,6 +127,8 @@ cc_library(
 
 cc_library(
     name = "cudnn_static",
+    # cuDNN loads its tensor-IR engine internally. Direct linking can initialize
+    # that engine incorrectly, including in releases that ship its static archive.
     alwayslink = True,
     deps = [
         ":cudnn_engines_precompiled_static",
@@ -128,9 +138,12 @@ cc_library(
         ":cudnn_adv_static",
         ":cudnn_engines_runtime_compiled_static",
         ":cudnn_heuristic_static",
+        "@{cuda_redist_repo}//cublas:cublas_static",
+        "@{cuda_redist_repo}//cudart:static",
         "@{cuda_redist_repo}//nvrtc:nvrtc_static",
+        "@zlib//:zlib",
     ],
-    linkopts = ["-lrt", "-lz"],
+    linkopts = ["-lrt"],
     visibility = ["//visibility:public"],
 )
 

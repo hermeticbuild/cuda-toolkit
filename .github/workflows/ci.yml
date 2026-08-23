@@ -33,3 +33,6 @@ jobs:
       - name: Bazel build //:all (${{ matrix.cuda_version }})
         working-directory: e2e
         run: bazel build //:all --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}
+      - name: Bazel analyze static cuDNN smoke (${{ matrix.cuda_version }})
+        working-directory: e2e
+        run: bazel build //:cudnn_static_smoke --nobuild --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}

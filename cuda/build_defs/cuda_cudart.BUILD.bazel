@@ -132,6 +132,15 @@ cc_import(
     shared_library = "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
     visibility = ["//visibility:public"],
 )
+
+cc_import(
+    name = "cudart_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libcudart.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "cuda_driver",
     deps = [":cuda_stub"],
@@ -182,6 +191,18 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "cudart_system",
+    deps = select({
+        "@{cuda_redist_repo}//driver:cuda_umd_libs": [
+            "@{cuda_redist_repo}//driver:nvidia_driver_system",
+            "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler_system",
+        ],
+        "//conditions:default": [":cuda_driver"],
+    }) + [":cudart_interface_library"],
+    visibility = ["//visibility:public"],
+)
+
 filegroup(
     name = "shared_library_files",
     srcs = [
@@ -214,7 +235,11 @@ cc_library(
     name = "headers",
     hdrs = [":header_list"],
     includes = ["include"],
-    deps = if_version_lower_than(
+    deps = ["@{cuda_redist_repo}//cccl:headers"] + if_version_equal_or_greater_than(
+        CUDA_VERSION,
+        "13.0.0",
+        ["@{cuda_redist_repo}//crt:headers"],
+    ) + if_version_lower_than(
         CUDA_VERSION,
         "13.0.0",
         ["@{cuda_redist_repo}//nvcc:headers"],

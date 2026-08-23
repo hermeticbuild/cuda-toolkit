@@ -9,6 +9,7 @@ load(
     "//cuda:redist_proxy_targets.bzl",
     "REPO_PUBLIC_TARGETS",
 )
+load("//cuda:repository_metadata.bzl", "write_repo_bazel")
 
 _PLATFORM_SPECS = {
     "linux_amd64": {
@@ -69,7 +70,8 @@ def cuda_redist_repositories(
         cuda_version,
         cuda_repo_name = "cuda",
         cuda_redist_path_prefix = CUDA_REDIST_PATH_PREFIX,
-        components_registry = COMPONENTS_REGISTRY):
+        components_registry = COMPONENTS_REGISTRY,
+        default_package_metadata = ()):
     cuda_version_major = cuda_version.split(".")[0]
     generated_repos = []
     for component_name in sorted(components_registry.keys()):
@@ -114,6 +116,7 @@ def cuda_redist_repositories(
                 component_version = component_version,
                 cuda_version = cuda_version,
                 cuda_repo_name = cuda_repo_name,
+                default_package_metadata = default_package_metadata,
                 sha256 = archive_entry.get("sha256", ""),
                 url = cuda_redist_path_prefix + archive_entry["relative_path"],
             )
@@ -238,6 +241,7 @@ def _download_redistribution(rctx):
 def _cuda_component_repository_impl(repository_ctx):
     component_version = repository_ctx.attr.component_version
 
+    write_repo_bazel(repository_ctx)
     _download_redistribution(repository_ctx)
 
     repository_ctx.template(
@@ -261,6 +265,7 @@ cuda_component_repository = repository_rule(
         "component_version": attr.string(mandatory = True),
         "cuda_version": attr.string(mandatory = True),
         "cuda_repo_name": attr.string(mandatory = True),
+        "default_package_metadata": attr.string_list(),
         "sha256": attr.string(),
         "url": attr.string(mandatory = True),
     },

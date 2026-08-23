@@ -51,6 +51,15 @@ cc_import(
     shared_library = "lib/libcupti.so." + LIB_VERSIONS["libcupti"],
     visibility = ["//visibility:public"],
 )
+
+cc_import(
+    name = "cupti_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libcupti.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_import(
     name = "cupti_static_library",
     deps = [":headers"],
@@ -60,6 +69,12 @@ cc_import(
 cc_library(
     name = "cupti",
     deps = [":cupti_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cupti_system",
+    deps = [":cupti_interface_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -76,9 +91,23 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 
+cc_import(
+    name = "checkpoint_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libcheckpoint.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "checkpoint",
     deps = [":checkpoint_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "checkpoint_system",
+    deps = [":checkpoint_interface_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -86,6 +115,14 @@ cc_import(
     name = "nvperf_host_shared_library",
     deps = [":headers"],
     shared_library = "lib/libnvperf_host.so",
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nvperf_host_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libnvperf_host.so",
+    system_provided = True,
     visibility = ["//visibility:public"],
 )
 
@@ -102,6 +139,12 @@ cc_library(
 )
 
 cc_library(
+    name = "nvperf_host_system",
+    deps = [":nvperf_host_interface_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
     name = "nvperf_host_static",
     deps = [":nvperf_host_static_library"],
     visibility = ["//visibility:public"],
@@ -114,9 +157,23 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 
+cc_import(
+    name = "nvperf_target_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libnvperf_target.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "nvperf_target",
     deps = [":nvperf_target_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nvperf_target_system",
+    deps = [":nvperf_target_interface_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -127,9 +184,23 @@ cc_import(
     visibility = ["//visibility:public"],
 )
 
+cc_import(
+    name = "pcsamplingutil_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libpcsamplingutil.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "pcsamplingutil",
     deps = [":pcsamplingutil_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "pcsamplingutil_system",
+    deps = [":pcsamplingutil_interface_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -176,6 +247,10 @@ cc_library(
     name = "headers",
     hdrs = [":header_list"],
     includes = ["include/"],
+    deps = [
+        "@{cuda_redist_repo}//cudart:headers",
+        "@{cuda_redist_repo}//nvtx:headers",
+    ],
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],
 )

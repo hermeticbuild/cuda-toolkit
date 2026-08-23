@@ -1,6 +1,8 @@
 
 """Repository rule for a single CUDA component proxy repository."""
 
+load("//cuda:repository_metadata.bzl", "write_repo_bazel")
+
 def _normalize_repo_name(repo_name):
     return repo_name.removeprefix("@")
 
@@ -46,7 +48,7 @@ def _render_build_file(name, targets, platform_repo_mappings):
             )
 
         lines.extend([
-            "    }}, no_match_error = \"@cuda//{{}}: platform-specific target '{{}}' unavailable for selected platform\"),".format(
+            "    }}, no_match_error = \"CUDA component '{}': platform-specific target '{}' unavailable for selected platform\"),".format(
                 name,
                 target_name,
             ),
@@ -57,6 +59,7 @@ def _render_build_file(name, targets, platform_repo_mappings):
     return "\n".join(lines)
 
 def _cuda_component_proxy_impl(repository_ctx):
+    write_repo_bazel(repository_ctx)
     repository_ctx.file(
         "BUILD.bazel",
         _render_build_file(
@@ -75,6 +78,7 @@ def _cuda_component_proxy_impl(repository_ctx):
 cuda_component_proxy = repository_rule(
     implementation = _cuda_component_proxy_impl,
     attrs = {
+        "default_package_metadata": attr.string_list(),
         "version": attr.string(
             doc = """Version of the CUDA component being proxied, used for informational purposes.""",
             mandatory = False,

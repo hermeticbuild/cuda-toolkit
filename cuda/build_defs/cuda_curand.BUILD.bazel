@@ -17,6 +17,14 @@ cc_import(
 )
 
 cc_import(
+    name = "curand_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/stubs/libcurand.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
     name = "curand_static_library",
     deps = [":headers"],
     static_library = "lib/libcurand_static.a",
@@ -25,6 +33,12 @@ cc_import(
 cc_library(
     name = "curand",
     deps = [":curand_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "curand_system",
+    deps = [":curand_interface_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -52,6 +66,7 @@ cc_library(
     name = "headers",
     hdrs = [":header_list"],
     includes = ["include"],
+    deps = ["@{cuda_redist_repo}//cudart:headers"],
     strip_include_prefix = "include",
     visibility = ["//visibility:public"],
 )

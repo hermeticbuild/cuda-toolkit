@@ -4,6 +4,7 @@ load(
     "//cuda:redist_proxy_targets.bzl",
     "REPO_PUBLIC_TARGETS",
 )
+load("//cuda:repository_metadata.bzl", "write_repo_bazel")
 
 def _proxy_package_name(repo_name):
     return repo_name.removeprefix("cuda_")
@@ -90,7 +91,7 @@ def _write_proxy_packages(repository_ctx):
         )
 
 def _cuda_redist_repository_impl(repository_ctx):
-
+    write_repo_bazel(repository_ctx)
     _write_proxy_packages(repository_ctx)
 
     repository_ctx.file("BUILD.bazel", "")
@@ -107,5 +108,6 @@ cuda_redist_repository = repository_rule(
         "cuda_version": attr.string(mandatory = True),
         "available_component_mappings": attr.string_dict(mandatory = True),
         "available_component_versions": attr.string_dict(mandatory = True),
+        "default_package_metadata": attr.string_list(),
     },
 )

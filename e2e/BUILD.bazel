@@ -4,6 +4,10 @@ load("@cuda//cuda:selects.bzl", "if_cuda_version")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "cuda_package_metadata",
+)
+
 SMOKE_CUDA_VERSIONS = [
     "12.8.1",
     "12.9.1",
@@ -135,6 +139,17 @@ cc_binary(
     deps = [
         ":smoke_test_common",
         "@cuda//cudnn:cudnn",
+    ],
+)
+
+cc_binary(
+    name = "cudnn_static_smoke",
+    srcs = ["cudnn_smoke.cc"],
+    # static archives use libstdc++ abi.
+    tags = ["manual"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cudnn:cudnn_static",
     ],
 )
 

@@ -6,6 +6,7 @@ bzl_library(
     visibility = ["//visibility:public"],
     deps = [
         ":redist_proxy_targets",
+        ":repository_metadata",
         ":selects_internal",
     ],
 )
@@ -17,6 +18,7 @@ bzl_library(
     deps = [
         ":cuda_redist_build_defs",
         ":redist_proxy_targets",
+        ":repository_metadata",
     ],
 )
 
@@ -40,6 +42,7 @@ bzl_library(
     name = "cuda_component_proxy",
     srcs = ["cuda_component_proxy.bzl"],
     visibility = ["//visibility:public"],
+    deps = [":repository_metadata"],
 )
 
 bzl_library(
@@ -52,7 +55,15 @@ bzl_library(
     name = "cuda_redist_repository",
     srcs = ["cuda_redist_repository.bzl"],
     visibility = ["//visibility:public"],
-    deps = [":redist_proxy_targets"],
+    deps = [
+        ":redist_proxy_targets",
+        ":repository_metadata",
+    ],
+)
+
+bzl_library(
+    name = "repository_metadata",
+    srcs = ["repository_metadata.bzl"],
 )
 
 bzl_library(
