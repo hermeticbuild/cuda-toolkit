@@ -20,6 +20,7 @@ Supported versions are defined in:
 - `cudnn/cudnn_redist_versions.json`
 - `nvshmem/nvshmem_redist_versions.json`
 - `nccl/nccl_redist_versions.json` (generated from NVIDIA's official NCCL archive index with `bazel run //tools/nccl:update_redists`)
+- `tensorrt/tensorrt_redist_versions.json` (generated from NVIDIA's official TensorRT GA tarballs with `bazel run //tools/tensorrt:update_redists`)
 
 ## Supported platforms
 
@@ -52,6 +53,7 @@ cuda_ext.redist(
     cudnn_version = "8.9.7",
     nvshmem_version = "3.3.24",
     nccl_version = "2.30.7",
+    tensorrt_version = "10.16.0",
 )
 
 use_repo(cuda_ext, "cuda")
@@ -61,9 +63,11 @@ use_repo(cuda_ext, "cuda")
 
 - CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
 - `cuda_ext.configure(...)` can set the global proxy repository's `name` and optionally apply `default_package_metadata` to every generated repository through `REPO.bazel`.
-- cuDNN, NVSHMEM, and NCCL versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
+- cuDNN, NVSHMEM, NCCL, and TensorRT versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
 - The generated NCCL catalog includes every official release from 2.25.1 onward that publishes an archive for a registered CUDA minor version.
 - NCCL archives record their exact build CUDA version and an explicit list of compatible registered CUDA minor versions; unsupported NCCL/CUDA pairs fail during module extension evaluation.
+- TensorRT archives are the official GA tarballs (NVIDIA publishes no redistrib manifests for TensorRT); like NCCL entries they record their exact build CUDA version and an explicit list of compatible registered CUDA minor versions, and unsupported TensorRT/CUDA pairs fail during module extension evaluation. Not every TensorRT CUDA build ships a `linux-sbsa` tarball; availability follows the catalog.
+- TensorRT is distributed under the NVIDIA TensorRT Supplement to the NVIDIA Software License Agreement, not under the regular CUDA toolkit EULA; review it before redistributing `@cuda//tensorrt` outputs.
 - CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - CUDA libraries backed by `*_shared_library` imports also expose `*_interface_library` imports and public

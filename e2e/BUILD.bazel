@@ -177,6 +177,37 @@ cc_binary(
     ],
 )
 
+# TensorRT is registered only for the CUDA versions matching its catalog
+# builds (see the tensorrt_version tags in MODULE.bazel); other CUDA versions
+# are incompatible.
+cc_binary(
+    name = "tensorrt_smoke",
+    srcs = ["tensorrt_smoke.cc"],
+    target_compatible_with = select({
+        "@cuda//:is_cuda_12_9_1": [],
+        "@cuda//:is_cuda_13_2_1": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    deps = [
+        ":smoke_test_common",
+        "@cuda//tensorrt:nvinfer",
+    ],
+)
+
+cc_binary(
+    name = "tensorrt_system_smoke",
+    srcs = ["tensorrt_smoke.cc"],
+    target_compatible_with = select({
+        "@cuda//:is_cuda_12_9_1": [],
+        "@cuda//:is_cuda_13_2_1": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    deps = [
+        ":smoke_test_common",
+        "@cuda//tensorrt:nvinfer_system",
+    ],
+)
+
 cc_library(
     name = "smoke_test_common",
     hdrs = ["smoke_test_common.h"],

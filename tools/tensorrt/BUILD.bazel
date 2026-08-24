@@ -1,0 +1,18 @@
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
+
+py_binary(
+    name = "update_redists",
+    srcs = ["//tensorrt:update_redists.py"],
+    main = "//tensorrt:update_redists.py",
+)
+
+py_test(
+    name = "update_redists_test",
+    srcs = ["//tensorrt:update_redists_test.py"],
+    data = [
+        "//tensorrt:tensorrt_redist_versions_json",
+        "//tensorrt:update_redists.py",
+    ],
+    main = "//tensorrt:update_redists_test.py",
+)
