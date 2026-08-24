@@ -24,12 +24,16 @@ cuda_ext.configure(
 
 # NCCL selections exercise archives built with both older and newer CUDA minors
 # across each explicitly compatible CUDA major family.
+# cuSPARSELt selections exercise both manifest shapes: releases up to 0.7.1
+# publish one archive per platform, while 0.8.0+ publish per-CUDA-major
+# cuda_variant archives.
 cuda_ext.redist(
     name = "cuda_12_8_1",
     version = "12.8.1",
     cudnn_version = "8.9.7",
     nvshmem_version = "3.3.24",
     nccl_version = "2.31.2",
+    cusparselt_version = "0.7.1",
 )
 cuda_ext.redist(
     name = "cuda_12_9_1",
@@ -37,6 +41,7 @@ cuda_ext.redist(
     cudnn_version = "8.9.7",
     nvshmem_version = "3.3.24",
     nccl_version = "2.25.1",
+    cusparselt_version = "0.8.1",
 )
 cuda_ext.redist(
     name = "cuda_13_0_2",
@@ -44,6 +49,7 @@ cuda_ext.redist(
     cudnn_version = "9.20.0",
     nvshmem_version = "3.5.19",
     nccl_version = "2.31.2",
+    cusparselt_version = "0.8.0",
 )
 cuda_ext.redist(
     name = "cuda_13_1_1",
@@ -51,6 +57,7 @@ cuda_ext.redist(
     cudnn_version = "9.20.0",
     nvshmem_version = "3.5.19",
     nccl_version = "2.27.7",
+    cusparselt_version = "0.8.1",
 )
 cuda_ext.redist(
     name = "cuda_13_2_1",
@@ -58,6 +65,7 @@ cuda_ext.redist(
     cudnn_version = "9.20.0",
     nvshmem_version = "3.5.19",
     nccl_version = "2.30.7",
+    cusparselt_version = "0.9.0",
 )
 cuda_ext.redist(
     name = "cuda_13_3_1",
@@ -65,6 +73,7 @@ cuda_ext.redist(
     cudnn_version = "9.20.0",
     nvshmem_version = "3.5.19",
     nccl_version = "2.29.3",
+    cusparselt_version = "0.9.1",
 )
 
 use_repo(

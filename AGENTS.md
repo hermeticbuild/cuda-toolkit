@@ -133,11 +133,13 @@ Key files:
 - `extensions/cuda.bzl`: module extension entrypoint
 - `cuda/cuda_redist_versions.json`: supported CUDA version pins
 - `cudnn/cudnn_redist_versions.json`: supported cuDNN version pins
+- `cusparselt/cusparselt_redist_versions.json`: supported cuSPARSELt version pins
 - `nvshmem/nvshmem_redist_versions.json`: supported NVSHMEM version pins
 - `nccl/nccl_redist_versions.json`: generated NCCL archive metadata
 - `nccl/update_redists.py`: NCCL catalog updater and archive verifier, run through `//tools/nccl:update_redists`
 - `cuda/cuda_redist_build_defs.bzl`: CUDA component registry and template selection
 - `cudnn/cudnn_redist_build_defs.bzl`: cuDNN component registry and template selection
+- `cusparselt/cusparselt_redist_build_defs.bzl`: cuSPARSELt component registry and template selection
 - `nvshmem/nvshmem_redist_build_defs.bzl`: NVSHMEM component registry and template selection
 - `nccl/nccl_redist_build_defs.bzl`: NCCL component registry and template selection
 - `cuda/redist_proxy_targets.bzl`: stable public target catalog

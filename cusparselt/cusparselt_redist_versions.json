@@ -1,0 +1,17 @@
+{
+  "0.3.0": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.3.0.json", "76fb0b1a93d3d3e6e69171030b7c0cb2db3fb05e66b1c367a653dff39a5820a8"],
+  "0.4.0": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.4.0.json", "c4bb48812ff57b99baad0cc2b68c28061e929c126282b8de98bf98235ae8d97f"],
+  "0.5.0": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.5.0.json", "c74823b2db62969d9a5dcb47cd927c51e2f36a82d4e2ffd2790c16f5e85d78b2"],
+  "0.5.1": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.5.1.json", "03fee9e956b5989a0f96a86f5e63d1b5a1efdd8606884b93c8e5cdc42c3a3ca8"],
+  "0.5.2": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.5.2.json", "40c8dd058f65789a430d28f583a0ab136794d4736bbf8f68ff531fed07c2f8f6"],
+  "0.6.0": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.6.0.json", "3807127864d86f76051272e19b5380e1cb709cef6dd70ab7b9dd7e4bbceb3894"],
+  "0.6.1": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.6.1.json", "4aca6331afc2d9fcdd64786faa2d2344c28e7c29061f877f46fafa612c466dd0"],
+  "0.6.2": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.6.2.json", "9d0011a3ca95de5b1e6fff207e106a93618635ccb7e00235e563ef506464a77c"],
+  "0.6.3": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.6.3.json", "ddecc44476df5ce7b41d518ea13f023606919883fa610b0c64f6268fe19f61ba"],
+  "0.7.0": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.7.0.json", "630ea0595bde72982d670c639e1277e12e0bc84bda4d4380556b6952253fdfe7"],
+  "0.7.1": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.7.1.json", "a6bb3fb44f0ecae0d87950127ec47de59486143c5c968c06447b6689d661d2bb"],
+  "0.8.0": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.8.0.json", "f1905214275cef3c6057ad3064254d2b679bf32e4c42e8a87637b4d46bcef8c3"],
+  "0.8.1": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.8.1.json", "d8ce601cd345630af9bb95bf2a40cca317c5f8256ebc4c5bd87af72e5f90d945"],
+  "0.9.0": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.9.0.json", "ea4a0c3e452f9cc57c10b57c33f94e5065703b4afeb554464a38fdb0a4014bc0"],
+  "0.9.1": ["https://developer.download.nvidia.com/compute/cusparselt/redist/redistrib_0.9.1.json", "beb23c66efdced33b66fd076730a34f5158892b8617f277a6e2db7e8ce47b662"]
+}

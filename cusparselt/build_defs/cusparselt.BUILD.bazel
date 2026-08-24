@@ -1,0 +1,97 @@
+"""BUILD definitions for cusparselt package"""
+
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("//:version.bzl", "LIB_VERSIONS")
+
+cc_import(
+    name = "cusparselt_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libcusparseLt.so." + LIB_VERSIONS["libcusparselt"],
+    visibility = ["//visibility:public"],
+)
+
+# cuSPARSELt archives ship no lib/stubs/ directory, so the unversioned
+# libcusparseLt.so symlink is the link interface.
+cc_import(
+    name = "cusparselt_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libcusparseLt.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cusparselt_static_library",
+    deps = [":headers"],
+    static_library = "lib/libcusparseLt_static.a",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cusparselt",
+    deps = [
+        ":cusparselt_shared_library",
+        ":headers",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cusparselt_system",
+    deps = [":cusparselt_interface_library"],
+    visibility = ["//visibility:public"],
+)
+
+# libcusparseLt_static.a leaves CUDA runtime symbols undefined (the shared
+# library embeds the runtime statically; the static archive does not).
+cc_library(
+    name = "cusparselt_static",
+    deps = [
+        ":cusparselt_static_library",
+        "@{cuda_redist_repo}//cudart:static",
+    ],
+    linkopts = [
+        "-lpthread",
+        "-lrt",
+        "-ldl",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# The SONAME (libcusparseLt.so.0) is a truncation of the fully versioned
+# file name, so consumers can derive the runtime symlink; only the fully
+# versioned file needs to be staged.
+filegroup(
+    name = "shared_library_files",
+    srcs = [
+        "lib/libcusparseLt.so." + LIB_VERSIONS["libcusparselt"],
+    ],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob(
+        [
+            "include/*.h",
+            "include/**/*.h",
+        ],
+        allow_empty = True,
+    ),
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    deps = [
+        # cusparseLt.h includes cusparse.h, driver_types.h and
+        # library_types.h.
+        "@{cuda_redist_repo}//cudart:headers",
+        "@{cuda_redist_repo}//cusparse:headers",
+    ],
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
