@@ -36,3 +36,15 @@ jobs:
       - name: Bazel analyze static cuDNN smoke (${{ matrix.cuda_version }})
         working-directory: e2e
         run: bazel build //:cudnn_static_smoke --nobuild --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}
+      - name: Check NCCL system dependency purity (${{ matrix.cuda_version }})
+        working-directory: e2e
+        run: |
+          nccl_system_deps="$(bazel cquery 'deps(@cuda//nccl:nccl_system)' --output label --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }})"
+          if ! grep -q 'nccl_interface_library' <<< "${nccl_system_deps}"; then
+            echo '@cuda//nccl:nccl_system does not reach the NCCL interface library' >&2
+            exit 1
+          fi
+          if grep -q 'nccl_shared_library' <<< "${nccl_system_deps}"; then
+            echo '@cuda//nccl:nccl_system reaches packaged NCCL shared libraries' >&2
+            exit 1
+          fi
