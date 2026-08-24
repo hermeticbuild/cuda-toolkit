@@ -70,6 +70,10 @@ use_repo(cuda_ext, "cuda")
   `foo_system` wrappers. These targets link through the redistribution's lightweight stub libraries where available
   (and otherwise through its unversioned `.so` interface) and mark the runtime library as system-provided, so the
   matching CUDA libraries must be available in the runtime environment.
+- The unsuffixed target in each complete shared/static/system library family defaults to the shared variant. Set
+  `--@cuda//:library_mode=static` or `--@cuda//:library_mode=system` to select the corresponding variant without
+  changing dependency labels. Explicit `foo_static` and `foo_system` labels remain available, and targets without a
+  complete three-variant family are unaffected.
 - For local validation on non-Linux hosts, you can force Linux selection with
   `--platforms=//:platform_linux_amd64` or `--platforms=//:platform_linux_arm64`.
 
