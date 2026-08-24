@@ -1,0 +1,18 @@
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_test.bzl", "py_test")
+
+py_binary(
+    name = "update_redists",
+    srcs = ["//nccl:update_redists.py"],
+    main = "//nccl:update_redists.py",
+)
+
+py_test(
+    name = "update_redists_test",
+    srcs = ["//nccl:update_redists_test.py"],
+    data = [
+        "//nccl:nccl_redist_versions_json",
+        "//nccl:update_redists.py",
+    ],
+    main = "//nccl:update_redists_test.py",
+)
