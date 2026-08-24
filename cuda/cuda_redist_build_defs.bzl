@@ -52,6 +52,12 @@ COMPONENTS_REGISTRY = {
             "10": "//cuda/build_defs:cuda_cufft.BUILD.bazel",
         },
     },
+    "libcufile": {
+        "repo_name": "cuda_cufile",
+        "version_to_template": {
+            "1": "//cuda/build_defs:cuda_cufile.BUILD.bazel",
+        },
+    },
     "cuda_cupti": {
         "repo_name": "cuda_cupti",
         "version_to_template": {
