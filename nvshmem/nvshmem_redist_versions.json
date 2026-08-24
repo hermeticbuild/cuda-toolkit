@@ -7,5 +7,8 @@
   "3.4.5": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.4.5.json", "a656614a6ec638d85922bc816e5e26063308c3905273a72a863cf0f24e188f38"],
   "3.5.19": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.5.19.json", "6dced4193eb728542504b346cfb768da6e3de2abca0cded95fda3a69729994d2"],
   "3.5.21": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.5.21.json", "c9a9c22766d1cfc64548205a526d9aabbdba46756e0dae60332e89a36a818350"],
-  "3.6.5": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.6.5.json", "afbf1ad5c4174c25a66cadd5b925d6814e679e8f836ef1fee1442afb6cb7fdd3"]
+  "3.6.5": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.6.5.json", "afbf1ad5c4174c25a66cadd5b925d6814e679e8f836ef1fee1442afb6cb7fdd3"],
+  "3.7.0": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.7.0.json", "45747435c4347ed9be8abbf876a99a6f18ab58987c6a87ded2e0d16a6bc74ddb"],
+  "3.7.1": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.7.1.json", "1a8466b994789e863d82865a746b0bb6fd5993e60d0d0fdd18f385b643a07f2a"],
+  "3.7.2": ["https://developer.download.nvidia.com/compute/nvshmem/redist/redistrib_3.7.2.json", "6dabe2b96f51b64fcf644f1dc1db5f4c8a59f309e6dfc6821502eaa6ccd4272b"]
 }
