@@ -147,6 +147,7 @@ Key files:
 ## Change Rules
 
 - Generated catalogs and cohesive follow-ups to an existing PR do not require a stack based on changed-line count alone.
+- Maintenance-only Bazel tooling belongs under `//tools`. Use language-native rules, keep tool-only dependencies as Bzlmod dev dependencies, and do not load those rules from production packages.
 - Preserve stable labels when upstream files move between components.
 - Prefer remapping or aliasing over forcing downstream migrations.
 - Do not invent fake components when upstream does not ship one.
