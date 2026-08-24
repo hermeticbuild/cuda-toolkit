@@ -252,49 +252,15 @@ def _write_json(path, value):
         raise
 
 
-def _starlark_value(value, indent=0):
-    prefix = " " * indent
-    child_prefix = " " * (indent + 4)
-    if isinstance(value, dict):
-        lines = ["{"]
-        keys = list(value)
-        if keys and all(re.fullmatch(r"\d+\.\d+\.\d+", key) for key in keys):
-            keys.sort(key=_version_tuple)
-        else:
-            keys.sort()
-        for key in keys:
-            rendered = _starlark_value(value[key], indent + 4)
-            rendered_lines = rendered.splitlines()
-            if len(rendered_lines) == 1:
-                lines.append('{}{}: {},'.format(child_prefix, json.dumps(key), rendered))
-            else:
-                lines.append('{}{}: {}'.format(child_prefix, json.dumps(key), rendered_lines[0]))
-                lines.extend(rendered_lines[1:-1])
-                lines.append(rendered_lines[-1] + ",")
-        lines.append(prefix + "}")
-        return "\n".join(lines)
-    if isinstance(value, list):
-        lines = ["["]
-        for item in value:
-            lines.append("{}{},".format(child_prefix, _starlark_value(item, indent + 4)))
-        lines.append(prefix + "]")
-        return "\n".join(lines)
-    return json.dumps(value)
-
-
 def _catalog_text(catalog):
-    return """\
-\"\"\"Generated NCCL redistribution metadata. Regenerate with `bazel run //nccl:update_redists`.\"\"\"
-
-NCCL_REDISTRIBUTIONS = {}
-""".format(_starlark_value(catalog))
+    return json.dumps(catalog, indent=2) + "\n"
 
 
 def _default_output():
     workspace_directory = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
     if workspace_directory:
-        return Path(workspace_directory) / "nccl" / "nccl_redist_versions.bzl"
-    return Path(__file__).with_name("nccl_redist_versions.bzl")
+        return Path(workspace_directory) / "nccl" / "nccl_redist_versions.json"
+    return Path(__file__).with_name("nccl_redist_versions.json")
 
 
 def _write_catalog(path, catalog, check):

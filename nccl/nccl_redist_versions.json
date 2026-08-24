@@ -1,0 +1,590 @@
+{
+  "2.25.1": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.25.1/nccl_2.25.1-1+cuda12.8_aarch64.txz",
+          "sha256": "2ae78f5fca61f56dd489841cefc322a6b1134f7281e8a62f4351d7e38a73c3c4",
+          "strip_prefix": "nccl_2.25.1-1+cuda12.8_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.25.1/nccl_2.25.1-1+cuda12.8_x86_64.txz",
+          "sha256": "71550c68ede7a23f2d132a7d7ce2c83dc5425efc7432e1c70e0f650e5eeb47b5",
+          "strip_prefix": "nccl_2.25.1-1+cuda12.8_x86_64"
+        }
+      },
+      "built_with_cuda": "12.8",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    }
+  },
+  "2.26.2": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.26.2/nccl_2.26.2-1+cuda12.8_aarch64.txz",
+          "sha256": "250a1bb323df4565bf6936dbacf6c20022deaf841c41b3a5c38c7963a9665050",
+          "strip_prefix": "nccl_2.26.2-1+cuda12.8_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.26.2/nccl_2.26.2-1+cuda12.8_x86_64.txz",
+          "sha256": "669434a7a2e4f6f99d6969f0a4de7bf12a26d3873bbbd84f1a7bd05e1cd6e45e",
+          "strip_prefix": "nccl_2.26.2-1+cuda12.8_x86_64"
+        }
+      },
+      "built_with_cuda": "12.8",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    }
+  },
+  "2.26.5": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.26.5/nccl_2.26.5-1+cuda12.9_aarch64.txz",
+          "sha256": "72264f74454c513867555414d06b1187bc7d1e3394279377b1a52146cef4d580",
+          "strip_prefix": "nccl_2.26.5-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.26.5/nccl_2.26.5-1+cuda12.9_x86_64.txz",
+          "sha256": "575cc23e8d736153c35093eb2da9436b5b4d8bd5e4944f3f515d8d91e008e361",
+          "strip_prefix": "nccl_2.26.5-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    }
+  },
+  "2.27.3": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.27.3/nccl_2.27.3-1+cuda12.9_aarch64.txz",
+          "sha256": "750052d0c975f13c9ef09a8418ceea6c148aa45b85350621ea0fbc05f4037978",
+          "strip_prefix": "nccl_2.27.3-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.27.3/nccl_2.27.3-1+cuda12.9_x86_64.txz",
+          "sha256": "a6b39773db233e374d92f7a387ea97bd376d13df2b919eb2fda2c7a08d182a95",
+          "strip_prefix": "nccl_2.27.3-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    }
+  },
+  "2.27.5": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.27.5/nccl_2.27.5-1+cuda12.9_aarch64.txz",
+          "sha256": "83e5e13548e111ac5e07b9a624aacf68535e0160fbd5865e7042b6bdebf2603c",
+          "strip_prefix": "nccl_2.27.5-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.27.5/nccl_2.27.5-1+cuda12.9_x86_64.txz",
+          "sha256": "e3fa552759135c4f1af6d61c79fe742f529e7cc3c5adfa632af5c9a3b3ffd6b1",
+          "strip_prefix": "nccl_2.27.5-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    }
+  },
+  "2.27.6": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.27.6/nccl_2.27.6-1+cuda12.9_aarch64.txz",
+          "sha256": "70e7af24cfc47a184688a602016a42216fde85775e462f53b7795c4d549b5c03",
+          "strip_prefix": "nccl_2.27.6-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.27.6/nccl_2.27.6-1+cuda12.9_x86_64.txz",
+          "sha256": "9062202aef625a76ca6dd359093a96401f7fdca656c9cc1a2d6ddf812c73fcf8",
+          "strip_prefix": "nccl_2.27.6-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    }
+  },
+  "2.27.7": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.27.7/nccl_2.27.7-1+cuda12.9_aarch64.txz",
+          "sha256": "f97d819bac0fd3578f33f4860cab680beb1c1fa0d56d2abfb8d2c67f80147352",
+          "strip_prefix": "nccl_2.27.7-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.27.7/nccl_2.27.7-1+cuda12.9_x86_64.txz",
+          "sha256": "00f9aac777f68090d60e9b66a96b85a29cb8f0fb6da83aeb183b7da96970b274",
+          "strip_prefix": "nccl_2.27.7-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.27.7/nccl_2.27.7-1+cuda13.0_aarch64.txz",
+          "sha256": "42b4e213d17ffc2e9b9dd6f50a9086cb940087b1fec197cd9fd53403e35209ca",
+          "strip_prefix": "nccl_2.27.7-1+cuda13.0_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.27.7/nccl_2.27.7-1+cuda13.0_x86_64.txz",
+          "sha256": "38cbc471f3058d5147f8112417fc24ea7dbe02bb94a6ab294d0b2a08d520eb60",
+          "strip_prefix": "nccl_2.27.7-1+cuda13.0_x86_64"
+        }
+      },
+      "built_with_cuda": "13.0",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.28.3": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.28.3/nccl_2.28.3-1+cuda12.9_aarch64.txz",
+          "sha256": "c51b970bb26a0d3afd676048923fc404ed1d1131441558a7d346940e93d6ab54",
+          "strip_prefix": "nccl_2.28.3-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.28.3/nccl_2.28.3-1+cuda12.9_x86_64.txz",
+          "sha256": "98f7abd2f505ba49f032052f3f36b14e28798a6e16ca783fe293e351e9376546",
+          "strip_prefix": "nccl_2.28.3-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.28.3/nccl_2.28.3-1+cuda13.0_aarch64.txz",
+          "sha256": "2b5961c4c4bcbc16148d8431c7b65525d00f386105ab1b9fa82051b7c05f6fd0",
+          "strip_prefix": "nccl_2.28.3-1+cuda13.0_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.28.3/nccl_2.28.3-1+cuda13.0_x86_64.txz",
+          "sha256": "3117db0efe13e1336dbe32e8b98eab943ad5baa69518189918d4aca9e3ce3270",
+          "strip_prefix": "nccl_2.28.3-1+cuda13.0_x86_64"
+        }
+      },
+      "built_with_cuda": "13.0",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.28.7": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.28.7/nccl_2.28.7-1+cuda12.9_aarch64.txz",
+          "sha256": "4a9fe649f67f4297a2db51ad34d56099465622fb2ab6d0da6677c62202907208",
+          "strip_prefix": "nccl_2.28.7-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.28.7/nccl_2.28.7-1+cuda12.9_x86_64.txz",
+          "sha256": "b9d84004c692867a1a28e7dee211cacb32d5efe0dc48da71cd79b7531bfee63e",
+          "strip_prefix": "nccl_2.28.7-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.28.7/nccl_2.28.7-1+cuda13.0_aarch64.txz",
+          "sha256": "94a92d6566121ddac294b042859f0087cee1038ae2723b46cadc3768f41f9b4b",
+          "strip_prefix": "nccl_2.28.7-1+cuda13.0_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.28.7/nccl_2.28.7-1+cuda13.0_x86_64.txz",
+          "sha256": "3f485ec5a5db28569821b1a706e6a2df896092585ebfef3f9d23366de723fcf7",
+          "strip_prefix": "nccl_2.28.7-1+cuda13.0_x86_64"
+        }
+      },
+      "built_with_cuda": "13.0",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.28.9": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.28.9/nccl_2.28.9-1+cuda12.9_aarch64.txz",
+          "sha256": "905b36ff791f9efdb369b7938e5468f6b2cfa229bdc9d6d100baa03f2e246f52",
+          "strip_prefix": "nccl_2.28.9-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.28.9/nccl_2.28.9-1+cuda12.9_x86_64.txz",
+          "sha256": "91c68094b6fef2d86740bb636d22e341aa803ec667d9f5af2278a8b597940e23",
+          "strip_prefix": "nccl_2.28.9-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.28.9/nccl_2.28.9-1+cuda13.0_aarch64.txz",
+          "sha256": "2c84dcee747a552ba1f858e7dba66f2b0b7a93f49c12772f29cbc49ead26ca9c",
+          "strip_prefix": "nccl_2.28.9-1+cuda13.0_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.28.9/nccl_2.28.9-1+cuda13.0_x86_64.txz",
+          "sha256": "1aed015c07114ddf04ed997cbc87f1d0680b6c91d22b03c9a678aaa9f6c9054d",
+          "strip_prefix": "nccl_2.28.9-1+cuda13.0_x86_64"
+        }
+      },
+      "built_with_cuda": "13.0",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.29.2": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.29.2/nccl_2.29.2-1+cuda12.9_aarch64.txz",
+          "sha256": "9c7665fd60f287f23629e8a4e0371abf3a291ccd78894ad5e9a6667cb352e3de",
+          "strip_prefix": "nccl_2.29.2-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.29.2/nccl_2.29.2-1+cuda12.9_x86_64.txz",
+          "sha256": "95879d8d30d7c1111831333127334c1f7edc27a0da71179df4b2ca4b7cb0cad1",
+          "strip_prefix": "nccl_2.29.2-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.29.2/nccl_2.29.2-1+cuda13.1_aarch64.txz",
+          "sha256": "a6c52303f7f8f8548f28a84aac7f4fa45aea7dc11a689dc3cb232c5727aee810",
+          "strip_prefix": "nccl_2.29.2-1+cuda13.1_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.29.2/nccl_2.29.2-1+cuda13.1_x86_64.txz",
+          "sha256": "bad8d8013ce4848885ad51d0d2326e8fed696c7491d226998004fb9d4857b690",
+          "strip_prefix": "nccl_2.29.2-1+cuda13.1_x86_64"
+        }
+      },
+      "built_with_cuda": "13.1",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.29.3": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.29.3/nccl_2.29.3-1+cuda12.9_aarch64.txz",
+          "sha256": "298e28252b1afe899b9018351b13f866b85edd4dad44013045966285add7c85e",
+          "strip_prefix": "nccl_2.29.3-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.29.3/nccl_2.29.3-1+cuda12.9_x86_64.txz",
+          "sha256": "945764b6439260210a98b13beaa0cd5e28f476438984b871309eacc4be0a54a4",
+          "strip_prefix": "nccl_2.29.3-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.29.3/nccl_2.29.3-1+cuda13.1_aarch64.txz",
+          "sha256": "1393abe5ceceff60e7727004f49c5fa68405e4ecc6671f899368814374f6c9c2",
+          "strip_prefix": "nccl_2.29.3-1+cuda13.1_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.29.3/nccl_2.29.3-1+cuda13.1_x86_64.txz",
+          "sha256": "60f5ca684961251b84725d48a4d5b845a64e4c73969ac172055e3fdcb8902661",
+          "strip_prefix": "nccl_2.29.3-1+cuda13.1_x86_64"
+        }
+      },
+      "built_with_cuda": "13.1",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.29.7": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.29.7/nccl_2.29.7-1+cuda12.9_aarch64.txz",
+          "sha256": "d4c82ffa178d85295009416d03779578f04dc719efe3b094f361f7e225f5a464",
+          "strip_prefix": "nccl_2.29.7-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.29.7/nccl_2.29.7-1+cuda12.9_x86_64.txz",
+          "sha256": "ed660e92b6aabe3c9418bec925c9b03bdf616073216e9be56a9484d316f262a3",
+          "strip_prefix": "nccl_2.29.7-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.29.7/nccl_2.29.7-1+cuda13.2_aarch64.txz",
+          "sha256": "0c5c72c3423e11649be449136f0ea7323a5d511d471f654014bfab5669244328",
+          "strip_prefix": "nccl_2.29.7-1+cuda13.2_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.29.7/nccl_2.29.7-1+cuda13.2_x86_64.txz",
+          "sha256": "bf2e30a02358e99fbbbd08f53967577339dec727268f2490be0d1719c1818928",
+          "strip_prefix": "nccl_2.29.7-1+cuda13.2_x86_64"
+        }
+      },
+      "built_with_cuda": "13.2",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.30.3": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.30.3/nccl_2.30.3-1+cuda12.9_aarch64.txz",
+          "sha256": "45fcc1cd716a0b4354686a13ee580c88200c6027a6a86b95e48b8ea4bbde95e1",
+          "strip_prefix": "nccl_2.30.3-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.30.3/nccl_2.30.3-1+cuda12.9_x86_64.txz",
+          "sha256": "d8c032b31bc385048cd520b4115e528a89029ab50b300e03755315dcae4ea9d2",
+          "strip_prefix": "nccl_2.30.3-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.30.3/nccl_2.30.3-1+cuda13.2_aarch64.txz",
+          "sha256": "1bf5ba1fe51871ed52166a857d34c55e8b4ca40fbc7dfb194662463ca85b3808",
+          "strip_prefix": "nccl_2.30.3-1+cuda13.2_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.30.3/nccl_2.30.3-1+cuda13.2_x86_64.txz",
+          "sha256": "fe1e7a02648f2bca399d80db41d28b351f0014d7b634abcac2bba41f9408b065",
+          "strip_prefix": "nccl_2.30.3-1+cuda13.2_x86_64"
+        }
+      },
+      "built_with_cuda": "13.2",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.30.4": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.30.4/nccl_2.30.4-1+cuda12.9_aarch64.txz",
+          "sha256": "5cf21860134e5f1d917fb8de3097730f46ddd27bdb13a874071dab7c1fc9e750",
+          "strip_prefix": "nccl_2.30.4-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.30.4/nccl_2.30.4-1+cuda12.9_x86_64.txz",
+          "sha256": "7ee7664a441acc6fd715026e0ee587554dd74a136ca7deac840ea36ce84ff89b",
+          "strip_prefix": "nccl_2.30.4-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.30.4/nccl_2.30.4-1+cuda13.2_aarch64.txz",
+          "sha256": "2378ecd8dd4cae0baf739396c8efb51464b7f8628473927b17c945e571464fe1",
+          "strip_prefix": "nccl_2.30.4-1+cuda13.2_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.30.4/nccl_2.30.4-1+cuda13.2_x86_64.txz",
+          "sha256": "7ff338410f6d3c2e352c5637b8ef0c411b617c3deb2a33d953fbf3c759b6d6ff",
+          "strip_prefix": "nccl_2.30.4-1+cuda13.2_x86_64"
+        }
+      },
+      "built_with_cuda": "13.2",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.30.7": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda12.9_aarch64.txz",
+          "sha256": "40627857207a990a3415328dba3e7b1c428a874c674c4a00df802673aac0a22b",
+          "strip_prefix": "nccl_2.30.7-1+cuda12.9_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda12.9_x86_64.txz",
+          "sha256": "03ab8e8af56f18cfc7b3e4d0b36a6111a78d5775987e69e176d70fd1e678e262",
+          "strip_prefix": "nccl_2.30.7-1+cuda12.9_x86_64"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda13.3_aarch64.txz",
+          "sha256": "ee4eb7b690bad24ca07f0c224423a56c7c3e570fbcd54ad28f52643129b7b2c2",
+          "strip_prefix": "nccl_2.30.7-1+cuda13.3_aarch64"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.30.7/nccl_2.30.7-1+cuda13.3_x86_64.txz",
+          "sha256": "c64355876178931a63f7f90a99da62ae4966cd8c9aa66acdd1eba10359c64c75",
+          "strip_prefix": "nccl_2.30.7-1+cuda13.3_x86_64"
+        }
+      },
+      "built_with_cuda": "13.3",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  },
+  "2.31.2": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.31.2/nccl-nccl-stable-cuda-12-linux-sbsa-2.31.2-cuda12.9.tar.gz",
+          "sha256": "551f7f2089e295ca4cfe3044b0dd9dc683973d9a1909079d8c20d334ee5ba16d",
+          "strip_prefix": "nccl-nccl-stable-cuda-12-linux-sbsa-2.31.2-cuda12.9"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.31.2/nccl-nccl-stable-cuda-12-linux-x86_64-2.31.2-cuda12.9.tar.gz",
+          "sha256": "053cb6c8d68667e83598113835efb81581f59c1a45ed1c070c1bf527e124a088",
+          "strip_prefix": "nccl-nccl-stable-cuda-12-linux-x86_64-2.31.2-cuda12.9"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    },
+    "13": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.31.2/nccl-nccl-stable-cuda-13-linux-sbsa-2.31.2-cuda13.3.tar.gz",
+          "sha256": "fae81e7e29ea4d044df11b2c7cb44f700ee6503104a79446ec5a5f13415908e3",
+          "strip_prefix": "nccl-nccl-stable-cuda-13-linux-sbsa-2.31.2-cuda13.3"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.31.2/nccl-nccl-stable-cuda-13-linux-x86_64-2.31.2-cuda13.3.tar.gz",
+          "sha256": "a1af1b3e37dd121133132f8879ed00c4494dba6836e06905793c05d0f1a332c6",
+          "strip_prefix": "nccl-nccl-stable-cuda-13-linux-x86_64-2.31.2-cuda13.3"
+        }
+      },
+      "built_with_cuda": "13.3",
+      "compatible_cuda": [
+        "13.0",
+        "13.1",
+        "13.2",
+        "13.3"
+      ]
+    }
+  }
+}

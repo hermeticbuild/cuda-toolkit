@@ -7,13 +7,6 @@ bzl_library(
     name = "nccl_redist_build_defs",
     srcs = ["nccl_redist_build_defs.bzl"],
     visibility = ["//visibility:public"],
-    deps = [":nccl_redist_versions"],
-)
-
-bzl_library(
-    name = "nccl_redist_versions",
-    srcs = ["nccl_redist_versions.bzl"],
-    visibility = ["//visibility:public"],
 )
 
 nccl_redist_build_defs_test_suite(
@@ -28,5 +21,8 @@ sh_binary(
 sh_test(
     name = "update_redists_test",
     srcs = ["update_redists_test.py"],
-    data = ["update_redists.py"],
+    data = [
+        "nccl_redist_versions.json",
+        "update_redists.py",
+    ],
 )

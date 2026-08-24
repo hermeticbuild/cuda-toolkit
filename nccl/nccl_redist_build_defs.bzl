@@ -1,10 +1,8 @@
 """Hermetic NCCL redistribution utilities."""
 
-load(":nccl_redist_versions.bzl", "NCCL_REDISTRIBUTIONS")
-
 NCCL_REDIST_PATH_PREFIX = "https://developer.download.nvidia.com/compute/redist/"
 
-def get_nccl_redist(nccl_version, cuda_version):
+def get_nccl_redist(nccl_redistributions, nccl_version, cuda_version):
     # NVIDIA publishes one NCCL archive stream per CUDA major. The generated
     # catalog keeps the exact build minor and the explicitly supported consumer
     # minors separate so selection never relies on an implicit fallback.
@@ -13,12 +11,12 @@ def get_nccl_redist(nccl_version, cuda_version):
         fail("Expected CUDA major.minor version, got '{}'".format(cuda_version))
     cuda_major = cuda_parts[0]
     cuda_minor = ".".join(cuda_parts[:2])
-    version_redist = NCCL_REDISTRIBUTIONS.get(nccl_version)
+    version_redist = nccl_redistributions.get(nccl_version)
     if not version_redist:
         fail(
             "Unsupported NCCL version '{}'. Supported versions: {}.".format(
                 nccl_version,
-                sorted(NCCL_REDISTRIBUTIONS.keys()),
+                sorted(nccl_redistributions.keys()),
             ),
         )
 

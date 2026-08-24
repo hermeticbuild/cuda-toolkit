@@ -23,6 +23,7 @@ load(
 
 _CUDA_REDIST_VERSIONS_JSON = Label("//cuda:cuda_redist_versions.json")
 _CUDNN_REDIST_VERSIONS_JSON = Label("//cudnn:cudnn_redist_versions.json")
+_NCCL_REDIST_VERSIONS_JSON = Label("//nccl:nccl_redist_versions.json")
 _NVSHMEM_REDIST_VERSIONS_JSON = Label("//nvshmem:nvshmem_redist_versions.json")
 
 def _collect_redist_tags(mctx):
@@ -97,6 +98,7 @@ def _read_downloaded_json(mctx, pending_download):
 def _cuda_impl(mctx):
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
     cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
+    nccl_version_map = json.decode(mctx.read(_NCCL_REDIST_VERSIONS_JSON))
     nvshmem_version_map = json.decode(mctx.read(_NVSHMEM_REDIST_VERSIONS_JSON))
 
     tags = _collect_redist_tags(mctx)
@@ -108,6 +110,7 @@ def _cuda_impl(mctx):
     for tag in tags:
         if tag.nccl_version:
             nccl_redistributions_by_tag_name[tag.name] = get_nccl_redist(
+                nccl_version_map,
                 tag.nccl_version,
                 tag.version,
             )

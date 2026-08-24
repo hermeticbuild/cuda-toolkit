@@ -5,6 +5,7 @@ import functools
 import hashlib
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import io
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -50,6 +51,47 @@ class UpdateRedistsTest(unittest.TestCase):
             archive.addfile(header, io.BytesIO(contents))
         return path, strip_prefix
 
+    def test_checked_in_catalog_has_all_supported_versions_and_complete_archives(self):
+        expected_versions = [
+            "2.25.1",
+            "2.26.2",
+            "2.26.5",
+            "2.27.3",
+            "2.27.5",
+            "2.27.6",
+            "2.27.7",
+            "2.28.3",
+            "2.28.7",
+            "2.28.9",
+            "2.29.2",
+            "2.29.3",
+            "2.29.7",
+            "2.30.3",
+            "2.30.4",
+            "2.30.7",
+            "2.31.2",
+        ]
+        catalog_path = Path(__file__).with_name("nccl_redist_versions.json")
+        catalog = json.loads(catalog_path.read_text())
+
+        self.assertEqual(expected_versions, list(catalog))
+        archive_count = 0
+        for nccl_version, cuda_families in catalog.items():
+            for cuda_major, cuda_family in cuda_families.items():
+                self.assertEqual(cuda_major, cuda_family["built_with_cuda"].split(".")[0])
+                for cuda_minor in cuda_family["compatible_cuda"]:
+                    self.assertEqual(cuda_major, cuda_minor.split(".")[0])
+                self.assertEqual(
+                    {"linux-sbsa", "linux-x86_64"},
+                    set(cuda_family["archives"]),
+                )
+                for archive in cuda_family["archives"].values():
+                    archive_count += 1
+                    self.assertTrue(archive["relative_path"].startswith("nccl/v{}/".format(nccl_version)))
+                    self.assertRegex(archive["sha256"], r"^[0-9a-f]{64}$")
+                    self.assertTrue(archive["strip_prefix"])
+        self.assertEqual(56, archive_count)
+
     def test_generates_and_checks_old_and_new_archive_families(self):
         old_x86, _ = self._archive(
             "2.25.1",
@@ -74,7 +116,7 @@ class UpdateRedistsTest(unittest.TestCase):
 
         workspace = self._root / "workspace"
         workspace.mkdir()
-        output = workspace / "nccl" / "nccl_redist_versions.bzl"
+        output = workspace / "nccl" / "nccl_redist_versions.json"
         cache = self._root / "cache.json"
         environment = os.environ.copy()
         environment["BUILD_WORKSPACE_DIRECTORY"] = str(workspace)
@@ -90,13 +132,14 @@ class UpdateRedistsTest(unittest.TestCase):
         ]
         subprocess.run(command, check=True, capture_output=True, env=environment, text=True)
 
-        catalog = output.read_text()
-        self.assertIn('"2.25.1"', catalog)
-        self.assertIn('"2.31.2"', catalog)
-        self.assertIn('"built_with_cuda": "12.8"', catalog)
-        self.assertIn('"built_with_cuda": "13.3"', catalog)
-        self.assertIn('"strip_prefix": "{}"'.format(new_prefix), catalog)
-        self.assertIn(hashlib.sha256(old_x86.read_bytes()).hexdigest(), catalog)
+        catalog = json.loads(output.read_text())
+        self.assertEqual(["2.25.1", "2.31.2"], list(catalog))
+        self.assertEqual("12.8", catalog["2.25.1"]["12"]["built_with_cuda"])
+        self.assertEqual("13.3", catalog["2.31.2"]["13"]["built_with_cuda"])
+        new_x86 = catalog["2.31.2"]["13"]["archives"]["linux-x86_64"]
+        self.assertEqual(new_prefix, new_x86["strip_prefix"])
+        old_x86_entry = catalog["2.25.1"]["12"]["archives"]["linux-x86_64"]
+        self.assertEqual(hashlib.sha256(old_x86.read_bytes()).hexdigest(), old_x86_entry["sha256"])
 
         subprocess.run(
             command + ["--check"],
