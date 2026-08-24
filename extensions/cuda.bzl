@@ -20,11 +20,18 @@ load(
     "NVSHMEM_COMPONENTS_REGISTRY",
     "NVSHMEM_REDIST_PATH_PREFIX",
 )
+load(
+    "//tensorrt:tensorrt_redist_build_defs.bzl",
+    "TENSORRT_COMPONENTS_REGISTRY",
+    "TENSORRT_REDIST_PATH_PREFIX",
+    "get_tensorrt_redist",
+)
 
 _CUDA_REDIST_VERSIONS_JSON = Label("//cuda:cuda_redist_versions.json")
 _CUDNN_REDIST_VERSIONS_JSON = Label("//cudnn:cudnn_redist_versions.json")
 _NCCL_REDIST_VERSIONS_JSON = Label("//nccl:nccl_redist_versions.json")
 _NVSHMEM_REDIST_VERSIONS_JSON = Label("//nvshmem:nvshmem_redist_versions.json")
+_TENSORRT_REDIST_VERSIONS_JSON = Label("//tensorrt:tensorrt_redist_versions.json")
 
 def _collect_redist_tags(mctx):
     all_tags = []
@@ -100,18 +107,27 @@ def _cuda_impl(mctx):
     cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
     nccl_version_map = json.decode(mctx.read(_NCCL_REDIST_VERSIONS_JSON))
     nvshmem_version_map = json.decode(mctx.read(_NVSHMEM_REDIST_VERSIONS_JSON))
+    tensorrt_version_map = json.decode(mctx.read(_TENSORRT_REDIST_VERSIONS_JSON))
 
     tags = _collect_redist_tags(mctx)
     configuration = _collect_configuration(mctx)
     default_package_metadata = configuration.default_package_metadata
 
-    # Validate NCCL/CUDA compatibility before starting any remote downloads.
+    # Validate NCCL/CUDA and TensorRT/CUDA compatibility before starting any
+    # remote downloads.
     nccl_redistributions_by_tag_name = {}
+    tensorrt_redistributions_by_tag_name = {}
     for tag in tags:
         if tag.nccl_version:
             nccl_redistributions_by_tag_name[tag.name] = get_nccl_redist(
                 nccl_version_map,
                 tag.nccl_version,
+                tag.version,
+            )
+        if tag.tensorrt_version:
+            tensorrt_redistributions_by_tag_name[tag.name] = get_tensorrt_redist(
+                tensorrt_version_map,
+                tag.tensorrt_version,
                 tag.version,
             )
 
@@ -299,6 +315,32 @@ def _cuda_impl(mctx):
                     component_proxy_specs[repo_name] = spec
                 spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
 
+        if tag.tensorrt_version:
+            tensorrt_redist = tensorrt_redistributions_by_tag_name[tag.name]
+
+            generated_tensorrt_repos = cuda_redist_repositories(
+                redist = tensorrt_redist,
+                cuda_repo_name = tag.name,
+                cuda_version = tag.version,
+                cuda_redist_path_prefix = TENSORRT_REDIST_PATH_PREFIX,
+                components_registry = TENSORRT_COMPONENTS_REGISTRY,
+                default_package_metadata = default_package_metadata,
+            )
+            if not generated_tensorrt_repos:
+                fail("TensorRT version '{}' did not generate any repositories for CUDA {}".format(tag.tensorrt_version, tag.version))
+
+            for generated in generated_tensorrt_repos:
+                repo_name = generated["component_repo_name"]
+                spec = component_proxy_specs.get(repo_name)
+                if not spec:
+                    spec = {
+                        "version": generated["version"],
+                        "targets": generated["targets"],
+                        "platform_repo_mappings": {},
+                    }
+                    component_proxy_specs[repo_name] = spec
+                spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
+
         available_component_versions = {}
         available_component_mappings = {}
         for repo_name, spec in component_proxy_specs.items():
@@ -357,6 +399,7 @@ _redist = tag_class(
         "cudnn_version": attr.string(),
         "nvshmem_version": attr.string(),
         "nccl_version": attr.string(),
+        "tensorrt_version": attr.string(),
     },
 )
 
