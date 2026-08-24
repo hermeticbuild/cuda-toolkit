@@ -212,6 +212,35 @@ cc_binary(
 )
 
 cc_binary(
+    name = "cufile_smoke",
+    srcs = ["cufile_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cufile:cufile",
+    ],
+)
+
+cc_binary(
+    name = "cufile_system_smoke",
+    srcs = ["cufile_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cufile:cufile_system",
+    ],
+)
+
+cc_binary(
+    name = "cufile_static_smoke",
+    srcs = ["cufile_smoke.cc"],
+    # static archives use libstdc++ abi.
+    tags = ["manual"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cufile:cufile_static",
+    ],
+)
+
+cc_binary(
     name = "curand_generate_smoke",
     srcs = ["curand_generate_smoke.cc"],
     deps = [

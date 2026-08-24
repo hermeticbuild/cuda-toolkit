@@ -1,0 +1,92 @@
+"""BUILD definitions for cuda_cufile package"""
+
+# This BUILD file is used within the arch specific cuda redist repository.
+#
+# Any user-facing target should be listed in _REPO_PUBLIC_TARGETS so that the
+# @cuda_cufile proxy repository can re-export it.
+
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("//:version.bzl", "LIB_VERSIONS")
+
+cc_import(
+    name = "cufile_shared_library",
+    deps = [":headers"],
+    shared_library = "lib/libcufile.so." + LIB_VERSIONS["libcufile"],
+    visibility = ["//visibility:public"],
+)
+
+# libcufile ships no lib/stubs/ directory, so the unversioned libcufile.so
+# symlink is the link interface.
+cc_import(
+    name = "cufile_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libcufile.so",
+    system_provided = True,
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "cufile_static_library",
+    deps = [":headers"],
+    static_library = "lib/libcufile_static.a",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cufile",
+    deps = [":cufile_shared_library"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "cufile_system",
+    deps = [":cufile_interface_library"],
+    visibility = ["//visibility:public"],
+)
+
+# libcufile_static.a references the CUDA runtime API (cudaLaunchKernel and
+# friends); the driver API is loaded through dlopen at runtime.
+cc_library(
+    name = "cufile_static",
+    deps = [
+        ":cufile_static_library",
+        "@{cuda_redist_repo}//cudart:static",
+    ],
+    linkopts = [
+        "-lpthread",
+        "-lrt",
+        "-ldl",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+# libcufile_rdma is a runtime plugin that libcufile dlopens when GPUDirect
+# Storage RDMA is configured. Its link closure requires system RDMA stacks
+# (libmlx5, librdmacm, libibverbs) that no redistribution provides, so no
+# link targets are exposed for it; its shared libraries still ship through
+# :shared_library_files.
+filegroup(
+    name = "shared_library_files",
+    # Glob rather than enumerate: libcufile's SONAME (libcufile.so.0) is not
+    # a prefix of the versioned file name (e.g. libcufile.so.1.17.1), so the
+    # archive's own SONAME symlinks must ship alongside the libraries.
+    srcs = glob(["lib/lib*.so*"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob(["include/*.h"]),
+    visibility = ["//visibility:public"],
+)
+
+# cufile.h includes the driver API header cuda.h, which cudart provides.
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    deps = ["@{cuda_redist_repo}//cudart:headers"],
+    includes = ["include"],
+    strip_include_prefix = "include",
+    visibility = ["//visibility:public"],
+)
