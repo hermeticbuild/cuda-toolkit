@@ -1,28 +1,57 @@
-"""Hermetic NCCL redistribution utilities.
+"""Hermetic NCCL redistribution utilities."""
 
-NVIDIA does not publish redistrib manifests for NCCL, so the manifests
-are hand-authored in this package, describing the official NCCL binary
-archives hosted on developer.download.nvidia.com.
-"""
+load(":nccl_redist_versions.bzl", "NCCL_REDISTRIBUTIONS")
 
 NCCL_REDIST_PATH_PREFIX = "https://developer.download.nvidia.com/compute/redist/"
 
-NCCL_VERSION_TO_MANIFEST = {
-    "2.30.7": {
-        "12.9": "//nccl:redistrib_2.30.7_cuda12.9.json",
-        "13.3": "//nccl:redistrib_2.30.7_cuda13.3.json",
-    },
-}
-
-def nccl_cuda_version(cuda_version):
-    parts = cuda_version.split(".")
-    if len(parts) < 2:
+def get_nccl_redist(nccl_version, cuda_version):
+    # NVIDIA publishes one NCCL archive stream per CUDA major. The generated
+    # catalog keeps the exact build minor and the explicitly supported consumer
+    # minors separate so selection never relies on an implicit fallback.
+    cuda_parts = cuda_version.split(".")
+    if len(cuda_parts) < 2:
         fail("Expected CUDA major.minor version, got '{}'".format(cuda_version))
-    return ".".join(parts[:2])
+    cuda_major = cuda_parts[0]
+    cuda_minor = ".".join(cuda_parts[:2])
+    version_redist = NCCL_REDISTRIBUTIONS.get(nccl_version)
+    if not version_redist:
+        fail(
+            "Unsupported NCCL version '{}'. Supported versions: {}.".format(
+                nccl_version,
+                sorted(NCCL_REDISTRIBUTIONS.keys()),
+            ),
+        )
 
-def get_nccl_manifest_label(nccl_version, cuda_version):
-    cuda_version_to_manifest = NCCL_VERSION_TO_MANIFEST.get(nccl_version, {})
-    return cuda_version_to_manifest.get(nccl_cuda_version(cuda_version))
+    cuda_family = version_redist.get(cuda_major)
+    if not cuda_family:
+        fail(
+            ("NCCL version '{nccl_version}' is unavailable for CUDA {cuda_version}. " +
+             "Supported CUDA major versions: {supported}.").format(
+                nccl_version = nccl_version,
+                cuda_version = cuda_version,
+                supported = sorted(version_redist.keys()),
+            ),
+        )
+    if cuda_minor not in cuda_family["compatible_cuda"]:
+        fail(
+            ("NCCL version '{nccl_version}' is unavailable for CUDA {cuda_version}. " +
+             "Supported CUDA versions in the CUDA {cuda_major} family: {supported}.").format(
+                nccl_version = nccl_version,
+                cuda_version = cuda_minor,
+                cuda_major = cuda_major,
+                supported = cuda_family["compatible_cuda"],
+            ),
+        )
+
+    return {
+        "libnccl": {
+            "name": "NVIDIA Collective Communications Library (NCCL)",
+            "license": "Apache-2.0 AND BSD-3-Clause",
+            "version": nccl_version,
+            "linux-sbsa": cuda_family["archives"]["linux-sbsa"],
+            "linux-x86_64": cuda_family["archives"]["linux-x86_64"],
+        },
+    }
 
 NCCL_VERSION_TO_TEMPLATE = {
     "any": "//nccl/build_defs:nccl.BUILD.bazel",

@@ -97,12 +97,6 @@ SMOKE_CRT_SHARED_SELECT = if_cuda_version(">=13", SMOKE_CRT_SHARED_DEPS)
 
 SMOKE_CRT_STATIC_SELECT = if_cuda_version(">=13", SMOKE_CRT_STATIC_DEPS)
 
-NCCL_COMPATIBILITY = select({
-    "@cuda//:is_cuda_12_9_1": [],
-    "@cuda//:is_cuda_13_3_1": [],
-    "//conditions:default": ["@platforms//:incompatible"],
-})
-
 cc_library(
     name = "smoke_deps",
     defines = SMOKE_BASE_DEFINES + SMOKE_CRT_DEFINE_SELECT,
@@ -163,11 +157,9 @@ cc_binary(
     ],
 )
 
-# NCCL 2.30.7 archives are available for CUDA 12.9 and 13.3.
 cc_binary(
     name = "nccl_smoke",
     srcs = ["nccl_smoke.cc"],
-    target_compatible_with = NCCL_COMPATIBILITY,
     deps = [
         ":smoke_test_common",
         "@cuda//nccl:nccl",
@@ -177,7 +169,8 @@ cc_binary(
 cc_binary(
     name = "nccl_static_smoke",
     srcs = ["nccl_smoke.cc"],
-    target_compatible_with = NCCL_COMPATIBILITY,
+    # static archives use libstdc++ abi.
+    tags = ["manual"],
     deps = [
         ":smoke_test_common",
         "@cuda//nccl:nccl_static",

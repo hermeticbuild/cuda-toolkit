@@ -118,6 +118,7 @@ def cuda_redist_repositories(
                 cuda_repo_name = cuda_repo_name,
                 default_package_metadata = default_package_metadata,
                 sha256 = archive_entry.get("sha256", ""),
+                strip_prefix = archive_entry.get("strip_prefix", ""),
                 url = cuda_redist_path_prefix + archive_entry["relative_path"],
             )
             generated_repos.append({
@@ -229,11 +230,11 @@ VERSION_PATCH = "{version_patch}"
 def _download_redistribution(rctx):
     # If url is not relative, then appending prefix is not needed.
     url = rctx.attr.url
-    archive_name = get_archive_name(url)
+    strip_prefix = rctx.attr.strip_prefix or get_archive_name(url)
     rctx.download_and_extract(
         url = url,
         sha256 = rctx.attr.sha256,
-        strip_prefix = archive_name,
+        strip_prefix = strip_prefix,
     )
 
 ## Redist component repository
@@ -267,6 +268,7 @@ cuda_component_repository = repository_rule(
         "cuda_repo_name": attr.string(mandatory = True),
         "default_package_metadata": attr.string_list(),
         "sha256": attr.string(),
+        "strip_prefix": attr.string(),
         "url": attr.string(mandatory = True),
     },
 )

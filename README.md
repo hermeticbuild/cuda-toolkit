@@ -19,7 +19,7 @@ Supported versions are defined in:
 - `cuda/cuda_redist_versions.json`
 - `cudnn/cudnn_redist_versions.json`
 - `nvshmem/nvshmem_redist_versions.json`
-- `nccl/redistrib_*.json` (NVIDIA does not publish redistrib manifests for NCCL, so they are hand-authored in this repository)
+- `nccl/nccl_redist_versions.bzl` (generated from NVIDIA's official NCCL archive index with `python3 nccl/update_redists.py`)
 
 ## Supported platforms
 
@@ -62,7 +62,8 @@ use_repo(cuda_ext, "cuda")
 - CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
 - `cuda_ext.configure(...)` can set the global proxy repository's `name` and optionally apply `default_package_metadata` to every generated repository through `REPO.bazel`.
 - cuDNN, NVSHMEM, and NCCL versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
-- NCCL archives are selected by CUDA major/minor version; unsupported NCCL/CUDA pairs fail during module extension evaluation.
+- The generated NCCL catalog includes every official release from 2.25.1 onward that publishes an archive for a registered CUDA minor version.
+- NCCL archives record their exact build CUDA version and an explicit list of compatible registered CUDA minor versions; unsupported NCCL/CUDA pairs fail during module extension evaluation.
 - CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - CUDA libraries backed by `*_shared_library` imports also expose `*_interface_library` imports and public

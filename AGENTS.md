@@ -134,7 +134,8 @@ Key files:
 - `cuda/cuda_redist_versions.json`: supported CUDA version pins
 - `cudnn/cudnn_redist_versions.json`: supported cuDNN version pins
 - `nvshmem/nvshmem_redist_versions.json`: supported NVSHMEM version pins
-- `nccl/redistrib_*.json`: hand-authored NCCL redist manifests (NVIDIA does not publish them)
+- `nccl/nccl_redist_versions.bzl`: generated NCCL archive metadata
+- `nccl/update_redists.py`: NCCL catalog updater and archive verifier
 - `cuda/cuda_redist_build_defs.bzl`: CUDA component registry and template selection
 - `cudnn/cudnn_redist_build_defs.bzl`: cuDNN component registry and template selection
 - `nvshmem/nvshmem_redist_build_defs.bzl`: NVSHMEM component registry and template selection
