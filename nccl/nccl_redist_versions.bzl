@@ -1,4 +1,4 @@
-"""Generated NCCL redistribution metadata. Regenerate with `python3 nccl/update_redists.py`."""
+"""Generated NCCL redistribution metadata. Regenerate with `bazel run //nccl:update_redists`."""
 
 NCCL_REDISTRIBUTIONS = {
     "2.25.1": {

@@ -284,10 +284,17 @@ def _starlark_value(value, indent=0):
 
 def _catalog_text(catalog):
     return """\
-\"\"\"Generated NCCL redistribution metadata. Regenerate with `python3 nccl/update_redists.py`.\"\"\"
+\"\"\"Generated NCCL redistribution metadata. Regenerate with `bazel run //nccl:update_redists`.\"\"\"
 
 NCCL_REDISTRIBUTIONS = {}
 """.format(_starlark_value(catalog))
+
+
+def _default_output():
+    workspace_directory = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
+    if workspace_directory:
+        return Path(workspace_directory) / "nccl" / "nccl_redist_versions.bzl"
+    return Path(__file__).with_name("nccl_redist_versions.bzl")
 
 
 def _write_catalog(path, catalog, check):
@@ -325,7 +332,7 @@ def _parse_args():
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(__file__).with_name("nccl_redist_versions.bzl"),
+        default=_default_output(),
     )
     parser.add_argument(
         "--refresh",

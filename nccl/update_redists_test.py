@@ -5,6 +5,7 @@ import functools
 import hashlib
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import io
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -71,8 +72,12 @@ class UpdateRedistsTest(unittest.TestCase):
             "w:gz",
         )
 
-        output = self._root / "catalog.bzl"
+        workspace = self._root / "workspace"
+        workspace.mkdir()
+        output = workspace / "nccl" / "nccl_redist_versions.bzl"
         cache = self._root / "cache.json"
+        environment = os.environ.copy()
+        environment["BUILD_WORKSPACE_DIRECTORY"] = str(workspace)
         command = [
             sys.executable,
             str(Path(__file__).with_name("update_redists.py")),
@@ -82,10 +87,8 @@ class UpdateRedistsTest(unittest.TestCase):
             str(cache),
             "--max-workers",
             "2",
-            "--output",
-            str(output),
         ]
-        subprocess.run(command, check=True, capture_output=True, text=True)
+        subprocess.run(command, check=True, capture_output=True, env=environment, text=True)
 
         catalog = output.read_text()
         self.assertIn('"2.25.1"', catalog)
@@ -95,7 +98,13 @@ class UpdateRedistsTest(unittest.TestCase):
         self.assertIn('"strip_prefix": "{}"'.format(new_prefix), catalog)
         self.assertIn(hashlib.sha256(old_x86.read_bytes()).hexdigest(), catalog)
 
-        subprocess.run(command + ["--check"], check=True, capture_output=True, text=True)
+        subprocess.run(
+            command + ["--check"],
+            check=True,
+            capture_output=True,
+            env=environment,
+            text=True,
+        )
 
 
 if __name__ == "__main__":

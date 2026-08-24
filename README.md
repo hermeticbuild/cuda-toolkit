@@ -19,7 +19,7 @@ Supported versions are defined in:
 - `cuda/cuda_redist_versions.json`
 - `cudnn/cudnn_redist_versions.json`
 - `nvshmem/nvshmem_redist_versions.json`
-- `nccl/nccl_redist_versions.bzl` (generated from NVIDIA's official NCCL archive index with `python3 nccl/update_redists.py`)
+- `nccl/nccl_redist_versions.bzl` (generated from NVIDIA's official NCCL archive index with `bazel run //nccl:update_redists`)
 
 ## Supported platforms
 

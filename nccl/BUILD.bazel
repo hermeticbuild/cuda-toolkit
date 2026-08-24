@@ -1,4 +1,6 @@
 load("@bazel_lib//:bzl_library.bzl", "bzl_library")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load(":nccl_redist_build_defs_test.bzl", "nccl_redist_build_defs_test_suite")
 
 bzl_library(
@@ -16,4 +18,15 @@ bzl_library(
 
 nccl_redist_build_defs_test_suite(
     name = "nccl_redist_build_defs_tests",
+)
+
+sh_binary(
+    name = "update_redists",
+    srcs = ["update_redists.py"],
+)
+
+sh_test(
+    name = "update_redists_test",
+    srcs = ["update_redists_test.py"],
+    data = ["update_redists.py"],
 )
