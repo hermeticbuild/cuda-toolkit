@@ -1,15 +1,23 @@
 """BUILD definitions for nccl package"""
 
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("@rules_cc//cc:cc_import.bzl", "cc_import")
-load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("//:version.bzl", "LIB_VERSIONS")
 
 cc_import(
     name = "nccl_shared_library",
     deps = [":headers"],
     shared_library = "lib/libnccl.so." + LIB_VERSIONS["libnccl"],
+    visibility = ["//visibility:public"],
+)
+
+cc_import(
+    name = "nccl_interface_library",
+    deps = [":headers"],
+    interface_library = "lib/libnccl.so",
+    system_provided = True,
     visibility = ["//visibility:public"],
 )
 
@@ -26,6 +34,12 @@ cc_library(
         ":headers",
         ":nccl_shared_library",
     ],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "nccl_system",
+    deps = [":nccl_interface_library"],
     visibility = ["//visibility:public"],
 )
 

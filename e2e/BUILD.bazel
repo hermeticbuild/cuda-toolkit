@@ -167,6 +167,15 @@ cc_binary(
 )
 
 cc_binary(
+    name = "nccl_system_smoke",
+    srcs = ["nccl_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//nccl:nccl_system",
+    ],
+)
+
+cc_binary(
     name = "nccl_static_smoke",
     srcs = ["nccl_smoke.cc"],
     # static archives use libstdc++ abi.

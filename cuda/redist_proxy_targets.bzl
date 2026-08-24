@@ -108,8 +108,10 @@ REPO_PUBLIC_TARGETS = {
     ],
     "cuda_nccl": [
         "nccl_shared_library",
+        "nccl_interface_library",
         "nccl_static_library",
         "nccl",
+        "nccl_system",
         "nccl_static",
         "header_list",
         "headers",
