@@ -177,6 +177,35 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "cusparselt_smoke",
+    srcs = ["cusparselt_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cusparselt:cusparselt",
+    ],
+)
+
+cc_binary(
+    name = "cusparselt_system_smoke",
+    srcs = ["cusparselt_smoke.cc"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cusparselt:cusparselt_system",
+    ],
+)
+
+cc_binary(
+    name = "cusparselt_static_smoke",
+    srcs = ["cusparselt_smoke.cc"],
+    # static archives use libstdc++ abi.
+    tags = ["manual"],
+    deps = [
+        ":smoke_test_common",
+        "@cuda//cusparselt:cusparselt_static",
+    ],
+)
+
 cc_library(
     name = "smoke_test_common",
     hdrs = ["smoke_test_common.h"],

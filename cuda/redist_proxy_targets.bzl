@@ -85,6 +85,17 @@ REPO_PUBLIC_TARGETS = {
     "cuda_curand": ["curand_shared_library", "curand_interface_library", "curand", "curand_system", "curand_static", "header_list", "headers", "shared_library_files"],
     "cuda_cusolver": ["cusolver_shared_library", "cusolver_interface_library", "cusolver", "cusolver_system", "cusolverMg_shared_library", "cusolverMg_interface_library", "cusolverMg", "cusolverMg_system", "cusolver_static", "cusolver_lapack_static", "cusolver_metis_static", "metis_static", "header_list", "headers", "shared_library_files"],
     "cuda_cusparse": ["cusparse_shared_library", "cusparse_interface_library", "cusparse", "cusparse_system", "cusparse_static", "header_list", "headers", "shared_library_files"],
+    "cuda_cusparselt": [
+        "cusparselt_shared_library",
+        "cusparselt_interface_library",
+        "cusparselt_static_library",
+        "cusparselt",
+        "cusparselt_system",
+        "cusparselt_static",
+        "header_list",
+        "headers",
+        "shared_library_files",
+    ],
     "cuda_driver": [
         "driver_shared_library",
         "driver_interface_library",
