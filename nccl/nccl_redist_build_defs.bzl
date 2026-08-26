@@ -58,6 +58,7 @@ NCCL_VERSION_TO_TEMPLATE = {
 NCCL_COMPONENTS_REGISTRY = {
     "libnccl": {
         "repo_name": "cuda_nccl",
+        "soname_libraries": ["libnccl"],
         "version_to_template": NCCL_VERSION_TO_TEMPLATE,
     },
 }

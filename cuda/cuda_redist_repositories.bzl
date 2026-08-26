@@ -2,8 +2,8 @@
 
 load(
     "//cuda:cuda_redist_build_defs.bzl",
-    "CUDA_REDIST_PATH_PREFIX",
     "COMPONENTS_REGISTRY",
+    "CUDA_REDIST_PATH_PREFIX",
 )
 load(
     "//cuda:redist_proxy_targets.bzl",
@@ -86,7 +86,7 @@ def cuda_redist_repositories(
         # A given redist may exist in a CUDA version but not in another.
         if component_redist_entry == None:
             # buildifier: disable=print
-            print("Component '{}' is missing from CUDA {} redist".format(component_name, cuda_version)) 
+            print("Component '{}' is missing from CUDA {} redist".format(component_name, cuda_version))
             continue
 
         component_version = component_redist_entry["version"]
@@ -96,13 +96,12 @@ def cuda_redist_repositories(
             repo_data["version_to_template"],
         )
         for platform, platform_spec in _PLATFORM_SPECS.items():
-
             platform_key = platform_spec["redist_platform_key"]
             archive_entry = _platform_archive_entry(component_redist_entry, platform_key, cuda_version_major)
             if not archive_entry:
                 # Component may not be available for that platform
                 # buildifier: disable=print
-                print("Component '{}' is missing for platform '{}' in CUDA {} redist".format(component_name, platform_key, cuda_version)) 
+                print("Component '{}' is missing for platform '{}' in CUDA {} redist".format(component_name, platform_key, cuda_version))
                 continue
 
             concrete_repo_name = _concrete_repo_name(
@@ -118,6 +117,10 @@ def cuda_redist_repositories(
                 cuda_repo_name = cuda_repo_name,
                 default_package_metadata = default_package_metadata,
                 sha256 = archive_entry.get("sha256", ""),
+                soname_libraries = repo_data.get("soname_libraries_by_version", {}).get(
+                    component_version.split(".")[0],
+                    repo_data.get("soname_libraries", []),
+                ),
                 strip_prefix = archive_entry.get("strip_prefix", ""),
                 url = cuda_redist_path_prefix + archive_entry["relative_path"],
             )
@@ -161,7 +164,7 @@ def get_archive_name(url):
             return filename[:-len(extension)]
     return filename
 
-def _update_lib_versions_from_dir(dir_path, lib_versions):
+def _update_lib_entries_from_dir(dir_path, lib_entries):
     if not dir_path.exists:
         return
 
@@ -177,29 +180,79 @@ def _update_lib_versions_from_dir(dir_path, lib_versions):
         if not version:
             continue
 
-        existing = lib_versions.get(lib_name, "")
-        if not existing:
-            lib_versions[lib_name] = version
-            continue
+        entries = lib_entries.get(lib_name)
+        if entries == None:
+            entries = []
+            lib_entries[lib_name] = entries
+        entries.append(struct(
+            is_symlink = lib_path.basename != lib_path.realpath.basename,
+            realpath = str(lib_path.realpath),
+            version = version,
+        ))
 
-        # Prefer the most specific soname suffix for a library
-        # (for example 12.9.1.4 over 12 or 1).
-        existing_parts = existing.split(".")
-        version_parts = version.split(".")
-        if len(version_parts) > len(existing_parts):
-            lib_versions[lib_name] = version
-        elif len(version_parts) == len(existing_parts) and len(version) > len(existing):
-            lib_versions[lib_name] = version
+def _is_more_specific_version(candidate, current):
+    candidate_parts = candidate.split(".")
+    current_parts = current.split(".")
+    if len(candidate_parts) != len(current_parts):
+        return len(candidate_parts) > len(current_parts)
+    if len(candidate) != len(current):
+        return len(candidate) > len(current)
+    return candidate > current
+
+def _is_less_specific_version(candidate, current):
+    candidate_parts = candidate.split(".")
+    current_parts = current.split(".")
+    if len(candidate_parts) != len(current_parts):
+        return len(candidate_parts) < len(current_parts)
+    if len(candidate) != len(current):
+        return len(candidate) < len(current)
+    return candidate < current
 
 def _get_lib_versions(repository_ctx):
+    lib_entries = {}
+    _update_lib_entries_from_dir(repository_ctx.path("lib"), lib_entries)
+    _update_lib_entries_from_dir(repository_ctx.path("compat"), lib_entries)
+
     lib_versions = {}
-    _update_lib_versions_from_dir(repository_ctx.path("lib"), lib_versions)
-    _update_lib_versions_from_dir(repository_ctx.path("compat"), lib_versions)
+    for lib_name, entries in lib_entries.items():
+        most_specific = entries[0]
+        for entry in entries:
+            if _is_more_specific_version(entry.version, most_specific.version):
+                most_specific = entry
 
-    return lib_versions
+        lib_versions[lib_name] = most_specific.version
 
-def _format_lib_versions_bzl(lib_versions):
-    lines = ["LIB_VERSIONS = {"]
+    lib_soname_versions = {}
+    for lib_name in repository_ctx.attr.soname_libraries:
+        entries = lib_entries.get(lib_name)
+        if not entries:
+            fail("Cannot determine SONAME for '{}': no versioned library files found".format(lib_name))
+
+        realpaths = {}
+        for entry in entries:
+            realpaths[entry.realpath] = True
+
+        # NVIDIA user-space redistributions encode the ELF DT_SONAME as the
+        # least-specific versioned symlink in a single library's symlink chain
+        # (for example libcudart.so.12 -> libcudart.so.12.9.79). Do not infer a
+        # SONAME from unrelated real files or a lone fully versioned file.
+        if len(realpaths) != 1:
+            fail("Cannot determine SONAME for '{}': versioned paths resolve to multiple files".format(lib_name))
+
+        soname = None
+        for entry in entries:
+            if not entry.is_symlink:
+                continue
+            if soname == None or _is_less_specific_version(entry.version, soname.version):
+                soname = entry
+        if soname == None:
+            fail("Cannot determine SONAME for '{}': no versioned symlink found".format(lib_name))
+        lib_soname_versions[lib_name] = soname.version
+
+    return lib_versions, lib_soname_versions
+
+def _format_lib_versions_bzl(name, lib_versions):
+    lines = [name + " = {"]
     for lib_name in sorted(lib_versions.keys()):
         lines.append('    "{name}": "{version}",'.format(
             name = lib_name,
@@ -208,7 +261,7 @@ def _format_lib_versions_bzl(lib_versions):
     lines.append("}")
     return "\n".join(lines)
 
-def _version_bzl_content(component_version, lib_versions = {}):
+def _version_bzl_content(component_version, lib_versions = {}, lib_soname_versions = {}):
     parts = component_version.split(".") if component_version else []
     version_major = parts[0] if len(parts) > 0 else ""
     version_minor = parts[1] if len(parts) > 1 else ""
@@ -219,12 +272,14 @@ VERSION_MAJOR = "{version_major}"
 VERSION_MINOR = "{version_minor}"
 VERSION_PATCH = "{version_patch}"
 {lib_versions}
+{lib_soname_versions}
 """.format(
         version = component_version,
         version_major = version_major,
         version_minor = version_minor,
         version_patch = version_patch,
-        lib_versions = _format_lib_versions_bzl(lib_versions),
+        lib_versions = _format_lib_versions_bzl("LIB_VERSIONS", lib_versions),
+        lib_soname_versions = _format_lib_versions_bzl("LIB_SONAME_VERSIONS", lib_soname_versions),
     )
 
 def _download_redistribution(rctx):
@@ -251,10 +306,10 @@ def _cuda_component_repository_impl(repository_ctx):
         {"{cuda_redist_repo}": repository_ctx.attr.cuda_repo_name},
     )
 
-    lib_versions = _get_lib_versions(repository_ctx)
+    lib_versions, lib_soname_versions = _get_lib_versions(repository_ctx)
     repository_ctx.file(
         "version.bzl",
-        _version_bzl_content(component_version, lib_versions),
+        _version_bzl_content(component_version, lib_versions, lib_soname_versions),
     )
 
     return repository_ctx.repo_metadata(reproducible = True)
@@ -268,6 +323,7 @@ cuda_component_repository = repository_rule(
         "cuda_repo_name": attr.string(mandatory = True),
         "default_package_metadata": attr.string_list(),
         "sha256": attr.string(),
+        "soname_libraries": attr.string_list(),
         "strip_prefix": attr.string(),
         "url": attr.string(mandatory = True),
     },

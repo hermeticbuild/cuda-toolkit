@@ -9,6 +9,7 @@ NVSHMEM_VERSION_TO_TEMPLATE = {
 NVSHMEM_COMPONENTS_REGISTRY = {
     "libnvshmem": {
         "repo_name": "cuda_nvshmem",
+        "soname_libraries": ["libnvshmem_host"],
         "version_to_template": NVSHMEM_VERSION_TO_TEMPLATE,
     },
 }

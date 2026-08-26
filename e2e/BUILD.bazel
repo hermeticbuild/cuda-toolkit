@@ -1,5 +1,6 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@cuda//cuda:selects.bzl", "if_cuda_version")
 
 package(default_visibility = ["//visibility:public"])
@@ -23,6 +24,18 @@ SMOKE_CUDA_VERSIONS = [
         constraint_values = [
             "@platforms//os:linux",
             "@platforms//cpu:x86_64",
+            "@cuda//:cuda_{}".format(version.replace(".", "_")),
+        ],
+    )
+    for version in SMOKE_CUDA_VERSIONS
+]
+
+[
+    platform(
+        name = "platform_linux_arm64_cuda_{}".format(version.replace(".", "_")),
+        constraint_values = [
+            "@platforms//os:linux",
+            "@platforms//cpu:arm64",
             "@cuda//:cuda_{}".format(version.replace(".", "_")),
         ],
     )
@@ -69,6 +82,41 @@ SMOKE_BASE_SHARED_DEPS = [
     "@cuda//profiler_api:headers",
 ]
 
+# Shared redistribution libraries that can be loaded without a GPU driver.
+# --no-as-needed keeps every direct DSO in DT_NEEDED so executing this test
+# validates that Bazel stages each library at its SONAME.
+SMOKE_RUNTIME_DEFINES = [
+    define
+    for define in SMOKE_BASE_DEFINES
+    if define not in [
+        "CUDA_SMOKE_HAVE_DRIVER_API=1",
+        "CUDA_SMOKE_HAVE_NVML=1",
+    ]
+] + [
+    "CUDA_SMOKE_HAVE_CUDNN=1",
+    "CUDA_SMOKE_HAVE_NCCL=1",
+    "CUDA_SMOKE_HAVE_NVSHMEM=1",
+]
+
+SMOKE_RUNTIME_SHARED_DEPS = [
+    dep
+    for dep in SMOKE_BASE_SHARED_DEPS
+    if dep not in [
+        "@cuda//cudart:cuda_driver",
+        "@cuda//nvml:nvidia-ml_stub",
+    ]
+] + [
+    "@cuda//cublas:nvblas_shared_library",
+    "@cuda//cudnn:cudnn",
+    "@cuda//cufft:cufftw_shared_library",
+    "@cuda//cusolver:cusolverMg_shared_library",
+    "@cuda//nccl:nccl_shared_library",
+    "@cuda//nvfatbin:nvfatbin_shared_library",
+    "@cuda//nvml:headers",
+    "@cuda//nvrtc:nvrtc_builtins_shared_library",
+    "@cuda//nvshmem:nvshmem_host_shared_library",
+]
+
 SMOKE_BASE_STATIC_DEPS = [
     "@cuda//cccl:headers",
     "@cuda//cublas:cublas_static",
@@ -111,6 +159,14 @@ cc_binary(
     name = "smoke",
     srcs = ["main.cc"],
     deps = [":smoke_deps"],
+)
+
+cc_test(
+    name = "shared_runtime_smoke_test",
+    srcs = ["main.cc"],
+    defines = SMOKE_RUNTIME_DEFINES,
+    linkopts = ["-Wl,--no-as-needed"],
+    deps = SMOKE_RUNTIME_SHARED_DEPS,
 )
 
 cc_library(

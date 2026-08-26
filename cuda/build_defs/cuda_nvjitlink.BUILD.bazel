@@ -9,12 +9,12 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_lower_than")
-load("//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS")
 
 cc_import(
     name = "nvjitlink_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libnvJitLink.so." + LIB_VERSIONS["libnvjitlink"],
+    shared_library = "lib/libnvJitLink.so." + LIB_SONAME_VERSIONS["libnvjitlink"],
     visibility = ["//visibility:public"],
 )
 

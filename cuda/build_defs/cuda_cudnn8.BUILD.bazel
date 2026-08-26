@@ -9,48 +9,48 @@ load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_tha
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
-load("//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_SONAME_VERSIONS")
 
 cc_import(
     name = "cudnn_ops_infer",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_ops_infer.so." + LIB_VERSIONS["libcudnn_ops_infer"],
+    shared_library = "lib/libcudnn_ops_infer.so." + LIB_SONAME_VERSIONS["libcudnn_ops_infer"],
 )
 
 cc_import(
     name = "cudnn_cnn_infer",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_cnn_infer.so." + LIB_VERSIONS["libcudnn_cnn_infer"],
+    shared_library = "lib/libcudnn_cnn_infer.so." + LIB_SONAME_VERSIONS["libcudnn_cnn_infer"],
 )
 
 cc_import(
     name = "cudnn_ops_train",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_ops_train.so." + LIB_VERSIONS["libcudnn_ops_train"],
+    shared_library = "lib/libcudnn_ops_train.so." + LIB_SONAME_VERSIONS["libcudnn_ops_train"],
 )
 
 cc_import(
     name = "cudnn_cnn_train",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_cnn_train.so." + LIB_VERSIONS["libcudnn_cnn_train"],
+    shared_library = "lib/libcudnn_cnn_train.so." + LIB_SONAME_VERSIONS["libcudnn_cnn_train"],
 )
 
 cc_import(
     name = "cudnn_adv_infer",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_adv_infer.so." + LIB_VERSIONS["libcudnn_adv_infer"],
+    shared_library = "lib/libcudnn_adv_infer.so." + LIB_SONAME_VERSIONS["libcudnn_adv_infer"],
 )
 
 cc_import(
     name = "cudnn_adv_train",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_adv_train.so." + LIB_VERSIONS["libcudnn_adv_train"],
+    shared_library = "lib/libcudnn_adv_train.so." + LIB_SONAME_VERSIONS["libcudnn_adv_train"],
 )
 
 cc_import(
     name = "cudnn_main",
     deps = [":headers"],
-    shared_library = "lib/libcudnn.so." + LIB_VERSIONS["libcudnn"],
+    shared_library = "lib/libcudnn.so." + LIB_SONAME_VERSIONS["libcudnn"],
 )
 
 cc_import(

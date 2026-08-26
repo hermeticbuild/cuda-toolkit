@@ -9,54 +9,62 @@ load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_tha
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
-load("//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_SONAME_VERSIONS")
 
 cc_import(
     name = "cudnn_ops",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_ops.so." + LIB_VERSIONS["libcudnn_ops"],
+    shared_library = "lib/libcudnn_ops.so." + LIB_SONAME_VERSIONS["libcudnn_ops"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cudnn_cnn",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_cnn.so." + LIB_VERSIONS["libcudnn_cnn"],
+    shared_library = "lib/libcudnn_cnn.so." + LIB_SONAME_VERSIONS["libcudnn_cnn"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cudnn_adv",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_adv.so." + LIB_VERSIONS["libcudnn_adv"],
+    shared_library = "lib/libcudnn_adv.so." + LIB_SONAME_VERSIONS["libcudnn_adv"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cudnn_graph",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_graph.so." + LIB_VERSIONS["libcudnn_graph"],
+    shared_library = "lib/libcudnn_graph.so." + LIB_SONAME_VERSIONS["libcudnn_graph"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cudnn_engines_precompiled",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_engines_precompiled.so." + LIB_VERSIONS["libcudnn_engines_precompiled"],
+    shared_library = "lib/libcudnn_engines_precompiled.so." + LIB_SONAME_VERSIONS["libcudnn_engines_precompiled"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cudnn_engines_runtime_compiled",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_engines_runtime_compiled.so." + LIB_VERSIONS["libcudnn_engines_runtime_compiled"],
+    shared_library = "lib/libcudnn_engines_runtime_compiled.so." + LIB_SONAME_VERSIONS["libcudnn_engines_runtime_compiled"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cudnn_heuristic",
     deps = [":headers"],
-    shared_library = "lib/libcudnn_heuristic.so." + LIB_VERSIONS["libcudnn_heuristic"],
+    shared_library = "lib/libcudnn_heuristic.so." + LIB_SONAME_VERSIONS["libcudnn_heuristic"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cudnn_main",
     deps = [":headers"],
-    shared_library = "lib/libcudnn.so." + LIB_VERSIONS["libcudnn"],
+    shared_library = "lib/libcudnn.so." + LIB_SONAME_VERSIONS["libcudnn"],
+    visibility = ["//visibility:public"],
 )
 
 cc_import(
