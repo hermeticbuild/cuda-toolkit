@@ -7,12 +7,12 @@
 
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
-load("//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS")
 
 cc_import(
     name = "nvfatbin_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libnvfatbin.so." + LIB_VERSIONS["libnvfatbin"],
+    shared_library = "lib/libnvfatbin.so." + LIB_SONAME_VERSIONS["libnvfatbin"],
     visibility = ["//visibility:public"],
 )
 

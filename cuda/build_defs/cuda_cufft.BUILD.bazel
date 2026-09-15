@@ -9,7 +9,7 @@ load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_tha
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
-load("//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS")
 
 # Keep concrete paths explicit; reserve glob only for real patterns.
 _HEADER_FILES = [
@@ -22,7 +22,7 @@ _HEADER_GLOBS = [
 cc_import(
     name = "cufft_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libcufft.so." + LIB_VERSIONS["libcufft"],
+    shared_library = "lib/libcufft.so." + LIB_SONAME_VERSIONS["libcufft"],
     visibility = ["//visibility:public"],
 )
 
@@ -72,7 +72,7 @@ cc_import(
 cc_import(
     name = "cufftw_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libcufftw.so." + LIB_VERSIONS["libcufftw"],
+    shared_library = "lib/libcufftw.so." + LIB_SONAME_VERSIONS["libcufftw"],
     visibility = ["//visibility:public"],
 )
 

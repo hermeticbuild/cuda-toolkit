@@ -9,11 +9,11 @@ load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
 load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_than")
-load("//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS")
 
 cc_import(
     name = "cublas_shared_library",
-    shared_library = "lib/libcublas.so." + LIB_VERSIONS["libcublas"],
+    shared_library = "lib/libcublas.so." + LIB_SONAME_VERSIONS["libcublas"],
     deps = [":headers"],
     visibility = ["//visibility:public"],
 )
@@ -29,7 +29,7 @@ cc_import(
 cc_import(
     name = "cublasLt_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libcublasLt.so." + LIB_VERSIONS["libcublaslt"],
+    shared_library = "lib/libcublasLt.so." + LIB_SONAME_VERSIONS["libcublaslt"],
     visibility = ["//visibility:public"],
 )
 
@@ -96,7 +96,7 @@ cc_library(
 cc_import(
     name = "nvblas_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libnvblas.so." + LIB_VERSIONS["libnvblas"],
+    shared_library = "lib/libnvblas.so." + LIB_SONAME_VERSIONS["libnvblas"],
     visibility = ["//visibility:public"],
 )
 

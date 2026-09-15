@@ -9,19 +9,19 @@ load("@cuda_toolkit//cuda:versions_helper.bzl", "if_version_equal_or_greater_tha
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
-load("//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS")
 
 cc_import(
     name = "nvrtc_main",
     deps = [":headers"],
-    shared_library = "lib/libnvrtc.so." + LIB_VERSIONS["libnvrtc"],
+    shared_library = "lib/libnvrtc.so." + LIB_SONAME_VERSIONS["libnvrtc"],
     visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "nvrtc_builtins_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libnvrtc-builtins.so." + LIB_VERSIONS["libnvrtc-builtins"],
+    shared_library = "lib/libnvrtc-builtins.so." + LIB_SONAME_VERSIONS["libnvrtc-builtins"],
     visibility = ["//visibility:public"],
 )
 

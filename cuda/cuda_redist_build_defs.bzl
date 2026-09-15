@@ -23,6 +23,7 @@ COMPONENTS_REGISTRY = {
     },
     "libcublas": {
         "repo_name": "cuda_cublas",
+        "soname_libraries": ["libcublas", "libcublaslt", "libnvblas"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_cublas.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_cublas.BUILD.bazel",
@@ -31,6 +32,7 @@ COMPONENTS_REGISTRY = {
     },
     "cuda_cudart": {
         "repo_name": "cuda_cudart",
+        "soname_libraries": ["libcudart"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_cudart.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_cudart.BUILD.bazel",
@@ -45,6 +47,7 @@ COMPONENTS_REGISTRY = {
     },
     "libcufft": {
         "repo_name": "cuda_cufft",
+        "soname_libraries": ["libcufft", "libcufftw"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_cufft.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_cufft.BUILD.bazel",
@@ -60,6 +63,7 @@ COMPONENTS_REGISTRY = {
     },
     "cuda_cupti": {
         "repo_name": "cuda_cupti",
+        "soname_libraries": ["libcupti"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_cupti.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_cupti.BUILD.bazel",
@@ -68,12 +72,14 @@ COMPONENTS_REGISTRY = {
     },
     "libcurand": {
         "repo_name": "cuda_curand",
+        "soname_libraries": ["libcurand"],
         "version_to_template": {
             "10": "//cuda/build_defs:cuda_curand.BUILD.bazel",
         },
     },
     "libcusolver": {
         "repo_name": "cuda_cusolver",
+        "soname_libraries": ["libcusolver", "libcusolvermg"],
         "version_to_template": {
             "12": "//cuda/build_defs:cuda_cusolver.BUILD.bazel",
             "11": "//cuda/build_defs:cuda_cusolver.BUILD.bazel",
@@ -81,6 +87,7 @@ COMPONENTS_REGISTRY = {
     },
     "libcusparse": {
         "repo_name": "cuda_cusparse",
+        "soname_libraries": ["libcusparse"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_cusparse.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_cusparse.BUILD.bazel",
@@ -89,6 +96,7 @@ COMPONENTS_REGISTRY = {
     },
     "libnvjitlink": {
         "repo_name": "cuda_nvjitlink",
+        "soname_libraries": ["libnvjitlink"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_nvjitlink.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_nvjitlink.BUILD.bazel",
@@ -96,6 +104,7 @@ COMPONENTS_REGISTRY = {
     },
     "libnvfatbin": {
         "repo_name": "cuda_nvfatbin",
+        "soname_libraries": ["libnvfatbin"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_nvfatbin.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_nvfatbin.BUILD.bazel",
@@ -109,6 +118,7 @@ COMPONENTS_REGISTRY = {
     },
     "cuda_nvrtc": {
         "repo_name": "cuda_nvrtc",
+        "soname_libraries": ["libnvrtc", "libnvrtc-builtins"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_nvrtc.BUILD.bazel",
             "12": "//cuda/build_defs:cuda_nvrtc.BUILD.bazel",
