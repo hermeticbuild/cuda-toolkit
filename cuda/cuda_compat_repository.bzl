@@ -4,6 +4,12 @@ load("//cuda:redist_proxy_targets.bzl", "REPO_PUBLIC_TARGETS")
 load("//cuda:repository_metadata.bzl", "write_repo_bazel")
 load("//cuda:versions_helper.bzl", "max_version", "sort_versions")
 
+_LIBRARY_MODES = [
+    "shared",
+    "static",
+    "system",
+]
+
 def _sanitize_version(version):
     return version.replace(".", "_").replace("-", "_")
 
@@ -22,7 +28,7 @@ def _render_selects_bzl(cuda_versions):
         "CUDA_VERSIONS = [",
     ]
 
-    # We only generate this based on the registered versions to minimize the number 
+    # We only generate this based on the registered versions to minimize the number
     # of targets that will be created by _if_cuda_version.
     for version in ordered_cuda_versions:
         lines.append("    \"{}\",".format(version))
@@ -42,6 +48,94 @@ def _render_selects_bzl(cuda_versions):
 
     return "\n".join(lines)
 
+def _render_version_alias(
+        lines,
+        name,
+        package_name,
+        target_name,
+        ordered_versions,
+        version_to_redist_repo_name,
+        visibility = None):
+    lines.extend([
+        "alias(",
+        "    name = \"{}\",".format(name),
+        "    actual = select({",
+    ])
+
+    for version in ordered_versions:
+        lines.append(
+            "        \"//:is_cuda_{version}\": \"@{repo}//{package}:{target}\",".format(
+                version = _sanitize_version(version),
+                repo = version_to_redist_repo_name[version],
+                package = package_name,
+                target = target_name,
+            ),
+        )
+
+    # If users do not select a CUDA constraint, use the highest registered version.
+    selected_max_version = max_version(ordered_versions)
+    lines.append("        \"//conditions:default\": \"@{repo}//{package}:{target}\",".format(
+        repo = version_to_redist_repo_name[selected_max_version],
+        package = package_name,
+        target = target_name,
+    ))
+    lines.append("    }),")
+    if visibility:
+        lines.append("    visibility = [\"{}\"],".format(visibility))
+    lines.extend([
+        ")",
+        "",
+    ])
+
+def _library_mode_targets(target_name, target_names):
+    mode_targets = {
+        "shared": target_name,
+        "static": target_name + "_static",
+        "system": target_name + "_system",
+    }
+    if all([mode_target in target_names for mode_target in mode_targets.values()]):
+        return mode_targets
+    return None
+
+def _render_library_mode_alias(
+        lines,
+        target_name,
+        mode_targets,
+        package_name,
+        ordered_versions,
+        version_to_redist_repo_name):
+    mode_aliases = {}
+    for mode in _LIBRARY_MODES:
+        mode_alias = "_{}_{}".format(target_name, mode)
+        mode_aliases[mode] = mode_alias
+        _render_version_alias(
+            lines = lines,
+            name = mode_alias,
+            ordered_versions = ordered_versions,
+            package_name = package_name,
+            target_name = mode_targets[mode],
+            version_to_redist_repo_name = version_to_redist_repo_name,
+            visibility = "//visibility:private",
+        )
+
+    lines.extend([
+        "alias(",
+        "    name = \"{}\",".format(target_name),
+        "    actual = select({",
+    ])
+    for mode in _LIBRARY_MODES:
+        lines.append(
+            "        \"//:library_mode_{mode}\": \":{alias}\",".format(
+                alias = mode_aliases[mode],
+                mode = mode,
+            ),
+        )
+    lines.extend([
+        "    }),",
+        ")",
+        "",
+    ])
+
 def _render_component_alias_build_file(package_name, target_names, version_to_redist_repo_name):
     ordered_versions = sort_versions(version_to_redist_repo_name.keys())
     lines = [
@@ -50,46 +144,52 @@ def _render_component_alias_build_file(package_name, target_names, version_to_re
     ]
 
     for target_name in target_names:
-        lines.extend([
-            "alias(",
-            "    name = \"{}\",".format(target_name),
-            "    actual = select({",
-        ])
-
-        for version in ordered_versions:
-            lines.append(
-                "        \"//:is_cuda_{version}\": \"@{repo}//{package}:{target}\",".format(
-                    version = _sanitize_version(version),
-                    repo = version_to_redist_repo_name[version],
-                    package = package_name,
-                    target = target_name,
-                ),
+        mode_targets = _library_mode_targets(target_name, target_names)
+        if mode_targets:
+            _render_library_mode_alias(
+                lines = lines,
+                target_name = target_name,
+                mode_targets = mode_targets,
+                package_name = package_name,
+                ordered_versions = ordered_versions,
+                version_to_redist_repo_name = version_to_redist_repo_name,
             )
-
-        # add //conditions:default to max version
-        # So that if users don't set a constraint, they get max version by default.
-        selected_max_version = max_version(ordered_versions)
-        lines.append("        \"//conditions:default\": \"@{repo}//{package}:{target}\",".format(
-            repo = version_to_redist_repo_name[selected_max_version],
-            package = package_name,
-            target = target_name,
-        ))
-        lines.extend([
-            "    }),",
-            ")",
-            "",
-        ])
+        else:
+            _render_version_alias(
+                lines = lines,
+                name = target_name,
+                ordered_versions = ordered_versions,
+                package_name = package_name,
+                target_name = target_name,
+                version_to_redist_repo_name = version_to_redist_repo_name,
+            )
 
     return "\n".join(lines)
 
 def _render_root_constraints_build(available_cuda_versions, registered_cuda_versions):
-    return "\n".join([
+    lines = [
+        "load(\"@bazel_skylib//rules:common_settings.bzl\", \"string_flag\")",
         "load(\"@cuda_toolkit//cuda:declare_constraints.bzl\", \"declare_constraints\")",
         "",
         "package(default_visibility = [\"//visibility:public\"])",
         "",
-        "declare_constraints(" + repr(available_cuda_versions) + ", " + repr(registered_cuda_versions) + ")",
-    ])
+        "string_flag(",
+        "    name = \"library_mode\",",
+        "    build_setting_default = \"shared\",",
+        "    values = [\"shared\", \"static\", \"system\"],",
+        ")",
+        "",
+    ]
+    for mode in _LIBRARY_MODES:
+        lines.extend([
+            "config_setting(",
+            "    name = \"library_mode_{}\",".format(mode),
+            "    flag_values = {{\":library_mode\": \"{}\"}},".format(mode),
+            ")",
+            "",
+        ])
+    lines.append("declare_constraints(" + repr(available_cuda_versions) + ", " + repr(registered_cuda_versions) + ")")
+    return "\n".join(lines)
 
 def _cuda_compat_repository_impl(repository_ctx):
     write_repo_bazel(repository_ctx)

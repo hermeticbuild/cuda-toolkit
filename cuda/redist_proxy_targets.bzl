@@ -45,7 +45,7 @@ REPO_PUBLIC_TARGETS = {
     ],
     "cuda_crt": ["header_list", "headers"],
     "cuda_cublas": ["cublas_shared_library", "cublas_interface_library", "cublasLt_shared_library", "cublasLt_interface_library", "cublas", "cublas_system", "cublasLt", "cublasLt_system", "cublas_static", "cublasLt_static", "nvblas_shared_library", "nvblas_interface_library", "nvblas", "nvblas_system", "header_list", "headers", "shared_library_files"],
-    "cuda_cudart": ["static", "cudadevrt_static", "cuda_stub", "cudart_shared_library", "cudart_interface_library", "cuda_driver", "cudart", "cudart_system", "header_list", "headers", "cuda_header", "cuda", "shared_library_files"],
+    "cuda_cudart": ["static", "cudadevrt_static", "cuda_stub", "cudart_shared_library", "cudart_interface_library", "cuda_driver", "cudart", "cudart_static", "cudart_system", "header_list", "headers", "cuda_header", "cuda", "shared_library_files"],
     "cuda_cudnn": [
         "cudnn_ops_infer",
         "cudnn_cnn_infer",
