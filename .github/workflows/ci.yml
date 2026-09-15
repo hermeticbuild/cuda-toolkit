@@ -36,6 +36,6 @@ jobs:
       - name: Test shared library runtime staging (${{ matrix.cuda_version }})
         working-directory: e2e
         run: bazel test //:shared_runtime_smoke_test --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}
-      - name: Bazel analyze static cuDNN smoke (${{ matrix.cuda_version }})
+      - name: Bazel analyze static smoke targets (${{ matrix.cuda_version }})
         working-directory: e2e
-        run: bazel build //:cudnn_static_smoke --nobuild --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}
+        run: bazel build //:cudnn_static_smoke //:cufile_static_smoke --nobuild --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}
