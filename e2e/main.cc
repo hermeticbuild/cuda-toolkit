@@ -20,6 +20,10 @@
 #include <cuda_runtime_api.h>
 #endif
 
+#if defined(CUDA_SMOKE_HAVE_CUDNN)
+#include <cudnn.h>
+#endif
+
 #if defined(CUDA_SMOKE_HAVE_CUFFT)
 #include <cufft.h>
 #endif
@@ -40,20 +44,28 @@
 #include <cusparse.h>
 #endif
 
+#if defined(CUDA_SMOKE_HAVE_NCCL)
+#include <nccl.h>
+#endif
+
+#if defined(CUDA_SMOKE_HAVE_NVSHMEM)
+#include <nvshmem.h>
+#endif
+
 namespace {
 
-template <typename T>
-void Use(T value) {
-  (void)value;
+template <typename T> void Use(T value) {
+  // Keep a relocation to every referenced DSO even under --as-needed so the
+  // runtime smoke test exercises each library's staged SONAME.
+  static volatile T sink;
+  sink = value;
 }
 
 #if defined(CUDA_SMOKE_HAVE_CUDA_CRT)
-__host__ __device__ int CudaCrtSmoke(int value) {
-  return value;
-}
+__host__ __device__ int CudaCrtSmoke(int value) { return value; }
 #endif
 
-}  // namespace
+} // namespace
 
 int main() {
 #if defined(CUDA_SMOKE_HAVE_NVJITLINK)
@@ -77,6 +89,10 @@ int main() {
 
 #if defined(CUDA_SMOKE_HAVE_CUDART)
   Use(&cudaGetDeviceCount);
+#endif
+
+#if defined(CUDA_SMOKE_HAVE_CUDNN)
+  Use(&cudnnGetVersion);
 #endif
 
 #if defined(CUDA_SMOKE_HAVE_PROFILER_API)
@@ -107,6 +123,14 @@ int main() {
 
 #if defined(CUDA_SMOKE_HAVE_CUSPARSE)
   Use(&cusparseCreate);
+#endif
+
+#if defined(CUDA_SMOKE_HAVE_NCCL)
+  Use(&ncclGetVersion);
+#endif
+
+#if defined(CUDA_SMOKE_HAVE_NVSHMEM)
+  Use(&nvshmem_my_pe);
 #endif
 
 #if defined(CUDA_SMOKE_HAVE_CUDA_CRT)

@@ -7,12 +7,12 @@
 
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
-load("//:version.bzl", "LIB_VERSIONS")
+load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS")
 
 cc_import(
     name = "curand_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libcurand.so." + LIB_VERSIONS["libcurand"],
+    shared_library = "lib/libcurand.so." + LIB_SONAME_VERSIONS["libcurand"],
     visibility = ["//visibility:public"],
 )
 

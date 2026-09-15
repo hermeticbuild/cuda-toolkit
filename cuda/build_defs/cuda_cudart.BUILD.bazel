@@ -13,7 +13,7 @@ load(
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
-load("//:version.bzl", "LIB_VERSIONS", "VERSION")
+load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS", "VERSION")
 
 filegroup(
     name = "cuda_header",
@@ -129,7 +129,7 @@ cc_import(
 cc_import(
     name = "cudart_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
+    shared_library = "lib/libcudart.so." + LIB_SONAME_VERSIONS["libcudart"],
     visibility = ["//visibility:public"],
 )
 
