@@ -57,6 +57,7 @@ COMPONENTS_REGISTRY = {
     },
     "libcufile": {
         "repo_name": "cuda_cufile",
+        "soname_libraries": ["libcufile"],
         "version_to_template": {
             "1": "//cuda/build_defs:cuda_cufile.BUILD.bazel",
         },

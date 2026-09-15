@@ -24,6 +24,10 @@
 #include <cudnn.h>
 #endif
 
+#if defined(CUDA_SMOKE_HAVE_CUFILE)
+#include <cufile.h>
+#endif
+
 #if defined(CUDA_SMOKE_HAVE_CUFFT)
 #include <cufft.h>
 #endif
@@ -93,6 +97,10 @@ int main() {
 
 #if defined(CUDA_SMOKE_HAVE_CUDNN)
   Use(&cudnnGetVersion);
+#endif
+
+#if defined(CUDA_SMOKE_HAVE_CUFILE)
+  Use(&cuFileGetVersion);
 #endif
 
 #if defined(CUDA_SMOKE_HAVE_PROFILER_API)
