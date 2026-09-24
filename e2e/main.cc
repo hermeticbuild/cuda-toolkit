@@ -52,6 +52,10 @@
 #include <nccl.h>
 #endif
 
+#if defined(CUDA_SMOKE_HAVE_NVJPEG)
+#include <nvjpeg.h>
+#endif
+
 #if defined(CUDA_SMOKE_HAVE_NVSHMEM)
 #include <nvshmem.h>
 #endif
@@ -135,6 +139,10 @@ int main() {
 
 #if defined(CUDA_SMOKE_HAVE_NCCL)
   Use(&ncclGetVersion);
+#endif
+
+#if defined(CUDA_SMOKE_HAVE_NVJPEG)
+  Use(&nvjpegGetProperty);
 #endif
 
 #if defined(CUDA_SMOKE_HAVE_NVSHMEM)

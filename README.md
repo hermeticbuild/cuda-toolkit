@@ -59,6 +59,10 @@ use_repo(cuda_ext, "cuda")
 
 ## Notes
 
+- nvJPEG is available through `@cuda//nvjpeg:nvjpeg`, `:nvjpeg_static`, and `:nvjpeg_system`,
+  with `:headers` and `:shared_library_files` for header-only and runtime packaging consumers.
+  The shared import uses the redistribution's SONAME symlink so Bazel stages the library
+  under the name required by the runtime loader.
 - CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
 - `cuda_ext.configure(...)` can set the global proxy repository's `name` and optionally apply `default_package_metadata` to every generated repository through `REPO.bazel`.
 - cuDNN, NVSHMEM, and NCCL versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.

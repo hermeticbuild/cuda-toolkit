@@ -120,6 +120,7 @@ REPO_PUBLIC_TARGETS = {
     "cuda_nvdisasm": ["nvdisasm"],
     "cuda_nvfatbin": ["nvfatbin_shared_library", "nvfatbin_static_library", "nvfatbin", "nvfatbin_static", "header_list", "headers", "shared_library_files"],
     "cuda_nvjitlink": ["nvjitlink_shared_library", "nvjitlink_interface_library", "nvjitlink", "nvjitlink_system", "nvjitlink_static", "header_list", "headers", "shared_library_files"],
+    "cuda_nvjpeg": ["nvjpeg_shared_library", "nvjpeg_interface_library", "nvjpeg_static_library", "nvjpeg", "nvjpeg_system", "nvjpeg_static", "header_list", "headers", "shared_library_files"],
     "cuda_nvml": ["header_list", "headers", "nvidia-ml_stub", "nvidia_ml_static_stub", "nvml"],
     "cuda_nvptxcompiler": ["header_list", "headers", "nvptxcompiler_static", "nvptxcompiler"],
     "cuda_nvprune": ["nvprune"],
