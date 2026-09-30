@@ -19,6 +19,7 @@ Supported versions are defined in:
 - `cuda/cuda_redist_versions.json`
 - `cudnn/cudnn_redist_versions.json`
 - `nvshmem/nvshmem_redist_versions.json`
+- `cusparselt/cusparselt_redist_versions.json`
 - `nccl/nccl_redist_versions.json` (generated from NVIDIA's official NCCL archive index with `bazel run //tools/nccl:update_redists`)
 
 ## Supported platforms
@@ -52,6 +53,7 @@ cuda_ext.redist(
     cudnn_version = "8.9.7",
     nvshmem_version = "3.3.24",
     nccl_version = "2.30.7",
+    cusparselt_version = "0.8.1",
 )
 
 use_repo(cuda_ext, "cuda")
@@ -61,9 +63,10 @@ use_repo(cuda_ext, "cuda")
 
 - CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
 - `cuda_ext.configure(...)` can set the global proxy repository's `name` and optionally apply `default_package_metadata` to every generated repository through `REPO.bazel`.
-- cuDNN, NVSHMEM, and NCCL versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
+- cuDNN, NVSHMEM, NCCL, and cuSPARSELt versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
 - The generated NCCL catalog includes every official release from 2.25.1 onward that publishes an archive for a registered CUDA minor version.
 - NCCL archives record their exact build CUDA version and an explicit list of compatible registered CUDA minor versions; unsupported NCCL/CUDA pairs fail during module extension evaluation.
+- cuSPARSELt manifests from 0.8.0 onward publish one archive per CUDA major (`cuda_variant`); the archive matching the registered CUDA major is selected, and requesting a cuSPARSELt version with no archive for the registered CUDA major fails during module extension evaluation.
 - CUDA packages under `@cuda//<components>` are platform-resolving proxies. The selected concrete redistribution
   is chosen from the current Bazel configuration platform (including exec config).
 - CUDA libraries backed by `*_shared_library` imports also expose `*_interface_library` imports and public

@@ -10,6 +10,11 @@ load(
     "CUDNN_REDIST_PATH_PREFIX",
 )
 load(
+    "//cusparselt:cusparselt_redist_build_defs.bzl",
+    "CUSPARSELT_COMPONENTS_REGISTRY",
+    "CUSPARSELT_REDIST_PATH_PREFIX",
+)
+load(
     "//nccl:nccl_redist_build_defs.bzl",
     "NCCL_COMPONENTS_REGISTRY",
     "NCCL_REDIST_PATH_PREFIX",
@@ -23,6 +28,7 @@ load(
 
 _CUDA_REDIST_VERSIONS_JSON = Label("//cuda:cuda_redist_versions.json")
 _CUDNN_REDIST_VERSIONS_JSON = Label("//cudnn:cudnn_redist_versions.json")
+_CUSPARSELT_REDIST_VERSIONS_JSON = Label("//cusparselt:cusparselt_redist_versions.json")
 _NCCL_REDIST_VERSIONS_JSON = Label("//nccl:nccl_redist_versions.json")
 _NVSHMEM_REDIST_VERSIONS_JSON = Label("//nvshmem:nvshmem_redist_versions.json")
 
@@ -98,6 +104,7 @@ def _read_downloaded_json(mctx, pending_download):
 def _cuda_impl(mctx):
     cuda_version_map = json.decode(mctx.read(_CUDA_REDIST_VERSIONS_JSON))
     cudnn_version_map = json.decode(mctx.read(_CUDNN_REDIST_VERSIONS_JSON))
+    cusparselt_version_map = json.decode(mctx.read(_CUSPARSELT_REDIST_VERSIONS_JSON))
     nccl_version_map = json.decode(mctx.read(_NCCL_REDIST_VERSIONS_JSON))
     nvshmem_version_map = json.decode(mctx.read(_NVSHMEM_REDIST_VERSIONS_JSON))
 
@@ -127,6 +134,9 @@ def _cuda_impl(mctx):
     pending_nvshmem_redistributions_by_version = {}
     nvshmem_versions_to_fetch = []
     nvshmem_redistributions_by_version = {}
+    pending_cusparselt_redistributions_by_version = {}
+    cusparselt_versions_to_fetch = []
+    cusparselt_redistributions_by_version = {}
     for tag in tags:
         if tag.name == configuration.name:
             fail("redist name '{}' is reserved for the global aggregated CUDA repository".format(configuration.name))
@@ -178,6 +188,20 @@ def _cuda_impl(mctx):
             )
             nvshmem_versions_to_fetch.append(tag.nvshmem_version)
 
+        if tag.cusparselt_version and tag.cusparselt_version not in pending_cusparselt_redistributions_by_version:
+            (cusparselt_redist_url, cusparselt_redist_sha256) = _get_url_sha_from_version_map(
+                version = tag.cusparselt_version,
+                version_to_url_sha = cusparselt_version_map,
+                toolkit_name = "cuSPARSELt",
+            )
+            pending_cusparselt_redistributions_by_version[tag.cusparselt_version] = _json_from_url_future(
+                mctx = mctx,
+                url = cusparselt_redist_url,
+                sha256 = cusparselt_redist_sha256,
+                output_path = "redistrib_cusparselt_%s.json" % tag.cusparselt_version,
+            )
+            cusparselt_versions_to_fetch.append(tag.cusparselt_version)
+
     for version in versions_to_fetch:
         redistributions_by_version[version] = _read_downloaded_json(
             mctx,
@@ -194,6 +218,12 @@ def _cuda_impl(mctx):
         nvshmem_redistributions_by_version[version] = _read_downloaded_json(
             mctx,
             pending_nvshmem_redistributions_by_version[version],
+        )
+
+    for version in cusparselt_versions_to_fetch:
+        cusparselt_redistributions_by_version[version] = _read_downloaded_json(
+            mctx,
+            pending_cusparselt_redistributions_by_version[version],
         )
 
     for tag in tags:
@@ -262,6 +292,34 @@ def _cuda_impl(mctx):
                 fail("NVSHMEM version '{}' did not generate any repositories for CUDA {}".format(tag.nvshmem_version, tag.version))
 
             for generated in generated_nvshmem_repos:
+                repo_name = generated["component_repo_name"]
+                spec = component_proxy_specs.get(repo_name)
+                if not spec:
+                    spec = {
+                        "version": generated["version"],
+                        "targets": generated["targets"],
+                        "platform_repo_mappings": {},
+                    }
+                    component_proxy_specs[repo_name] = spec
+                spec["platform_repo_mappings"][generated["config_setting"]] = generated["concrete_repo_name"]
+
+        if tag.cusparselt_version:
+            cusparselt_redist = cusparselt_redistributions_by_version[tag.cusparselt_version]
+            if "libcusparse_lt" not in cusparselt_redist:
+                fail("cuSPARSELt manifest '{}' does not contain a 'libcusparse_lt' package".format(tag.cusparselt_version))
+
+            generated_cusparselt_repos = cuda_redist_repositories(
+                redist = {"libcusparse_lt": cusparselt_redist["libcusparse_lt"]},
+                cuda_repo_name = tag.name,
+                cuda_version = tag.version,
+                cuda_redist_path_prefix = CUSPARSELT_REDIST_PATH_PREFIX,
+                components_registry = CUSPARSELT_COMPONENTS_REGISTRY,
+                default_package_metadata = default_package_metadata,
+            )
+            if not generated_cusparselt_repos:
+                fail("cuSPARSELt version '{}' did not generate any repositories for CUDA {}".format(tag.cusparselt_version, tag.version))
+
+            for generated in generated_cusparselt_repos:
                 repo_name = generated["component_repo_name"]
                 spec = component_proxy_specs.get(repo_name)
                 if not spec:
@@ -357,6 +415,7 @@ _redist = tag_class(
         "cudnn_version": attr.string(),
         "nvshmem_version": attr.string(),
         "nccl_version": attr.string(),
+        "cusparselt_version": attr.string(),
     },
 )
 
