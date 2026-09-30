@@ -95,6 +95,15 @@ COMPONENTS_REGISTRY = {
             "11": "//cuda/build_defs:cuda_cusparse.BUILD.bazel",
         },
     },
+    "libnvjpeg": {
+        "repo_name": "cuda_nvjpeg",
+        "soname_libraries": ["libnvjpeg"],
+        "version_to_template": {
+            "13": "//cuda/build_defs:cuda_nvjpeg.BUILD.bazel",
+            "12": "//cuda/build_defs:cuda_nvjpeg.BUILD.bazel",
+            "11": "//cuda/build_defs:cuda_nvjpeg.BUILD.bazel",
+        },
+    },
     "libnvjitlink": {
         "repo_name": "cuda_nvjitlink",
         "soname_libraries": ["libnvjitlink"],

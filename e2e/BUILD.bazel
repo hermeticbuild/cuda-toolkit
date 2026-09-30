@@ -52,6 +52,7 @@ SMOKE_BASE_DEFINES = [
     "CUDA_SMOKE_HAVE_CUSPARSE=1",
     "CUDA_SMOKE_HAVE_DRIVER_API=1",
     "CUDA_SMOKE_HAVE_NVJITLINK=1",
+    "CUDA_SMOKE_HAVE_NVJPEG=1",
     "CUDA_SMOKE_HAVE_NVML=1",
     "CUDA_SMOKE_HAVE_NVRTC=1",
     "CUDA_SMOKE_HAVE_NVTX=1",
@@ -76,6 +77,7 @@ SMOKE_BASE_SHARED_DEPS = [
     "@cuda//cusolver:cusolver_shared_library",
     "@cuda//cusparse:cusparse_shared_library",
     "@cuda//nvjitlink:nvjitlink_shared_library",
+    "@cuda//nvjpeg:nvjpeg_shared_library",
     "@cuda//nvml:nvidia-ml_stub",
     "@cuda//nvrtc:nvrtc_main",
     "@cuda//nvtx:headers",
@@ -129,6 +131,7 @@ SMOKE_BASE_STATIC_DEPS = [
     "@cuda//cusolver:cusolver_static",
     "@cuda//cusparse:cusparse_static",
     "@cuda//nvjitlink:nvjitlink_static",
+    "@cuda//nvjpeg:nvjpeg_static",
     "@cuda//nvml:nvidia_ml_static_stub",
     "@cuda//nvrtc:nvrtc_static",
     "@cuda//nvtx:headers",
@@ -360,6 +363,28 @@ cc_binary(
         ":smoke_test_common",
         "@cuda//nvjitlink:nvjitlink",
     ],
+)
+
+cc_test(
+    name = "nvjpeg_runtime_test",
+    size = "small",
+    srcs = ["nvjpeg_smoke.cc"],
+    deps = ["@cuda//nvjpeg:nvjpeg"],
+)
+
+cc_binary(
+    name = "nvjpeg_system_smoke",
+    srcs = ["nvjpeg_smoke.cc"],
+    deps = ["@cuda//nvjpeg:nvjpeg_system"],
+)
+
+cc_test(
+    name = "nvjpeg_static_test",
+    size = "small",
+    srcs = ["nvjpeg_smoke.cc"],
+    # Static archives use the libstdc++ ABI.
+    tags = ["manual"],
+    deps = ["@cuda//nvjpeg:nvjpeg_static"],
 )
 
 cc_binary(
