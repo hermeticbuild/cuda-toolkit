@@ -37,6 +37,11 @@ alias(
     ),
 )
 
+alias(
+    name = "device_runtime_static",
+    actual = "//cudart:device_runtime_static",
+)
+
 cuda_toolchain(
     name = "cuda_toolchain",
     cuda_path = ":cuda_path",

@@ -186,6 +186,12 @@ cc_binary(
 )
 
 cc_binary(
+    name = "device_runtime_static_smoke",
+    srcs = ["device_runtime_static_smoke.cc"],
+    deps = ["@cuda//cuda:device_runtime_static"],
+)
+
+cc_binary(
     name = "cudnn_smoke",
     srcs = ["cudnn_smoke.cc"],
     deps = [
