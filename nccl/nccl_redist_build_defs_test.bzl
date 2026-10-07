@@ -32,6 +32,20 @@ _NCCL_REDISTRIBUTIONS = {
             "compatible_cuda": ["12.8", "12.9"],
         },
     },
+    "2.32.3": {
+        "12": {
+            "archives": {
+                "linux-sbsa": {
+                    "relative_path": "nccl/v2.32.2/nccl-nccl-stable-cuda-12-linux-sbsa-2.32.3-cuda12.9.tar.gz",
+                },
+                "linux-x86_64": {
+                    "relative_path": "nccl/v2.32.2/nccl-nccl-stable-cuda-12-linux-x86_64-2.32.3-cuda12.9.tar.gz",
+                },
+            },
+            "built_with_cuda": "12.9",
+            "compatible_cuda": ["12.8", "12.9"],
+        },
+    },
 }
 
 def _nccl_redist_selection_test_impl(ctx):
@@ -48,6 +62,12 @@ def _nccl_redist_selection_test_impl(ctx):
         env,
         "nccl/v2.31.2/nccl-nccl-stable-cuda-12-linux-x86_64-2.31.2-cuda12.9.tar.gz",
         latest_redist["libnccl"]["linux-x86_64"]["relative_path"],
+    )
+    stale_directory_redist = get_nccl_redist(_NCCL_REDISTRIBUTIONS, "2.32.3", "12.8.1")
+    asserts.equals(
+        env,
+        "nccl/v2.32.2/nccl-nccl-stable-cuda-12-linux-x86_64-2.32.3-cuda12.9.tar.gz",
+        stale_directory_redist["libnccl"]["linux-x86_64"]["relative_path"],
     )
 
     return unittest.end(env)

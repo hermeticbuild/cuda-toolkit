@@ -586,5 +586,26 @@
         "13.3"
       ]
     }
+  },
+  "2.32.3": {
+    "12": {
+      "archives": {
+        "linux-sbsa": {
+          "relative_path": "nccl/v2.32.2/nccl-nccl-stable-cuda-12-linux-sbsa-2.32.3-cuda12.9.tar.gz",
+          "sha256": "a7ed9d21e667853fe2b7ab31e2c83c1417e59d858aa10e5bfd63c405b5bf2e57",
+          "strip_prefix": "nccl-nccl-stable-cuda-12-linux-sbsa-2.32.3-cuda12.9"
+        },
+        "linux-x86_64": {
+          "relative_path": "nccl/v2.32.2/nccl-nccl-stable-cuda-12-linux-x86_64-2.32.3-cuda12.9.tar.gz",
+          "sha256": "a54ce55313026d5f6fc2c59af892809bcdcfa152dd688bf1ca5fb4880ae6bc65",
+          "strip_prefix": "nccl-nccl-stable-cuda-12-linux-x86_64-2.32.3-cuda12.9"
+        }
+      },
+      "built_with_cuda": "12.9",
+      "compatible_cuda": [
+        "12.8",
+        "12.9"
+      ]
+    }
   }
 }

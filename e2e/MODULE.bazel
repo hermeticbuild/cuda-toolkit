@@ -29,7 +29,7 @@ cuda_ext.redist(
     version = "12.8.1",
     cudnn_version = "8.9.7",
     nvshmem_version = "3.3.24",
-    nccl_version = "2.31.2",
+    nccl_version = "2.32.3",
 )
 cuda_ext.redist(
     name = "cuda_12_9_1",
