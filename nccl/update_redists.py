@@ -21,7 +21,7 @@ DEFAULT_NCCL_REDIST_URL = "https://developer.download.nvidia.com/compute/redist/
 MINIMUM_NCCL_VERSION = (2, 25, 1)
 SUPPORTED_CUDA_MINORS = {
     "12": ["12.8", "12.9"],
-    "13": ["13.0", "13.1", "13.2", "13.3"],
+    "13": ["13.0", "13.1", "13.2", "13.3", "13.4"],
 }
 PLATFORMS = ["linux-sbsa", "linux-x86_64"]
 USER_AGENT = "hermeticbuild-cuda-toolkit-nccl-catalog/1"
