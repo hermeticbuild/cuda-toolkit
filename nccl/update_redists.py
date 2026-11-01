@@ -21,7 +21,7 @@ DEFAULT_NCCL_REDIST_URL = "https://developer.download.nvidia.com/compute/redist/
 MINIMUM_NCCL_VERSION = (2, 25, 1)
 SUPPORTED_CUDA_MINORS = {
     "12": ["12.8", "12.9"],
-    "13": ["13.0", "13.1", "13.2", "13.3"],
+    "13": ["13.0", "13.1", "13.2", "13.3", "13.4"],
 }
 PLATFORMS = ["linux-sbsa", "linux-x86_64"]
 USER_AGENT = "hermeticbuild-cuda-toolkit-nccl-catalog/1"
@@ -158,7 +158,16 @@ def _archive_extension(filename):
     return None
 
 
-def _archive_candidates(version, directory, base_url):
+def _archive_version(filename):
+    versions = set(re.findall(r"(?<!\d)(\d+\.\d+\.\d+)(?!\d)", filename))
+    if not versions:
+        return None
+    if len(versions) != 1:
+        raise ValueError("Ambiguous NCCL version in archive name '{}'".format(filename))
+    return versions.pop()
+
+
+def _archive_candidates(directory, base_url):
     directory_url = urljoin(base_url, directory)
     candidates = {}
     for href in _links(directory_url):
@@ -168,31 +177,49 @@ def _archive_candidates(version, directory, base_url):
         cuda_match = re.search(r"cuda(\d+\.\d+)", filename)
         if not extension or not platform or not cuda_match:
             continue
+        version = _archive_version(filename)
+        if not version:
+            continue
+        if _version_tuple(version) < MINIMUM_NCCL_VERSION:
+            continue
 
         cuda_minor = cuda_match.group(1)
         cuda_major = cuda_minor.split(".", 1)[0]
         if cuda_minor not in SUPPORTED_CUDA_MINORS.get(cuda_major, []):
             continue
 
-        candidates.setdefault(cuda_minor, {})[platform] = {
+        platform_candidates = candidates.setdefault(version, {}).setdefault(cuda_minor, {})
+        if platform in platform_candidates:
+            raise ValueError(
+                "Multiple NCCL {} CUDA {} archives for {} in {}".format(
+                    version,
+                    cuda_minor,
+                    platform,
+                    directory,
+                ),
+            )
+        platform_candidates[platform] = {
             "filename": filename,
             "relative_path": "nccl/{}/{}".format(directory.rstrip("/"), filename),
             "url": urljoin(directory_url, href),
-            "version": version,
         }
 
     selected = {}
-    for cuda_major in SUPPORTED_CUDA_MINORS:
-        variants = [
-            cuda_minor
-            for cuda_minor, archives in candidates.items()
-            if cuda_minor.startswith(cuda_major + ".") and all(
-                platform in archives
-                for platform in PLATFORMS
-            )
-        ]
-        if variants:
-            selected[cuda_major] = candidates[max(variants, key=_version_tuple)]
+    for version, version_candidates in candidates.items():
+        selected[version] = {}
+        for cuda_major in SUPPORTED_CUDA_MINORS:
+            variants = [
+                cuda_minor
+                for cuda_minor, archives in version_candidates.items()
+                if cuda_minor.startswith(cuda_major + ".") and all(
+                    platform in archives
+                    for platform in PLATFORMS
+                )
+            ]
+            if variants:
+                selected[version][cuda_major] = version_candidates[max(variants, key=_version_tuple)]
+        if not selected[version]:
+            selected.pop(version)
     return selected
 
 
@@ -318,17 +345,27 @@ def main():
     args = _parse_args()
     base_url = args.base_url.rstrip("/") + "/"
     version_directories = _available_version_directories(base_url)
-    versions = args.versions or sorted(version_directories, key=_version_tuple)
-    missing_versions = sorted(set(versions) - set(version_directories), key=_version_tuple)
+    available_selections = {}
+    for directory_version in sorted(version_directories, key=_version_tuple):
+        directory_selections = _archive_candidates(version_directories[directory_version], base_url)
+        for version, cuda_families in directory_selections.items():
+            version_selections = available_selections.setdefault(version, {})
+            for cuda_major, archives in cuda_families.items():
+                if cuda_major in version_selections:
+                    raise SystemExit(
+                        "Multiple NCCL {} CUDA {} archive sets found".format(version, cuda_major),
+                    )
+                version_selections[cuda_major] = archives
+
+    versions = args.versions or sorted(available_selections, key=_version_tuple)
+    missing_versions = sorted(set(versions) - set(available_selections), key=_version_tuple)
     if missing_versions:
         raise SystemExit("Unknown NCCL versions: {}".format(missing_versions))
 
     selections = {}
     archives_to_inspect = []
     for version in versions:
-        selected = _archive_candidates(version, version_directories[version], base_url)
-        if not selected:
-            raise SystemExit("No supported CUDA archives found for NCCL {}".format(version))
+        selected = available_selections[version]
         selections[version] = selected
         for archives in selected.values():
             archives_to_inspect.extend(archives.values())

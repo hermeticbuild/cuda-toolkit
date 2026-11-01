@@ -53,6 +53,18 @@ def _render_placeholder_build_file(target_names, cuda_version):
     ]
 
     for target_name in target_names:
+        # Cudart uses this condition even when the optional driver archive is
+        # absent. Keep it false so the default driver-stub branch can resolve.
+        if target_name == "cuda_umd_libs":
+            lines.extend([
+                "config_setting(",
+                "    name = \"cuda_umd_libs\",",
+                "    constraint_values = [\"@platforms//:incompatible\"],",
+                ")",
+                "",
+            ])
+            continue
+
         lines.extend([
             "alias(",
             "    name = \"{}\",".format(target_name),

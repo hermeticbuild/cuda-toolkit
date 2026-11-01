@@ -70,11 +70,13 @@ class UpdateRedistsTest(unittest.TestCase):
             "2.30.4",
             "2.30.7",
             "2.31.2",
+            "2.32.3",
         ]
         catalog_path = Path(__file__).with_name("nccl_redist_versions.json")
         catalog = json.loads(catalog_path.read_text())
 
         self.assertEqual(expected_versions, list(catalog))
+        self.assertEqual({"12", "13"}, set(catalog["2.32.3"]))
         archive_count = 0
         for nccl_version, cuda_families in catalog.items():
             for cuda_major, cuda_family in cuda_families.items():
@@ -87,10 +89,11 @@ class UpdateRedistsTest(unittest.TestCase):
                 )
                 for archive in cuda_family["archives"].values():
                     archive_count += 1
-                    self.assertTrue(archive["relative_path"].startswith("nccl/v{}/".format(nccl_version)))
+                    self.assertTrue(archive["relative_path"].startswith("nccl/v"))
+                    self.assertIn(nccl_version, Path(archive["relative_path"]).name)
                     self.assertRegex(archive["sha256"], r"^[0-9a-f]{64}$")
                     self.assertTrue(archive["strip_prefix"])
-        self.assertEqual(56, archive_count)
+        self.assertEqual(60, archive_count)
 
     def test_generates_and_checks_old_and_new_archive_families(self):
         old_x86, _ = self._archive(
@@ -148,6 +151,56 @@ class UpdateRedistsTest(unittest.TestCase):
             env=environment,
             text=True,
         )
+
+    def test_uses_archive_version_when_directory_name_is_stale(self):
+        self._archive(
+            "2.32.2",
+            "nccl-nccl-stable-cuda-12-linux-x86_64-2.32.3-cuda12.9.tar.gz",
+            "w:gz",
+        )
+        self._archive(
+            "2.32.2",
+            "nccl-nccl-stable-cuda-12-linux-sbsa-2.32.3-cuda12.9.tar.gz",
+            "w:gz",
+        )
+        for platform in ["linux-x86_64", "linux-sbsa"]:
+            self._archive(
+                "2.32.2",
+                "nccl-nccl-stable-cuda-13-{}-2.32.3-cuda13.4.tar.gz".format(platform),
+                "w:gz",
+            )
+            # An unregistered future CUDA minor must stay outside the catalog.
+            self._archive(
+                "2.33.1",
+                "nccl-nccl-stable-cuda-13-{}-2.33.1-cuda13.5.tar.gz".format(platform),
+                "w:gz",
+            )
+
+        output = self._root / "catalog.json"
+        subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).with_name("update_redists.py")),
+                "--base-url",
+                "http://127.0.0.1:{}/".format(self._server.server_port),
+                "--cache",
+                str(self._root / "cache.json"),
+                "--output",
+                str(output),
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        catalog = json.loads(output.read_text())
+        self.assertEqual(["2.32.3"], list(catalog))
+        archive = catalog["2.32.3"]["12"]["archives"]["linux-x86_64"]
+        self.assertTrue(archive["relative_path"].startswith("nccl/v2.32.2/"))
+        cuda_13 = catalog["2.32.3"]["13"]
+        self.assertEqual("13.4", cuda_13["built_with_cuda"])
+        self.assertEqual(["13.0", "13.1", "13.2", "13.3", "13.4"], cuda_13["compatible_cuda"])
+        self.assertEqual({"linux-sbsa", "linux-x86_64"}, set(cuda_13["archives"]))
 
 
 if __name__ == "__main__":
