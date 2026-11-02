@@ -115,6 +115,29 @@ In short:
 - upstream component boundaries may drift
 - this repository’s public surface should drift as little as possible
 
+## Library Target Families
+
+New public library capabilities should use a consistent target family when the corresponding upstream artifacts exist:
+- `foo_shared_library`: raw packaged shared-library import
+- `foo`: semantic shared wrapper with its complete shared dependency closure
+- `foo_interface_library`: raw system-provided link interface
+- `foo_system`: semantic system-provided wrapper with the same logical dependency closure as `foo`
+- `foo_static_library`: raw static archive import
+- `foo_static`: semantic static wrapper with its complete hermetic static dependency closure
+- `headers`: compile-time header surface and header dependency closure
+- `shared_library_files`: packaged runtime shared-library files only
+
+Target-family rules:
+- a new `*_shared_library` should have a matching `*_interface_library` and `_system` wrapper unless upstream provides no usable link-time interface; document and test intentional absence
+- interface imports use `cc_import(interface_library = ..., system_provided = True)`
+- prefer NVIDIA linker stubs under `lib/stubs/`; otherwise use the unversioned shared library as the link interface
+- raw imports stay lightweight; cross-library semantic composition belongs in `foo`, `foo_system`, and `foo_static`
+- `foo_system` mirrors `foo` dependencies using system variants and must not reach packaged `*_shared_library` targets
+- `foo_static` must not reach shared or system variants and must include all required hermetic static side dependencies
+- compile-time transitive dependencies belong on `headers` so shared, system, and static variants see the same header closure
+- existing public labels may predate this naming convention; preserve compatibility rather than renaming them mechanically
+- add every public family member to `cuda/redist_proxy_targets.bzl` and exercise it through the stable proxy namespace
+
 ## Scope
 
 Current scope is the CUDA redistribution model implemented by this repository.
@@ -153,6 +176,7 @@ Key files:
 - Do not invent fake components when upstream does not ship one.
 - Keep broad version selection in registries; keep fine layout differences in BUILD templates.
 - Add public targets through `redist_proxy_targets.bzl` plus matching templates.
+- For new library capabilities, follow the target-family and dependency-purity rules above.
 - Public API changes require README/docs review.
 
 ## Verification
@@ -172,3 +196,8 @@ CI matrix mirrors:
 - `13_3_1`
 
 For compatibility-sensitive changes, run the relevant e2e platform for every affected CUDA major/minor.
+
+For library target-family changes:
+- build the public shared, system, and static variants that exist upstream
+- inspect the configured dependency graph and confirm `_system` closures contain no packaged `*_shared_library` targets
+- inspect link actions or output artifacts to confirm system targets use only the intended link interface and do not package redistribution DSOs
