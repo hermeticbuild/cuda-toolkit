@@ -1,32 +1,17 @@
-load("@bazel_lib//lib:copy_to_directory.bzl", "copy_to_directory")
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
-load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load(
-     "@cuda_toolkit//cuda:versions_helper.bzl",
-     "if_version_equal_or_greater_than",
+    "@cuda_toolkit//cuda:versions_helper.bzl",
+    "if_version_equal_or_greater_than",
 )
+load("@cuda_toolkit//cuda/private:versioned_toolchains.bzl", "versioned_toolchains")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("//cuda:selects.bzl", "if_cuda_version")
-load("@cuda_toolkit//cuda/private:cuda_toolchain.bzl", "cuda_toolchain")
-load("@cuda_toolkit//cuda/private:exec_binary.bzl", "exec_binary")
+load(":toolchain_versions.bzl", "DEFAULT_VERSION", "VERSION_TO_REPO")
 
 package(default_visibility = ["//visibility:public"])
 
-# TODO(cerisier): Do differently
-copy_to_directory(
-    name = "cuda_path",
-    srcs = [
-        "//cudart:cuda_header",
-        ":bin/ptxas",
-        ":libdevice",
-    ],
-    include_external_repositories = ["**"],
-)
-
-exec_binary(
-    name = "bin/ptxas",
-    actual = "//nvcc:ptxas",
-)
+versioned_toolchains(VERSION_TO_REPO, DEFAULT_VERSION)
 
 alias(
     name = "libdevice",
@@ -40,13 +25,6 @@ alias(
 alias(
     name = "device_runtime_static",
     actual = "//cudart:device_runtime_static",
-)
-
-cuda_toolchain(
-    name = "cuda_toolchain",
-    cuda_path = ":cuda_path",
-    ptxas = "//nvcc:ptxas",
-    fatbinary = "//nvcc:fatbinary",
 )
 
 SUPPORTED_EXECS = [
@@ -81,7 +59,6 @@ SUPPORTED_TARGETS = [
     for (exec_os, exec_arch) in SUPPORTED_EXECS
     for (target_os, target_arch) in SUPPORTED_TARGETS
 ]
-
 
 cc_library(
     name = "cuda_headers",
