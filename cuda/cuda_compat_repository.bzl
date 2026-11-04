@@ -22,7 +22,7 @@ def _render_selects_bzl(cuda_versions):
         "CUDA_VERSIONS = [",
     ]
 
-    # We only generate this based on the registered versions to minimize the number 
+    # We only generate this based on the registered versions to minimize the number
     # of targets that will be created by _if_cuda_version.
     for version in ordered_cuda_versions:
         lines.append("    \"{}\",".format(version))
@@ -96,6 +96,13 @@ def _cuda_compat_repository_impl(repository_ctx):
     repository_ctx.template(
         "cuda/BUILD.bazel",
         repository_ctx.attr._cuda_build_file,
+    )
+    repository_ctx.file(
+        "cuda/toolchain_versions.bzl",
+        "VERSION_TO_REPO = {}\nDEFAULT_VERSION = {}\n".format(
+            repr(repository_ctx.attr.version_to_redist_repo_name),
+            repr(max_version(repository_ctx.attr.registered_cuda_versions)),
+        ),
     )
     repository_ctx.file(
         "cuda/selects.bzl",

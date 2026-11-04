@@ -2,6 +2,7 @@ load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@cuda//cuda:selects.bzl", "if_cuda_version")
+load(":toolchain_selection_check.bzl", "toolchain_selection_check")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -17,6 +18,26 @@ SMOKE_CUDA_VERSIONS = [
     "13.2.1",
     "13.3.1",
     "13.4.1",
+]
+
+toolchain_selection_check(
+    name = "toolchain_selection_check",
+    expected_repository = select({
+        "@cuda//:is_cuda_{}".format(version.replace(".", "_")): "cuda_{}__cuda_nvcc__".format(version.replace(".", "_"))
+        for version in SMOKE_CUDA_VERSIONS
+    }),
+    tags = ["manual"],
+)
+
+[
+    platform(
+        name = "platform_linux_{}_exec".format(arch),
+        constraint_values = [
+            "@platforms//os:linux",
+            "@platforms//cpu:{}".format(cpu),
+        ],
+    )
+    for arch, cpu in [("amd64", "x86_64"), ("arm64", "aarch64")]
 ]
 
 [
