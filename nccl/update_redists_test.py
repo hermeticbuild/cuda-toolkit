@@ -83,6 +83,9 @@ class UpdateRedistsTest(unittest.TestCase):
                 self.assertEqual(cuda_major, cuda_family["built_with_cuda"].split(".")[0])
                 for cuda_minor in cuda_family["compatible_cuda"]:
                     self.assertEqual(cuda_major, cuda_minor.split(".")[0])
+                if cuda_major == "13":
+                    self.assertIn("13.5", cuda_family["compatible_cuda"])
+                    self.assertNotIn("13.6", cuda_family["compatible_cuda"])
                 self.assertEqual(
                     {"linux-sbsa", "linux-x86_64"},
                     set(cuda_family["archives"]),
@@ -169,10 +172,15 @@ class UpdateRedistsTest(unittest.TestCase):
                 "nccl-nccl-stable-cuda-13-{}-2.32.3-cuda13.4.tar.gz".format(platform),
                 "w:gz",
             )
-            # An unregistered future CUDA minor must stay outside the catalog.
             self._archive(
                 "2.33.1",
                 "nccl-nccl-stable-cuda-13-{}-2.33.1-cuda13.5.tar.gz".format(platform),
+                "w:gz",
+            )
+            # An unregistered future CUDA minor must stay outside the catalog.
+            self._archive(
+                "2.34.1",
+                "nccl-nccl-stable-cuda-13-{}-2.34.1-cuda13.6.tar.gz".format(platform),
                 "w:gz",
             )
 
@@ -194,12 +202,13 @@ class UpdateRedistsTest(unittest.TestCase):
         )
 
         catalog = json.loads(output.read_text())
-        self.assertEqual(["2.32.3"], list(catalog))
+        self.assertEqual(["2.32.3", "2.33.1"], list(catalog))
+        self.assertEqual("13.5", catalog["2.33.1"]["13"]["built_with_cuda"])
         archive = catalog["2.32.3"]["12"]["archives"]["linux-x86_64"]
         self.assertTrue(archive["relative_path"].startswith("nccl/v2.32.2/"))
         cuda_13 = catalog["2.32.3"]["13"]
         self.assertEqual("13.4", cuda_13["built_with_cuda"])
-        self.assertEqual(["13.0", "13.1", "13.2", "13.3", "13.4"], cuda_13["compatible_cuda"])
+        self.assertEqual(["13.0", "13.1", "13.2", "13.3", "13.4", "13.5"], cuda_13["compatible_cuda"])
         self.assertEqual({"linux-sbsa", "linux-x86_64"}, set(cuda_13["archives"]))
 
 

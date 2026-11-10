@@ -60,6 +60,7 @@ use_repo(cuda_ext, "cuda")
 ## Notes
 
 - CUDA versions are registered explicitly with `cuda_ext.redist(...)`.
+- CUDA 13.5's [driver compatibility requirements](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cuda-driver) distinguish CUDA 13.x minor-version compatibility from new features and platforms requiring R620 or later. Install the GPU driver separately; NVIDIA no longer bundles the Linux driver with CUDA 13.4 and newer.
 - `cuda_ext.configure(...)` can set the global proxy repository's `name` and optionally apply `default_package_metadata` to every generated repository through `REPO.bazel`.
 - cuDNN, NVSHMEM, and NCCL versions, when used, are pinned on the same `cuda_ext.redist(...)` tag.
 - The generated NCCL catalog includes every official release from 2.25.1 onward that publishes an archive for a registered CUDA minor version.
