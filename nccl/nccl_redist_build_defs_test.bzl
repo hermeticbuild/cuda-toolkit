@@ -55,7 +55,7 @@ _NCCL_REDISTRIBUTIONS = {
                 },
             },
             "built_with_cuda": "13.4",
-            "compatible_cuda": ["13.0", "13.1", "13.2", "13.3", "13.4"],
+            "compatible_cuda": ["13.0", "13.1", "13.2", "13.3", "13.4", "13.5"],
         },
     },
 }
@@ -82,6 +82,8 @@ def _nccl_redist_selection_test_impl(ctx):
         stale_directory_redist["libnccl"]["linux-x86_64"]["relative_path"],
     )
     cuda_13_4_redist = get_nccl_redist(_NCCL_REDISTRIBUTIONS, "2.32.3", "13.4.1")
+    cuda_13_5_redist = get_nccl_redist(_NCCL_REDISTRIBUTIONS, "2.32.3", "13.5.0")
+    asserts.equals(env, cuda_13_4_redist, cuda_13_5_redist)
     for platform in ["linux-sbsa", "linux-x86_64"]:
         asserts.equals(
             env,
