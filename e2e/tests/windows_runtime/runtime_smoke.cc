@@ -2,13 +2,13 @@
 #include <windows.h>
 
 #include <cstdio>
+#include <cstring>
 
 int main() {
-    int version = 0;
-    const cudaError_t status = cudaRuntimeGetVersion(&version);
-    if (status != cudaSuccess || version != CUDART_VERSION) {
-        std::fprintf(stderr, "cudaRuntimeGetVersion: status %d, version %d, expected %d\n",
-                     status, version, CUDART_VERSION);
+    // cudaRuntimeGetVersion may initialize CUDA and require an NVIDIA driver.
+    const char* name = cudaGetErrorName(cudaErrorInvalidValue);
+    if (name == nullptr || std::strcmp(name, "cudaErrorInvalidValue") != 0) {
+        std::fprintf(stderr, "Unexpected CUDA error name: %s\n", name ? name : "(null)");
         return 1;
     }
 
