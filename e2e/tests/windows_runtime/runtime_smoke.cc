@@ -2,7 +2,7 @@
 #include <windows.h>
 
 #include <cstdio>
-#include <filesystem>
+#include <string>
 
 int main() {
     int version = 0;
@@ -23,7 +23,9 @@ int main() {
         std::fprintf(stderr, "Could not locate the test executable\n");
         return 1;
     }
-    const auto dll_path = std::filesystem::path(executable).parent_path() / L"cudart64_13.dll";
+    std::wstring dll_path(executable, length);
+    dll_path.resize(dll_path.find_last_of(L"\\/") + 1);
+    dll_path += L"cudart64_13.dll";
     const HMODULE dll = LoadLibraryW(dll_path.c_str());
     if (dll == nullptr) {
         std::fprintf(stderr, "Could not load the staged cudart DLL: %lu\n", GetLastError());
