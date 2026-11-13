@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include <cstdio>
+#include <filesystem>
 
 int main() {
     int version = 0;
@@ -13,14 +14,24 @@ int main() {
         return 1;
     }
 
-    const bool dll_loaded = GetModuleHandleW(L"cudart64_13.dll") != nullptr;
 #ifdef EXPECT_CUDART_DLL
-    if (!dll_loaded) {
-        std::fprintf(stderr, "Expected the redistributed cudart DLL to load\n");
+    // cudart.lib can try the driver-provided runtime first. Load the exact
+    // DLL staged beside the executable to verify redistribution packaging.
+    wchar_t executable[MAX_PATH];
+    const DWORD length = GetModuleFileNameW(nullptr, executable, MAX_PATH);
+    if (length == 0 || length == MAX_PATH) {
+        std::fprintf(stderr, "Could not locate the test executable\n");
         return 1;
     }
+    const auto dll_path = std::filesystem::path(executable).parent_path() / L"cudart64_13.dll";
+    const HMODULE dll = LoadLibraryW(dll_path.c_str());
+    if (dll == nullptr) {
+        std::fprintf(stderr, "Could not load the staged cudart DLL: %lu\n", GetLastError());
+        return 1;
+    }
+    FreeLibrary(dll);
 #else
-    if (dll_loaded) {
+    if (GetModuleHandleW(L"cudart64_13.dll") != nullptr) {
         std::fprintf(stderr, "Static cudart unexpectedly loaded the cudart DLL\n");
         return 1;
     }
