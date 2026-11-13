@@ -44,3 +44,31 @@ jobs:
       - name: Bazel analyze static smoke targets (${{ matrix.cuda_version }})
         working-directory: e2e
         run: bazel build //:cudnn_static_smoke //:cufile_static_smoke --nobuild --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}
+
+  windows-runtime:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - { runner: windows-2025, cpu: x86_64 }
+          - { runner: windows-11-arm, cpu: arm64 }
+        cuda_version: ["13_4_1", "13_5_0"]
+    env:
+      MSYS2_ARG_CONV_EXCL: '*'
+    defaults:
+      run:
+        working-directory: e2e
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test CUDA runtime on native Windows
+        run: |
+          flags=(
+            --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0
+            --extra_toolchains=@local_config_cc_toolchains//:all
+            --platforms=//tests/windows_runtime:${{ matrix.platform.cpu }}_cuda_${{ matrix.cuda_version }}
+          )
+          bazelisk --output_user_root=C:/b test "${flags[@]}" --test_output=errors \
+            //tests/windows_runtime:shared //tests/windows_runtime:static
+          bazelisk --output_user_root=C:/b build "${flags[@]}" //tests/windows_runtime:system_link

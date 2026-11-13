@@ -16,6 +16,9 @@ local_path_override(
 
 register_toolchains("@llvm//toolchain:all")
 
+cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
+use_repo(cc_configure, "local_config_cc_toolchains")
+
 cuda_ext = use_extension("@cuda_toolkit//extensions:cuda.bzl", "cuda")
 
 cuda_ext.configure(

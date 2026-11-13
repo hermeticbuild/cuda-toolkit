@@ -22,7 +22,22 @@ _PLATFORM_SPECS = {
         "repo_suffix": "linux_sbsa",
         "config_setting": "@cuda_toolkit//:linux_arm64",
     },
+    "windows_x86_64": {
+        "redist_platform_key": "windows-x86_64",
+        "repo_suffix": "windows_x86_64",
+        "config_setting": "@cuda_toolkit//:windows_x86_64",
+        "windows_arch": "x64",
+    },
+    "windows_arm64": {
+        "redist_platform_key": "windows-arm64",
+        "repo_suffix": "windows_arm64",
+        "config_setting": "@cuda_toolkit//:windows_arm64",
+        "windows_arch": "arm64",
+    },
 }
+
+# These releases have validated Windows runtime layouts.
+_WINDOWS_CUDA_VERSIONS = ["13.4.1", "13.5.0"]
 
 _REPO_PUBLIC_TARGETS = REPO_PUBLIC_TARGETS
 _SUPPORTED_ARCHIVE_EXTENSIONS = [
@@ -90,12 +105,19 @@ def cuda_redist_repositories(
             continue
 
         component_version = component_redist_entry["version"]
-        build_file = get_build_template(
+        linux_template = get_build_template(
             component_name,
             component_version,
             repo_data["version_to_template"],
         )
         for platform, platform_spec in _PLATFORM_SPECS.items():
+            windows_arch = platform_spec.get("windows_arch", "")
+            build_file = linux_template
+            if windows_arch:
+                build_file = repo_data.get("windows_template")
+                if not build_file or cuda_version not in _WINDOWS_CUDA_VERSIONS:
+                    continue
+
             platform_key = platform_spec["redist_platform_key"]
             archive_entry = _platform_archive_entry(component_redist_entry, platform_key, cuda_version_major)
             if not archive_entry:
@@ -117,12 +139,13 @@ def cuda_redist_repositories(
                 cuda_repo_name = cuda_repo_name,
                 default_package_metadata = default_package_metadata,
                 sha256 = archive_entry.get("sha256", ""),
-                soname_libraries = repo_data.get("soname_libraries_by_version", {}).get(
+                soname_libraries = [] if windows_arch else repo_data.get("soname_libraries_by_version", {}).get(
                     component_version.split(".")[0],
                     repo_data.get("soname_libraries", []),
                 ),
                 strip_prefix = archive_entry.get("strip_prefix", ""),
                 url = cuda_redist_path_prefix + archive_entry["relative_path"],
+                windows_arch = windows_arch,
             )
             generated_repos.append({
                 "component_repo_name": repo_data["repo_name"],
@@ -303,7 +326,10 @@ def _cuda_component_repository_impl(repository_ctx):
     repository_ctx.template(
         "BUILD",
         repository_ctx.attr.build_file,
-        {"{cuda_redist_repo}": repository_ctx.attr.cuda_repo_name},
+        {
+            "{cuda_redist_repo}": repository_ctx.attr.cuda_repo_name,
+            "{windows_arch}": repository_ctx.attr.windows_arch,
+        },
     )
 
     lib_versions, lib_soname_versions = _get_lib_versions(repository_ctx)
@@ -326,5 +352,6 @@ cuda_component_repository = repository_rule(
         "soname_libraries": attr.string_list(),
         "strip_prefix": attr.string(),
         "url": attr.string(mandatory = True),
+        "windows_arch": attr.string(),
     },
 )

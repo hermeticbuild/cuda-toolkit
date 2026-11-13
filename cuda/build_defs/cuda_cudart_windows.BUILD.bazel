@@ -1,0 +1,112 @@
+"""CUDA runtime redistributions for Windows."""
+
+load("@rules_cc//cc:cc_import.bzl", "cc_import")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+_LIB = "lib/{windows_arch}/"
+_CUDART_DLL = "bin/{windows_arch}/cudart64_13.dll"
+
+filegroup(
+    name = "cuda_header",
+    srcs = ["include/cuda.h"],
+)
+
+cc_library(
+    name = "cuda",
+    hdrs = [":cuda_header"],
+    includes = ["include"],
+    strip_include_prefix = "include",
+)
+
+filegroup(
+    name = "header_list",
+    srcs = glob(["include/**"], allow_empty = False),
+)
+
+cc_library(
+    name = "headers",
+    hdrs = [":header_list"],
+    includes = ["include"],
+    strip_include_prefix = "include",
+    deps = [
+        "@{cuda_redist_repo}//cccl:headers",
+        "@{cuda_redist_repo}//crt:headers",
+    ],
+)
+
+cc_import(
+    name = "cuda_stub",
+    interface_library = _LIB + "cuda.lib",
+    system_provided = True,
+    deps = [":cuda"],
+)
+
+alias(
+    name = "cuda_driver",
+    actual = ":cuda_stub",
+)
+
+cc_import(
+    name = "cudart_shared_library",
+    interface_library = _LIB + "cudart.lib",
+    shared_library = _CUDART_DLL,
+    deps = [":headers"],
+)
+
+cc_import(
+    name = "cudart_interface_library",
+    interface_library = _LIB + "cudart.lib",
+    system_provided = True,
+    deps = [":headers"],
+)
+
+cc_library(
+    name = "cudart",
+    deps = [
+        ":cuda_driver",
+        ":cudart_shared_library",
+    ],
+)
+
+cc_library(
+    name = "cudart_system",
+    deps = [
+        ":cuda_driver",
+        ":cudart_interface_library",
+    ],
+)
+
+cc_import(
+    name = "cudadevrt_static",
+    static_library = _LIB + "cudadevrt.lib",
+    deps = [":headers"],
+)
+
+# NVIDIA does not ship culibos on Windows.
+alias(
+    name = "device_runtime_static",
+    actual = ":cudadevrt_static",
+)
+
+cc_import(
+    name = "cudart_static_library",
+    static_library = _LIB + "cudart_static.lib",
+    visibility = ["//visibility:private"],
+    deps = [":headers"],
+)
+
+cc_library(
+    name = "static",
+    deps = [
+        ":cuda_driver",
+        ":cudart_static_library",
+        ":device_runtime_static",
+    ],
+)
+
+filegroup(
+    name = "shared_library_files",
+    srcs = [_CUDART_DLL],
+)
