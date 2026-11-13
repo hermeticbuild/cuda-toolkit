@@ -2,13 +2,14 @@
 #include <windows.h>
 
 #include <cstdio>
-#include <cstring>
 
 int main() {
-    // cudaRuntimeGetVersion may initialize CUDA and require an NVIDIA driver.
-    const char* name = cudaGetErrorName(cudaErrorInvalidValue);
-    if (name == nullptr || std::strcmp(name, "cudaErrorInvalidValue") != 0) {
-        std::fprintf(stderr, "Unexpected CUDA error name: %s\n", name ? name : "(null)");
+    int version = 0;
+    const cudaError_t status = cudaRuntimeGetVersion(&version);
+    // The version query can initialize CUDA. Hosted Windows runners have no
+    // usable NVIDIA driver, so the runtime may return cudaErrorInsufficientDriver.
+    if (status != cudaErrorInsufficientDriver && (status != cudaSuccess || version <= 0)) {
+        std::fprintf(stderr, "cudaRuntimeGetVersion: status %d, version %d\n", status, version);
         return 1;
     }
 
