@@ -22,7 +22,22 @@ _PLATFORM_SPECS = {
         "repo_suffix": "linux_sbsa",
         "config_setting": "@cuda_toolkit//:linux_arm64",
     },
+    "windows_x86_64": {
+        "redist_platform_key": "windows-x86_64",
+        "repo_suffix": "windows_x86_64",
+        "config_setting": "@cuda_toolkit//:windows_x86_64",
+        "windows_arch": "x64",
+    },
+    "windows_arm64": {
+        "redist_platform_key": "windows-arm64",
+        "repo_suffix": "windows_arm64",
+        "config_setting": "@cuda_toolkit//:windows_arm64",
+        "windows_arch": "arm64",
+    },
 }
+
+# These releases have validated Windows runtime layouts.
+_WINDOWS_CUDA_VERSIONS = ["13.4.1", "13.5.0"]
 
 _REPO_PUBLIC_TARGETS = REPO_PUBLIC_TARGETS
 _SUPPORTED_ARCHIVE_EXTENSIONS = [
@@ -96,6 +111,10 @@ def cuda_redist_repositories(
             repo_data["version_to_template"],
         )
         for platform, platform_spec in _PLATFORM_SPECS.items():
+            windows_arch = platform_spec.get("windows_arch", "")
+            if windows_arch and (not repo_data.get("supports_windows", False) or cuda_version not in _WINDOWS_CUDA_VERSIONS):
+                continue
+
             platform_key = platform_spec["redist_platform_key"]
             archive_entry = _platform_archive_entry(component_redist_entry, platform_key, cuda_version_major)
             if not archive_entry:
@@ -117,12 +136,13 @@ def cuda_redist_repositories(
                 cuda_repo_name = cuda_repo_name,
                 default_package_metadata = default_package_metadata,
                 sha256 = archive_entry.get("sha256", ""),
-                soname_libraries = repo_data.get("soname_libraries_by_version", {}).get(
+                soname_libraries = [] if windows_arch else repo_data.get("soname_libraries_by_version", {}).get(
                     component_version.split(".")[0],
                     repo_data.get("soname_libraries", []),
                 ),
                 strip_prefix = archive_entry.get("strip_prefix", ""),
                 url = cuda_redist_path_prefix + archive_entry["relative_path"],
+                windows_arch = windows_arch,
             )
             generated_repos.append({
                 "component_repo_name": repo_data["repo_name"],
@@ -261,7 +281,7 @@ def _format_lib_versions_bzl(name, lib_versions):
     lines.append("}")
     return "\n".join(lines)
 
-def _version_bzl_content(component_version, lib_versions = {}, lib_soname_versions = {}):
+def _version_bzl_content(component_version, windows_arch, lib_versions, lib_soname_versions):
     parts = component_version.split(".") if component_version else []
     version_major = parts[0] if len(parts) > 0 else ""
     version_minor = parts[1] if len(parts) > 1 else ""
@@ -271,6 +291,7 @@ VERSION = "{version}"
 VERSION_MAJOR = "{version_major}"
 VERSION_MINOR = "{version_minor}"
 VERSION_PATCH = "{version_patch}"
+WINDOWS_ARCH = "{windows_arch}"
 {lib_versions}
 {lib_soname_versions}
 """.format(
@@ -278,6 +299,7 @@ VERSION_PATCH = "{version_patch}"
         version_major = version_major,
         version_minor = version_minor,
         version_patch = version_patch,
+        windows_arch = windows_arch,
         lib_versions = _format_lib_versions_bzl("LIB_VERSIONS", lib_versions),
         lib_soname_versions = _format_lib_versions_bzl("LIB_SONAME_VERSIONS", lib_soname_versions),
     )
@@ -309,7 +331,7 @@ def _cuda_component_repository_impl(repository_ctx):
     lib_versions, lib_soname_versions = _get_lib_versions(repository_ctx)
     repository_ctx.file(
         "version.bzl",
-        _version_bzl_content(component_version, lib_versions, lib_soname_versions),
+        _version_bzl_content(component_version, repository_ctx.attr.windows_arch, lib_versions, lib_soname_versions),
     )
 
     return repository_ctx.repo_metadata(reproducible = True)
@@ -326,5 +348,6 @@ cuda_component_repository = repository_rule(
         "soname_libraries": attr.string_list(),
         "strip_prefix": attr.string(),
         "url": attr.string(mandatory = True),
+        "windows_arch": attr.string(),
     },
 )

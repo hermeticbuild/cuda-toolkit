@@ -38,3 +38,17 @@ alias(
     name = "linux_aarch64",
     actual = ":linux_arm64",
 )
+
+[
+    config_setting(
+        name = "windows_" + arch,
+        constraint_values = [
+            "@platforms//os:windows",
+            "@platforms//cpu:" + arch,
+        ],
+    )
+    for arch in [
+        "x86_64",
+        "arm64",
+    ]
+]

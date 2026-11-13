@@ -32,6 +32,7 @@ COMPONENTS_REGISTRY = {
     },
     "cuda_cudart": {
         "repo_name": "cuda_cudart",
+        "supports_windows": True,
         "soname_libraries": ["libcudart"],
         "version_to_template": {
             "13": "//cuda/build_defs:cuda_cudart.BUILD.bazel",
@@ -129,6 +130,7 @@ COMPONENTS_REGISTRY = {
     "cuda_cccl": {
         "repo_name": "cuda_cccl",
         "redist_component_aliases": ["cccl"],
+        "supports_windows": True,
         "version_to_template": {
             "any": "//cuda/build_defs:cuda_cccl.BUILD.bazel",
         },
@@ -141,6 +143,7 @@ COMPONENTS_REGISTRY = {
     },
     "cuda_crt": {
         "repo_name": "cuda_crt",
+        "supports_windows": True,
         "version_to_template": {
             "any": "//cuda/build_defs:cuda_crt.BUILD.bazel",
         },
