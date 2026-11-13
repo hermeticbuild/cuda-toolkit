@@ -105,18 +105,15 @@ def cuda_redist_repositories(
             continue
 
         component_version = component_redist_entry["version"]
-        linux_template = get_build_template(
+        build_file = get_build_template(
             component_name,
             component_version,
             repo_data["version_to_template"],
         )
         for platform, platform_spec in _PLATFORM_SPECS.items():
             windows_arch = platform_spec.get("windows_arch", "")
-            build_file = linux_template
-            if windows_arch:
-                build_file = repo_data.get("windows_template")
-                if not build_file or cuda_version not in _WINDOWS_CUDA_VERSIONS:
-                    continue
+            if windows_arch and (not repo_data.get("supports_windows", False) or cuda_version not in _WINDOWS_CUDA_VERSIONS):
+                continue
 
             platform_key = platform_spec["redist_platform_key"]
             archive_entry = _platform_archive_entry(component_redist_entry, platform_key, cuda_version_major)
@@ -284,7 +281,7 @@ def _format_lib_versions_bzl(name, lib_versions):
     lines.append("}")
     return "\n".join(lines)
 
-def _version_bzl_content(component_version, lib_versions = {}, lib_soname_versions = {}):
+def _version_bzl_content(component_version, windows_arch, lib_versions, lib_soname_versions):
     parts = component_version.split(".") if component_version else []
     version_major = parts[0] if len(parts) > 0 else ""
     version_minor = parts[1] if len(parts) > 1 else ""
@@ -294,6 +291,7 @@ VERSION = "{version}"
 VERSION_MAJOR = "{version_major}"
 VERSION_MINOR = "{version_minor}"
 VERSION_PATCH = "{version_patch}"
+WINDOWS_ARCH = "{windows_arch}"
 {lib_versions}
 {lib_soname_versions}
 """.format(
@@ -301,6 +299,7 @@ VERSION_PATCH = "{version_patch}"
         version_major = version_major,
         version_minor = version_minor,
         version_patch = version_patch,
+        windows_arch = windows_arch,
         lib_versions = _format_lib_versions_bzl("LIB_VERSIONS", lib_versions),
         lib_soname_versions = _format_lib_versions_bzl("LIB_SONAME_VERSIONS", lib_soname_versions),
     )
@@ -326,16 +325,13 @@ def _cuda_component_repository_impl(repository_ctx):
     repository_ctx.template(
         "BUILD",
         repository_ctx.attr.build_file,
-        {
-            "{cuda_redist_repo}": repository_ctx.attr.cuda_repo_name,
-            "{windows_arch}": repository_ctx.attr.windows_arch,
-        },
+        {"{cuda_redist_repo}": repository_ctx.attr.cuda_repo_name},
     )
 
     lib_versions, lib_soname_versions = _get_lib_versions(repository_ctx)
     repository_ctx.file(
         "version.bzl",
-        _version_bzl_content(component_version, lib_versions, lib_soname_versions),
+        _version_bzl_content(component_version, repository_ctx.attr.windows_arch, lib_versions, lib_soname_versions),
     )
 
     return repository_ctx.repo_metadata(reproducible = True)
