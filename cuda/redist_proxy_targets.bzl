@@ -135,4 +135,5 @@ REPO_PUBLIC_TARGETS = {
         "shared_library_files",
     ],
     "cuda_profiler_api": ["header_list", "headers"],
+    "cuda_sanitizer": ["headers", "compute_sanitizer", "compute_sanitizer_files"],
 }

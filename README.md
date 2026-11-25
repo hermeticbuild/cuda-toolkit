@@ -34,6 +34,12 @@ These proxy targets are platform-aware and resolve to the correct concrete packa
 
 For example, `@cuda//nvcc:ptxas` used from an attribute with `cfg = "exec"` resolves automatically to the appropriate execution-platform binary.
 
+For NVIDIA Compute Sanitizer on Linux, use `@cuda//sanitizer:headers` to
+include `<sanitizer.h>` and `@cuda//sanitizer:compute_sanitizer` to locate the
+executable. Include `@cuda//sanitizer:compute_sanitizer_files` in runfiles or
+stage it with its relative paths intact so the executable can find its
+injection libraries and launch helpers.
+
 ## Recommended usage
 
 Example `MODULE.bazel` setup:

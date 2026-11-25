@@ -183,6 +183,12 @@ COMPONENTS_REGISTRY = {
             "any": "//cuda/build_defs:cuda_profiler.BUILD.bazel",
         },
     },
+    "cuda_sanitizer_api": {
+        "repo_name": "cuda_sanitizer",
+        "version_to_template": {
+            "any": "//cuda/build_defs:cuda_sanitizer.BUILD.bazel",
+        },
+    },
     "cuda_nvtx": {
         "repo_name": "cuda_nvtx",
         "version_to_template": {
