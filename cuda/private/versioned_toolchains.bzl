@@ -14,11 +14,16 @@ def versioned_toolchains(version_to_repo, default_version):
             name = prefix + "/bin/ptxas",
             actual = nvcc + "ptxas",
         )
+        exec_binary(
+            name = prefix + "/bin/fatbinary",
+            actual = nvcc + "fatbinary",
+        )
         copy_to_directory(
             name = prefix + "/cuda_path",
             srcs = [
                 "@{}//cudart:cuda_header".format(repo),
                 prefix + "/bin/ptxas",
+                prefix + "/bin/fatbinary",
                 "@{}//{}:libdevice".format(repo, "nvvm" if int(version.split(".")[0]) >= 13 else "nvcc"),
             ],
             include_external_repositories = ["**"],
