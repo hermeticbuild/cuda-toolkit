@@ -169,15 +169,17 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+_DRIVER_DEPS = select({
+    "@{cuda_redist_repo}//driver:cuda_umd_libs": [
+        "@{cuda_redist_repo}//driver:nvidia_driver",
+        "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
+    ],
+    "//conditions:default": [":cuda_driver"],
+})
+
 cc_library(
     name = "static",
-    deps = select({
-        "@{cuda_redist_repo}//driver:cuda_umd_libs": [
-            "@{cuda_redist_repo}//driver:nvidia_driver",
-            "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
-        ],
-        "//conditions:default": [":cuda_driver"],
-    }) + [
+    deps = _DRIVER_DEPS + [
         ":cudart_static_library",
         ":device_runtime_static",
     ],
@@ -187,13 +189,7 @@ cc_library(
 
 cc_library(
     name = "cudart",
-    deps = select({
-        "@{cuda_redist_repo}//driver:cuda_umd_libs": [
-            "@{cuda_redist_repo}//driver:nvidia_driver",
-            "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
-        ],
-        "//conditions:default": [":cuda_driver"],
-    }) + [":cudart_shared_library"],
+    deps = _DRIVER_DEPS + [":cudart_shared_library"],
     visibility = ["//visibility:public"],
 )
 
@@ -207,6 +203,21 @@ cc_library(
         "//conditions:default": [":cuda_driver"],
     }) + [":cudart_interface_library"],
     visibility = ["//visibility:public"],
+)
+
+# One import lets Bazel choose the host runtime for the final link mode.
+cc_import(
+    name = "auto",
+    linkopts = [
+        "-ldl",
+        "-lpthread",
+        "-lrt",
+    ],
+    shared_library = "lib/libcudart.so." + LIB_SONAME_VERSIONS["libcudart"],
+    static_library = "lib/libcudart_static.a",
+    target_compatible_with = ["@platforms//os:linux"],
+    visibility = ["//visibility:public"],
+    deps = [":headers"] + _DRIVER_DEPS,
 )
 
 filegroup(

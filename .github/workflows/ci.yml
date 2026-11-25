@@ -35,6 +35,18 @@ jobs:
       - name: Bazel build //:all (${{ matrix.cuda_version }})
         working-directory: e2e
         run: bazel build //:all --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}
+      - name: Check cudart linkage with the native Linux toolchain (${{ matrix.cuda_version }})
+        working-directory: e2e
+        run: |
+          bazel build //:cudart_auto_static //:cudart_auto_dynamic \
+            --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }} \
+            --repo_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=0 \
+            --extra_toolchains=@local_config_cc_toolchains//:all
+          static_needed=$(readelf -d bazel-bin/cudart_auto_static)
+          if grep -E 'NEEDED.*libcudart\.so' <<< "$static_needed"; then
+            exit 1
+          fi
+          readelf -d bazel-bin/cudart_auto_dynamic | grep -E 'NEEDED.*\[libcudart\.so\.[0-9]+\]'
       - name: Test shared library runtime staging (${{ matrix.cuda_version }})
         working-directory: e2e
         run: bazel test //:shared_runtime_smoke_test --platforms //:platform_linux_amd64_cuda_${{ matrix.cuda_version }}
