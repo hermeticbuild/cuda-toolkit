@@ -1,0 +1,31 @@
+"""BUILD definitions for NVIDIA Compute Sanitizer."""
+
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_library(
+    name = "headers",
+    hdrs = glob(["compute-sanitizer/include/**/*.h"], allow_empty = False),
+    strip_include_prefix = "compute-sanitizer/include",
+    deps = ["@{cuda_redist_repo}//cudart:headers"],
+)
+
+filegroup(
+    name = "compute_sanitizer",
+    srcs = ["compute-sanitizer/compute-sanitizer"],
+)
+
+# Keep the executable, injection libraries, and launch helpers in their archive layout.
+filegroup(
+    name = "compute_sanitizer_files",
+    srcs = [":compute_sanitizer"] + glob(
+        ["compute-sanitizer/**"],
+        exclude = [
+            "compute-sanitizer/compute-sanitizer",
+            "compute-sanitizer/docs/**",
+            "compute-sanitizer/include/**",
+        ],
+        allow_empty = False,
+    ),
+)

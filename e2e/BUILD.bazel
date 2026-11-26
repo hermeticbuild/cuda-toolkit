@@ -165,6 +165,13 @@ cc_binary(
     deps = [":smoke_deps"],
 )
 
+cc_library(
+    name = "compute_sanitizer_smoke",
+    srcs = ["compute_sanitizer_smoke.cc"],
+    data = ["@cuda//sanitizer:compute_sanitizer_files"],
+    deps = ["@cuda//sanitizer:headers"],
+)
+
 cc_test(
     name = "shared_runtime_smoke_test",
     srcs = ["main.cc"],
