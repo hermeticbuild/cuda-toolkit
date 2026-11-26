@@ -180,6 +180,17 @@ cc_test(
     deps = SMOKE_RUNTIME_SHARED_DEPS,
 )
 
+[
+    cc_binary(
+        name = "cudart_auto_" + mode,
+        srcs = ["cudart_auto_smoke.cc"],
+        linkstatic = linkstatic,
+        tags = ["manual"],
+        deps = ["@cuda//cudart:auto"],
+    )
+    for mode, linkstatic in [("static", True), ("dynamic", False)]
+]
+
 cc_library(
     name = "smoke_static_deps",
     defines = SMOKE_BASE_DEFINES + SMOKE_CRT_DEFINE_SELECT,

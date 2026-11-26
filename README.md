@@ -40,6 +40,12 @@ executable. Include `@cuda//sanitizer:compute_sanitizer_files` in runfiles or
 stage it with its relative paths intact so the executable can find its
 injection libraries and launch helpers.
 
+On Linux, `@cuda//cudart:auto` lets Bazel choose between the static and
+shared CUDA host runtime for each final link. Shared selection requires a
+C++ toolchain that enables Bazel's `supports_dynamic_linker` feature.
+For relocatable device-code linking, select the device runtime separately via
+`@cuda//cuda:device_runtime_static`.
+
 ## Recommended usage
 
 Example `MODULE.bazel` setup:
