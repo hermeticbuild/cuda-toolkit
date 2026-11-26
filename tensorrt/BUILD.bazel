@@ -1,0 +1,26 @@
+load("@bazel_lib//:bzl_library.bzl", "bzl_library")
+load(":tensorrt_redist_build_defs_test.bzl", "tensorrt_redist_build_defs_test_suite")
+
+exports_files(
+    [
+        "update_redists.py",
+        "update_redists_test.py",
+    ],
+    visibility = ["//tools/tensorrt:__pkg__"],
+)
+
+filegroup(
+    name = "tensorrt_redist_versions_json",
+    srcs = ["tensorrt_redist_versions.json"],
+    visibility = ["//tools/tensorrt:__pkg__"],
+)
+
+bzl_library(
+    name = "tensorrt_redist_build_defs",
+    srcs = ["tensorrt_redist_build_defs.bzl"],
+    visibility = ["//visibility:public"],
+)
+
+tensorrt_redist_build_defs_test_suite(
+    name = "tensorrt_redist_build_defs_tests",
+)

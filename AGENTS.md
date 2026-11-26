@@ -136,10 +136,13 @@ Key files:
 - `nvshmem/nvshmem_redist_versions.json`: supported NVSHMEM version pins
 - `nccl/nccl_redist_versions.json`: generated NCCL archive metadata
 - `nccl/update_redists.py`: NCCL catalog updater and archive verifier, run through `//tools/nccl:update_redists`
+- `tensorrt/tensorrt_redist_versions.json`: generated TensorRT archive metadata
+- `tensorrt/update_redists.py`: TensorRT catalog updater and archive verifier, run through `//tools/tensorrt:update_redists`
 - `cuda/cuda_redist_build_defs.bzl`: CUDA component registry and template selection
 - `cudnn/cudnn_redist_build_defs.bzl`: cuDNN component registry and template selection
 - `nvshmem/nvshmem_redist_build_defs.bzl`: NVSHMEM component registry and template selection
 - `nccl/nccl_redist_build_defs.bzl`: NCCL component registry and template selection
+- `tensorrt/tensorrt_redist_build_defs.bzl`: TensorRT component registry and template selection
 - `cuda/redist_proxy_targets.bzl`: stable public target catalog
 - `cuda/build_defs/*.BUILD.bazel`: per-component generated repository templates
 - `e2e/`: consumer-style validation module

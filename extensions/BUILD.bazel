@@ -13,6 +13,7 @@ bzl_library(
         "//cudnn:cudnn_redist_build_defs",
         "//nccl:nccl_redist_build_defs",
         "//nvshmem:nvshmem_redist_build_defs",
+        "//tensorrt:tensorrt_redist_build_defs",
     ],
 )
 
