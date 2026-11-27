@@ -1,0 +1,45 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
+[
+    platform(
+        name = "{}_cuda_{}".format(cpu, version),
+        constraint_values = [
+            "@platforms//os:windows",
+            "@platforms//cpu:" + cpu,
+            "@cuda//:cuda_" + version,
+        ],
+    )
+    for cpu in [
+        "x86_64",
+        "arm64",
+    ]
+    for version in [
+        "12_8_1",
+        "13_4_1",
+        "13_5_0",
+    ]
+]
+
+[
+    cc_test(
+        name = name,
+        srcs = ["runtime_smoke.cc"],
+        local_defines = ["EXPECT_CUDART_DLL"] if name == "shared" else [],
+        tags = ["manual"],
+        target_compatible_with = ["@platforms//os:windows"],
+        deps = [dep],
+    )
+    for name, dep in [
+        ("shared", "@cuda//cudart:cudart"),
+        ("static", "@cuda//cudart:static"),
+    ]
+]
+
+cc_binary(
+    name = "system_link",
+    srcs = ["runtime_smoke.cc"],
+    tags = ["manual"],
+    target_compatible_with = ["@platforms//os:windows"],
+    deps = ["@cuda//cudart:cudart_system"],
+)

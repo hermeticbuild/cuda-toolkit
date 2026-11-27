@@ -27,6 +27,14 @@ CUDA components are typically published for these platforms:
 - `linux-x86_64`
 - `linux-sbsa`
 
+CUDA 13.4.1 and 13.5.0 also support the CUDA runtime on `windows-x86_64` and
+`windows-arm64`, including the CRT and CCCL headers required by cudart. Use
+`@cuda//cudart:cudart` for the redistributed DLL, `@cuda//cudart:cudart_system`
+when you supply the DLL at runtime, and `@cuda//cudart:static` for the static
+runtime. `@cuda//cuda:device_runtime_static` selects `cudadevrt.lib`.
+The driver remains system-provided. CUDA compiler tools and the full toolkit
+aggregate remain Linux-only.
+
 This module exposes each component through proxy subpackages:
 - `@cuda//<component>`
 

@@ -13,7 +13,29 @@ load(
 load("@rules_cc//cc:cc_import.bzl", "cc_import")
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
 load("@{cuda_redist_repo}//:version.bzl", "CUDA_VERSION")
-load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS", "VERSION")
+load("//:version.bzl", "LIB_SONAME_VERSIONS", "LIB_VERSIONS", "VERSION", "WINDOWS_ARCH")
+
+# The proxy selects the platform; this package contains only that archive.
+_IS_WINDOWS = WINDOWS_ARCH != ""
+_WINDOWS_LIB_DIR = "lib/" + WINDOWS_ARCH
+_CUDART_DLL = "bin/{}/cudart64_13.dll".format(WINDOWS_ARCH)
+_CUDART_INTERFACE = _WINDOWS_LIB_DIR + "/cudart.lib" if _IS_WINDOWS else "lib/libcudart.so"
+
+_DRIVER_DEPS = [":cuda_driver"] if _IS_WINDOWS else select({
+    "@{cuda_redist_repo}//driver:cuda_umd_libs": [
+        "@{cuda_redist_repo}//driver:nvidia_driver",
+        "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
+    ],
+    "//conditions:default": [":cuda_driver"],
+})
+
+_SYSTEM_DRIVER_DEPS = [":cuda_driver"] if _IS_WINDOWS else select({
+    "@{cuda_redist_repo}//driver:cuda_umd_libs": [
+        "@{cuda_redist_repo}//driver:nvidia_driver_system",
+        "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler_system",
+    ],
+    "//conditions:default": [":cuda_driver"],
+})
 
 filegroup(
     name = "cuda_header",
@@ -102,26 +124,29 @@ exports_files([
 cc_import(
     name = "cudart_static_library",
     deps = [":headers"],
-    static_library = "lib/libcudart_static.a",
+    static_library = _WINDOWS_LIB_DIR + "/cudart_static.lib" if _IS_WINDOWS else "lib/libcudart_static.a",
 )
 
 cc_import(
     name = "cudadevrt_static",
     deps = [":headers"],
-    static_library = "lib/libcudadevrt.a",
+    static_library = _WINDOWS_LIB_DIR + "/cudadevrt.lib" if _IS_WINDOWS else "lib/libcudadevrt.a",
     visibility = ["//visibility:public"],
 )
 
-cc_import(
-    name = "culibos_static",
-    deps = [":headers"],
-    static_library = "lib/libculibos.a",
-)
+[
+    cc_import(
+        name = name,
+        deps = [":headers"],
+        static_library = "lib/libculibos.a",
+    )
+    for name in ([] if _IS_WINDOWS else ["culibos_static"])
+]
 
 cc_import(
     name = "cuda_stub",
     deps = [":cuda"],
-    interface_library = "lib/stubs/libcuda.so",
+    interface_library = _WINDOWS_LIB_DIR + "/cuda.lib" if _IS_WINDOWS else "lib/stubs/libcuda.so",
     system_provided = 1,
     visibility = ["//visibility:public"],
 )
@@ -129,14 +154,15 @@ cc_import(
 cc_import(
     name = "cudart_shared_library",
     deps = [":headers"],
-    shared_library = "lib/libcudart.so." + LIB_SONAME_VERSIONS["libcudart"],
+    interface_library = _CUDART_INTERFACE if _IS_WINDOWS else None,
+    shared_library = _CUDART_DLL if _IS_WINDOWS else "lib/libcudart.so." + LIB_SONAME_VERSIONS["libcudart"],
     visibility = ["//visibility:public"],
 )
 
 cc_import(
     name = "cudart_interface_library",
     deps = [":headers"],
-    interface_library = "lib/libcudart.so",
+    interface_library = _CUDART_INTERFACE,
     system_provided = True,
     visibility = ["//visibility:public"],
 )
@@ -157,69 +183,51 @@ cc_library(
 
 cc_library(
     name = "device_runtime_static",
-    deps = [":cudadevrt_static"] + if_version_equal_or_greater_than(
-        CUDA_VERSION,
-        "13.0.0",
-        ["@{cuda_redist_repo}//culibos:culibos_static"],
-    ) + if_version_lower_than(
-        CUDA_VERSION,
-        "13.0.0",
-        [":culibos_static"],
+    # NVIDIA ships cudadevrt without culibos on Windows.
+    deps = [":cudadevrt_static"] + (
+        [] if _IS_WINDOWS else if_version_equal_or_greater_than(
+            CUDA_VERSION,
+            "13.0.0",
+            ["@{cuda_redist_repo}//culibos:culibos_static"],
+            [":culibos_static"],
+        )
     ),
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "static",
-    deps = select({
-        "@{cuda_redist_repo}//driver:cuda_umd_libs": [
-            "@{cuda_redist_repo}//driver:nvidia_driver",
-            "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
-        ],
-        "//conditions:default": [":cuda_driver"],
-    }) + [
+    deps = _DRIVER_DEPS + [
         ":cudart_static_library",
         ":device_runtime_static",
     ],
-    linkopts = ["-lrt"],
+    linkopts = [] if _IS_WINDOWS else ["-lrt"],
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "cudart",
-    deps = select({
-        "@{cuda_redist_repo}//driver:cuda_umd_libs": [
-            "@{cuda_redist_repo}//driver:nvidia_driver",
-            "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler",
-        ],
-        "//conditions:default": [":cuda_driver"],
-    }) + [":cudart_shared_library"],
+    deps = _DRIVER_DEPS + [":cudart_shared_library"],
     visibility = ["//visibility:public"],
 )
 
 cc_library(
     name = "cudart_system",
-    deps = select({
-        "@{cuda_redist_repo}//driver:cuda_umd_libs": [
-            "@{cuda_redist_repo}//driver:nvidia_driver_system",
-            "@{cuda_redist_repo}//driver:nvidia_ptxjitcompiler_system",
-        ],
-        "//conditions:default": [":cuda_driver"],
-    }) + [":cudart_interface_library"],
+    deps = _SYSTEM_DRIVER_DEPS + [":cudart_interface_library"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "shared_library_files",
     srcs = [
-        "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
+        _CUDART_DLL if _IS_WINDOWS else "lib/libcudart.so." + LIB_VERSIONS["libcudart"],
     ],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "header_list",
-    srcs = _HEADER_FILES + glob([
+    srcs = glob(["include/**"], allow_empty = False) if _IS_WINDOWS else _HEADER_FILES + glob([
         "include/cooperative_groups/**",
     ]) + if_version_equal_or_greater_than(VERSION, "12.8.0", [
         "include/cuda_fp4.h",
